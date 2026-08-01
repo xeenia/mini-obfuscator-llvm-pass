@@ -8,6 +8,12 @@ using namespace llvm;
 PassPluginLibraryInfo getPluginInfo(){
     return {LLVM_PLUGIN_API_VERSION, "miniObfuscator", LLVM_VERSION_STRING,
             [](PassBuilder &PB) {
+                PB.registerAnalysisRegistrationCallback(
+                    [](ModuleAnalysisManager &MAM) {
+                        MAM.registerPass([] { return SignatureObfuscatorAnalysis(); });
+                    }
+                );
+
                 PB.registerPipelineParsingCallback(
                     [](StringRef Name, ModulePassManager &MPM, ArrayRef<PassBuilder::PipelineElement>){
                         if(Name == "obfpass") {
