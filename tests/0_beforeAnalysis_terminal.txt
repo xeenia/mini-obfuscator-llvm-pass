@@ -1,0 +1,63 @@
+=== Module: merged.bc ===
+Function: multiply
+Return type: i32
+  Args:
+    [0] i32
+    [1] i32
+Function: pack_color
+Return type: i32
+  Args:
+    [0] i32
+    [1] i32
+    [2] i32
+    [3] i32
+Function: build_record
+Return type: i64
+  Args:
+    [0] i32
+    [1] double
+    [2] i8
+    [3] i64
+Function: negate
+Return type: i32
+  Args:
+    [0] i32
+Function: constant_answer
+Return type: i32
+Args: none
+Function: factorial
+Return type: i32
+  Args:
+    [0] i32
+Function: square
+Return type: i32
+  Args:
+    [0] i32
+Function: triple
+Return type: i32
+  Args:
+    [0] i32
+Function: sum_all
+Return type: i32
+  Args:
+    [0] i32
+Function: llvm.va_start
+Return type: void
+  Args:
+    [0] ptr
+Function: llvm.va_end
+Return type: void
+  Args:
+    [0] ptr
+Function: sub
+Return type: i32
+  Args:
+    [0] i32
+    [1] i32
+Function: main
+Return type: i32
+Args: none
+Function: printf
+Return type: i32
+  Args:
+    [0] ptr
