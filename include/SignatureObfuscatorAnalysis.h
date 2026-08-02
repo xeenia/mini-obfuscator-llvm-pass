@@ -3,14 +3,17 @@
 #include "llvm/IR/PassManager.h"
 #include <vector>
 
+
+
+
 struct SignatureObfuscatorAnalysis : public llvm::AnalysisInfoMixin<SignatureObfuscatorAnalysis>{
-    //i'm thinking of having a struct because it will help later with the selection proccess
-    //of the obfuscation techniques by storing extra information for each candidate function
     struct CandidateInfo{
             llvm::Function *Fn;
+            bool dummyAllowed = false; 
     };
     struct Result {
         std::vector<CandidateInfo> Candidates;
+        unsigned MaxArgs = 0; //we will save the max arg_size among dummy eligible functions
     };
 
     Result run(llvm::Module &M, llvm::ModuleAnalysisManager &AM);
