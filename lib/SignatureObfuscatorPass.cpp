@@ -30,7 +30,13 @@ static cl::opt<bool> OnlyDummy(
     "only-dummy",
     cl::init(false),
     cl::desc("apply only dummy-parameter insertion"));
+  
+static cl::opt<bool> OnlyShuffle(
+    "only-shuffle",
+    cl::init(false),
+    cl::desc("apply only shuffling-parameter insertion"));
 
+    
 static void printSignature(raw_ostream &OS, Function *F){
     OS << F->getName() << " (";
     unsigned i = 0;
@@ -121,6 +127,96 @@ static Function *addDummies(Function *F, unsigned padCount){
     return newF;
 }
 
+void rewriteShuffledCallSites(Function &Old, Function &newF, const std::vector<unsigned> &perm) {
+  for (User *U : make_early_inc_range(Old.users())) {
+    auto *CB = dyn_cast<CallBase>(U);
+    if (!CB || CB->getCalledFunction() != &Old)
+      continue;
+
+    //reordering the args the same way the params were shuffled
+    SmallVector<Value *, 8> NewArgs(CB->arg_size());
+    for (unsigned i = 0; i < CB->arg_size(); ++i)
+      NewArgs[perm[i]] = CB->getArgOperand(i);
+
+    IRBuilder<> B(CB);
+    CallInst *NC = B.CreateCall(&newF, NewArgs);
+    NC->setCallingConv(CB->getCallingConv());
+    CB->replaceAllUsesWith(NC);
+    CB->eraseFromParent();
+  }
+}
+
+Function *shuffleSlots(Function &Old, std::vector<unsigned> &perm) {
+  Module &M = *Old.getParent();
+  unsigned N = Old.arg_size();
+
+  std::vector<Type *> OldTypes;
+  for (Argument &Arg : Old.args())
+    OldTypes.push_back(Arg.getType());
+
+  //perm[i] = new slot that old arg i goes to. start as identity then shuffle
+  perm.resize(N);
+  for (unsigned i = 0; i < N; ++i)
+    perm[i] = i;
+  // for exactly 2 args, always swap. otherwise shuffle randomly
+  if (N == 2) {
+      perm[0] = 1;
+      perm[1] = 0;
+  } else {
+      uint64_t LocalSeed = Seed ^ hash_value(Old.getName());
+      std::mt19937_64 RNG(LocalSeed);
+      std::shuffle(perm.begin(), perm.end(), RNG);
+  }
+
+  //put each old type at its shuffled slot
+  std::vector<Type *> NewTypes(N);
+  for (unsigned i = 0; i < N; ++i)
+    NewTypes[perm[i]] = OldTypes[i];
+
+  FunctionType *NewTy = FunctionType::get(Old.getReturnType(), NewTypes, false);
+  Function *newF = Function::Create(NewTy, Old.getLinkage(),
+                                    Old.getAddressSpace(),
+                                    Old.getName(), &M);
+  newF->copyAttributesFrom(&Old);
+
+  SmallVector<Argument *, 8> NewArgs;
+  for (Argument &NA : newF->args())
+    NewArgs.push_back(&NA);
+
+  ValueToValueMapTy VMap;
+  unsigned i = 0;
+  for (Argument &OldArg : Old.args()) {
+    unsigned target = perm[i++];
+    NewArgs[target]->setName(OldArg.getName());
+    VMap[&OldArg] = NewArgs[target];
+  }
+
+  SmallVector<ReturnInst *, 8> Returns;
+  CloneFunctionInto(newF, &Old, VMap, CloneFunctionChangeType::LocalChangesOnly, Returns);
+  return newF;
+}
+
+static Function *shuffleParameters(Function *F) {
+  if (F->arg_size() < 2) {
+    errs() << "     (3) shuffle parameters: skipped (<2 args)\n";
+    return F;
+  }
+  std::vector<unsigned> perm;
+  Function *newF = shuffleSlots(*F, perm);
+  rewriteShuffledCallSites(*F, *newF, perm);
+  keepFunctionOrder(*F, *newF);
+  newF->takeName(F);
+  F->eraseFromParent();
+  errs() << "     (3) shuffle parameters: [";
+  int i{0};
+  for (Argument &Arg : newF->args()){
+    if (i) errs() << ",";
+    errs() << *Arg.getType() << " %" << perm[i++];
+  }
+  errs() << "]\n";
+  return newF;
+}
+
 PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager &AM) {
 
     auto &analysisResult = AM.getResult<SignatureObfuscatorAnalysis>(M);
@@ -137,11 +233,20 @@ PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager 
         printSignature(errs(), curFn);
         errs() << " ---\n";
 
-        if(!OnlyDummy)
+        //custom technique activation
+        bool doRename   = !OnlyDummy && !OnlyShuffle;
+        bool doDummy    = !OnlyRename && !OnlyShuffle;
+        bool doShuffle  = !OnlyRename && !OnlyDummy;
+        bool doDummyShuffle = OnlyDummy && OnlyShuffle;
+
+        if(doRename)
             curFn = symbolRenaming(curFn);
-        if(Info.dummyAllowed && !OnlyRename){
+        if(Info.dummyAllowed && (doDummy || doDummyShuffle)){
             unsigned padCount = analysisResult.MaxArgs - curFn->arg_size();
             curFn = addDummies(curFn, padCount+1); //we add +1 so even functions with max args can have at least 1 dummy 
+        }
+        if(Info.dummyAllowed && (doShuffle || doDummyShuffle)){
+            curFn = shuffleParameters(curFn);
         }
             
         Changed = true;

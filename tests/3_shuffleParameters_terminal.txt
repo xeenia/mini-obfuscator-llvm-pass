@@ -1,0 +1,19 @@
+=== Module: merged.bc ===
+
+--- square (i32) ---
+--- triple (i32) ---
+--- sum_all (i32) ---
+--- sub (i32, i32) ---
+     (3) shuffle parameters: [i32 %1,i32 %0]
+--- multiply (i32, i32) ---
+     (3) shuffle parameters: [i32 %1,i32 %0]
+--- pack_color (i32, i32, i32, i32) ---
+     (3) shuffle parameters: [i32 %2,i32 %3,i32 %1,i32 %0]
+--- build_record (i32, double, i8, i64) ---
+     (3) shuffle parameters: [i32 %0,i8 %3,i64 %1,double %2]
+--- negate (i32) ---
+     (3) shuffle parameters: skipped (<2 args)
+--- constant_answer () ---
+     (3) shuffle parameters: skipped (<2 args)
+--- factorial (i32) ---
+     (3) shuffle parameters: skipped (<2 args)
