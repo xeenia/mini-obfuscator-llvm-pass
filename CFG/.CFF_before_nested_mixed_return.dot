@@ -1,0 +1,19 @@
+digraph "CFG for 'CFF_before_nested_mixed_return' function" {
+	label="CFG for 'CFF_before_nested_mixed_return' function";
+
+	Node0x61e9b1a6a810 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%1:\l  %2 = alloca i32, align 4\l  %3 = alloca i32, align 4\l  store i32 %0, ptr %3, align 4\l  %4 = load i32, ptr %3, align 4\l  %5 = icmp ne i32 %4, 0\l  br i1 %5, label %6, label %14\l|{<s0>T|<s1>F}}"];
+	Node0x61e9b1a6a810:s0 -> Node0x61e9b1a6ab20;
+	Node0x61e9b1a6a810:s1 -> Node0x61e9b1a6ab70;
+	Node0x61e9b1a6ab20 [shape=record,color="#b70d28ff", style=filled, fillcolor="#e36c5570",label="{%6:\l6:                                                \l  %7 = load i32, ptr %3, align 4\l  %8 = icmp slt i32 %7, 0\l  br i1 %8, label %9, label %10\l|{<s0>T|<s1>F}}"];
+	Node0x61e9b1a6ab20:s0 -> Node0x61e9b1a6aa40;
+	Node0x61e9b1a6ab20:s1 -> Node0x61e9b1a6ae00;
+	Node0x61e9b1a6aa40 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#efcebd70",label="{%9:\l9:                                                \l  store i32 0, ptr %2, align 4\l  br label %16\l}"];
+	Node0x61e9b1a6aa40 -> Node0x61e9b1a6afd0;
+	Node0x61e9b1a6ae00 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#f6a38570",label="{%10:\l10:                                               \l  %11 = load i32, ptr %3, align 4\l  %12 = add nsw i32 %11, 5\l  store i32 %12, ptr %3, align 4\l  br label %13\l}"];
+	Node0x61e9b1a6ae00 -> Node0x61e9b1a6b220;
+	Node0x61e9b1a6b220 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#f6a38570",label="{%13:\l13:                                               \l  br label %14\l}"];
+	Node0x61e9b1a6b220 -> Node0x61e9b1a6ab70;
+	Node0x61e9b1a6ab70 [shape=record,color="#b70d28ff", style=filled, fillcolor="#d24b4070",label="{%14:\l14:                                               \l  %15 = load i32, ptr %3, align 4\l  store i32 %15, ptr %2, align 4\l  br label %16\l}"];
+	Node0x61e9b1a6ab70 -> Node0x61e9b1a6afd0;
+	Node0x61e9b1a6afd0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%16:\l16:                                               \l  %17 = load i32, ptr %2, align 4\l  ret i32 %17\l}"];
+}

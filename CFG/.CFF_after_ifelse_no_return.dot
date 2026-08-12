@@ -1,0 +1,34 @@
+digraph "CFG for 'CFF_after_ifelse_no_return' function" {
+	label="CFG for 'CFF_after_ifelse_no_return' function";
+
+	Node0x61e9b1a6de70 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#b9d0f970",label="{%1:\l  %2 = alloca i32, align 4\l  %3 = alloca i32, align 4\l  store i32 %0, ptr %2, align 4\l  store i32 0, ptr %3, align 4\l  br label %4\l}"];
+	Node0x61e9b1a6de70 -> Node0x61e9b1a6e0c0;
+	Node0x61e9b1a6e0c0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%4:\l4:                                                \l  %5 = load i32, ptr %3, align 4\l  switch i32 %5, label %14 [\l    i32 0, label %6\l    i32 1, label %12\l    i32 2, label %13\l  ]\l|{<s0>def|<s1>0|<s2>1|<s3>2}}"];
+	Node0x61e9b1a6e0c0:s0 -> Node0x61e9b1a6e240;
+	Node0x61e9b1a6e0c0:s1 -> Node0x61e9b1a6e290;
+	Node0x61e9b1a6e0c0:s2 -> Node0x61e9b1a6e2e0;
+	Node0x61e9b1a6e0c0:s3 -> Node0x61e9b1a6e330;
+	Node0x61e9b1a6e290 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#f59c7d70",label="{%6:\l6:                                                \l  %7 = load i32, ptr %2, align 4\l  %8 = icmp eq i32 %7, 0\l  br i1 %8, label %9, label %10\l|{<s0>T|<s1>F}}"];
+	Node0x61e9b1a6e290:s0 -> Node0x61e9b1a6e180;
+	Node0x61e9b1a6e290:s1 -> Node0x61e9b1a6e560;
+	Node0x61e9b1a6e180 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#ecd3c570",label="{%9:\l9:                                                \l  store i32 1, ptr %3, align 4\l  br label %11\l}"];
+	Node0x61e9b1a6e180 -> Node0x61e9b1a6e730;
+	Node0x61e9b1a6e560 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#f7bca170",label="{%10:\l10:                                               \l  store i32 2, ptr %3, align 4\l  br label %11\l}"];
+	Node0x61e9b1a6e560 -> Node0x61e9b1a6e730;
+	Node0x61e9b1a6e730 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#f59c7d70",label="{%11:\l11:                                               \l  br label %15\l}"];
+	Node0x61e9b1a6e730 -> Node0x61e9b1a6e8f0;
+	Node0x61e9b1a6e2e0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#f59c7d70",label="{%12:\l12:                                               \l  store i32 1, ptr %2, align 4\l  store i32 -1, ptr %3, align 4\l  br label %15\l}"];
+	Node0x61e9b1a6e2e0 -> Node0x61e9b1a6e8f0;
+	Node0x61e9b1a6e330 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#f59c7d70",label="{%13:\l13:                                               \l  store i32 0, ptr %2, align 4\l  store i32 -1, ptr %3, align 4\l  br label %14\l}"];
+	Node0x61e9b1a6e330 -> Node0x61e9b1a6e240;
+	Node0x61e9b1a6e240 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#de614d70",label="{%14:\l14:                                               \l  br label %15\l}"];
+	Node0x61e9b1a6e240 -> Node0x61e9b1a6e8f0;
+	Node0x61e9b1a6e8f0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%15:\l15:                                               \l  %16 = load i32, ptr %3, align 4\l  %17 = icmp eq i32 %16, -1\l  br i1 %17, label %18, label %19\l|{<s0>T|<s1>F}}"];
+	Node0x61e9b1a6e8f0:s0 -> Node0x61e9b1a6eec0;
+	Node0x61e9b1a6e8f0:s1 -> Node0x61e9b1a6ef10;
+	Node0x61e9b1a6eec0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#b9d0f970",label="{%18:\l18:                                               \l  br label %20\l}"];
+	Node0x61e9b1a6eec0 -> Node0x61e9b1a6f010;
+	Node0x61e9b1a6ef10 [shape=record,color="#b70d28ff", style=filled, fillcolor="#bb1b2c70",label="{%19:\l19:                                               \l  br label %4\l}"];
+	Node0x61e9b1a6ef10 -> Node0x61e9b1a6e0c0;
+	Node0x61e9b1a6f010 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#b9d0f970",label="{%20:\l20:                                               \l  %21 = load i32, ptr %2, align 4\l  ret i32 %21\l}"];
+}
