@@ -61,7 +61,8 @@ int CFF_after_without_returns(int a) {
         default:
             break;
     }
-    if(b<3) {
+    
+    if(b++!=0 && b<3) {
          int use_positive = rand() % 2; 
          if (use_positive) {
            b = 3 + rand() % 8;         
