@@ -1,0 +1,40 @@
+digraph "CFG for 'CFF_after_without_returns' function" {
+	label="CFG for 'CFF_after_without_returns' function";
+
+	Node0x5f46a06fe560 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#7ea1fa70",label="{%1:\l  %2 = alloca i32, align 4\l  %3 = alloca i32, align 4\l  %4 = alloca i32, align 4\l  store i32 %0, ptr %2, align 4\l  store i32 0, ptr %3, align 4\l  %5 = call i64 @time(ptr noundef null) #4\l  %6 = trunc i64 %5 to i32\l  call void @srand(i32 noundef %6) #4\l  br label %7\l}"];
+	Node0x5f46a06fe560 -> Node0x5f46a06ff0d0;
+	Node0x5f46a06ff0d0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%7:\l7:                                                \l  %8 = load i32, ptr %3, align 4\l  switch i32 %8, label %17 [\l    i32 0, label %9\l    i32 1, label %15\l    i32 2, label %16\l  ]\l|{<s0>def|<s1>0|<s2>1|<s3>2}}"];
+	Node0x5f46a06ff0d0:s0 -> Node0x5f46a06fe700;
+	Node0x5f46a06ff0d0:s1 -> Node0x5f46a06ff290;
+	Node0x5f46a06ff0d0:s2 -> Node0x5f46a06ff2e0;
+	Node0x5f46a06ff0d0:s3 -> Node0x5f46a06ff330;
+	Node0x5f46a06ff290 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#e1675170",label="{%9:\l9:                                                \l  %10 = load i32, ptr %2, align 4\l  %11 = icmp eq i32 %10, 0\l  br i1 %11, label %12, label %13\l|{<s0>T|<s1>F}}"];
+	Node0x5f46a06ff290:s0 -> Node0x5f46a06ff4d0;
+	Node0x5f46a06ff290:s1 -> Node0x5f46a06ff520;
+	Node0x5f46a06ff4d0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#f3947570",label="{%12:\l12:                                               \l  store i32 1, ptr %3, align 4\l  br label %14\l}"];
+	Node0x5f46a06ff4d0 -> Node0x5f46a06ff6f0;
+	Node0x5f46a06ff520 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#ec7f6370",label="{%13:\l13:                                               \l  store i32 2, ptr %3, align 4\l  br label %14\l}"];
+	Node0x5f46a06ff520 -> Node0x5f46a06ff6f0;
+	Node0x5f46a06ff6f0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#e1675170",label="{%14:\l14:                                               \l  br label %18\l}"];
+	Node0x5f46a06ff6f0 -> Node0x5f46a06ff8b0;
+	Node0x5f46a06ff2e0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#e1675170",label="{%15:\l15:                                               \l  store i32 100, ptr %2, align 4\l  br label %16\l}"];
+	Node0x5f46a06ff2e0 -> Node0x5f46a06ff330;
+	Node0x5f46a06ff330 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#d0473d70",label="{%16:\l16:                                               \l  store i32 -100, ptr %2, align 4\l  br label %17\l}"];
+	Node0x5f46a06ff330 -> Node0x5f46a06fe700;
+	Node0x5f46a06fe700 [shape=record,color="#b70d28ff", style=filled, fillcolor="#c32e3170",label="{%17:\l17:                                               \l  br label %18\l}"];
+	Node0x5f46a06fe700 -> Node0x5f46a06ff8b0;
+	Node0x5f46a06ff8b0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%18:\l18:                                               \l  %19 = load i32, ptr %3, align 4\l  %20 = icmp slt i32 %19, 3\l  br i1 %20, label %21, label %35\l|{<s0>T|<s1>F}}"];
+	Node0x5f46a06ff8b0:s0 -> Node0x5f46a06ffd60;
+	Node0x5f46a06ff8b0:s1 -> Node0x5f46a06ffdb0;
+	Node0x5f46a06ffd60 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#d0473d70",label="{%21:\l21:                                               \l  %22 = call i32 @rand() #4\l  %23 = srem i32 %22, 2\l  store i32 %23, ptr %4, align 4\l  %24 = load i32, ptr %4, align 4\l  %25 = icmp ne i32 %24, 0\l  br i1 %25, label %26, label %30\l|{<s0>T|<s1>F}}"];
+	Node0x5f46a06ffd60:s0 -> Node0x5f46a07002a0;
+	Node0x5f46a06ffd60:s1 -> Node0x5f46a07002f0;
+	Node0x5f46a07002a0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#dc5d4a70",label="{%26:\l26:                                               \l  %27 = call i32 @rand() #4\l  %28 = srem i32 %27, 8\l  %29 = add nsw i32 3, %28\l  store i32 %29, ptr %3, align 4\l  br label %34\l}"];
+	Node0x5f46a07002a0 -> Node0x5f46a07006c0;
+	Node0x5f46a07002f0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#e8765c70",label="{%30:\l30:                                               \l  %31 = call i32 @rand() #4\l  %32 = srem i32 %31, 8\l  %33 = add nsw i32 -10, %32\l  store i32 %33, ptr %3, align 4\l  br label %34\l}"];
+	Node0x5f46a07002f0 -> Node0x5f46a07006c0;
+	Node0x5f46a07006c0 [shape=record,color="#3d50c3ff", style=filled, fillcolor="#d0473d70",label="{%34:\l34:                                               \l  br label %35\l}"];
+	Node0x5f46a07006c0 -> Node0x5f46a06ffdb0;
+	Node0x5f46a06ffdb0 [shape=record,color="#b70d28ff", style=filled, fillcolor="#b70d2870",label="{%35:\l35:                                               \l  br label %7\l}"];
+	Node0x5f46a06ffdb0 -> Node0x5f46a06ff0d0;
+}
