@@ -43,7 +43,6 @@ int CFF_after_with_returns(int a) {
 
 int CFF_after_without_returns(int a) {
   int b = 0;
-  srand(time(NULL)); 
   while(1){
     switch(b){
         case 0:
@@ -56,22 +55,15 @@ int CFF_after_without_returns(int a) {
             break;
         case 1:
             a = 100;
+             b=3;
+            break;
         case 2:
             a = -100;
         default:
-            break;
-    }
-    
-    if(b++!=0 && b<3) {
-         int use_positive = rand() % 2; 
-         if (use_positive) {
-           b = 3 + rand() % 8;         
-         } else {
-           b = -10 + rand() % 8; 
-         }
+            return a;
     }
   }
-  return 0;
+  return 0; 
 }
 
 int main(int argc, char** argv) {
