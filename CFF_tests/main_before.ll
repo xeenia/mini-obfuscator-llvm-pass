@@ -6,8 +6,11 @@ target triple = "x86_64-unknown-linux-gnu"
 @.str = private unnamed_addr constant [15 x i8] c"start: x = %d\0A\00", align 1
 @.str.1 = private unnamed_addr constant [16 x i8] c"condition true\0A\00", align 1
 @.str.2 = private unnamed_addr constant [13 x i8] c"end: y = %d\0A\00", align 1
-@.str.3 = private unnamed_addr constant [7 x i8] c"a: %d\0A\00", align 1
-@.str.4 = private unnamed_addr constant [20 x i8] c"_1_ifalone before:\0A\00", align 1
+@.str.3 = private unnamed_addr constant [12 x i8] c"outer true\0A\00", align 1
+@.str.4 = private unnamed_addr constant [19 x i8] c"inner true (even)\0A\00", align 1
+@.str.5 = private unnamed_addr constant [16 x i8] c"after inner if\0A\00", align 1
+@.str.6 = private unnamed_addr constant [7 x i8] c"a: %d\0A\00", align 1
+@.str.7 = private unnamed_addr constant [20 x i8] c"_1_ifalone before:\0A\00", align 1
 
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local void @_1_ifalone(i32 noundef %0) #0 {
@@ -38,6 +41,64 @@ define dso_local void @_1_ifalone(i32 noundef %0) #0 {
 declare i32 @printf(ptr noundef, ...) #1
 
 ; Function Attrs: noinline nounwind optnone uwtable
+define dso_local void @_3_ifnested(i32 noundef %0) #0 {
+  %2 = alloca i32, align 4
+  %3 = alloca i32, align 4
+  store i32 %0, ptr %2, align 4
+  %4 = load i32, ptr %2, align 4
+  %5 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %4)
+  %6 = load i32, ptr %2, align 4
+  store i32 %6, ptr %3, align 4
+  %7 = load i32, ptr %2, align 4
+  %8 = icmp sgt i32 %7, 0
+  br i1 %8, label %9, label %32
+
+9:                                                ; preds = %1
+  %10 = call i32 (ptr, ...) @printf(ptr noundef @.str.3)
+  %11 = load i32, ptr %3, align 4
+  %12 = add nsw i32 %11, 10
+  store i32 %12, ptr %3, align 4
+  %13 = load i32, ptr %2, align 4
+  %14 = srem i32 %13, 2
+  %15 = icmp eq i32 %14, 0
+  br i1 %15, label %16, label %20
+
+16:                                               ; preds = %9
+  %17 = call i32 (ptr, ...) @printf(ptr noundef @.str.4)
+  %18 = load i32, ptr %3, align 4
+  %19 = mul nsw i32 %18, 3
+  store i32 %19, ptr %3, align 4
+  br label %28
+
+20:                                               ; preds = %9
+  %21 = load i32, ptr %2, align 4
+  %22 = srem i32 %21, 2
+  store i32 %22, ptr %2, align 4
+  %23 = load i32, ptr %2, align 4
+  %24 = icmp eq i32 %23, 3
+  br i1 %24, label %25, label %27
+
+25:                                               ; preds = %20
+  %26 = call i32 (ptr, ...) @printf(ptr noundef @.str.4)
+  br label %27
+
+27:                                               ; preds = %25, %20
+  br label %28
+
+28:                                               ; preds = %27, %16
+  %29 = call i32 (ptr, ...) @printf(ptr noundef @.str.5)
+  %30 = load i32, ptr %3, align 4
+  %31 = add nsw i32 %30, 1
+  store i32 %31, ptr %3, align 4
+  br label %32
+
+32:                                               ; preds = %28, %1
+  %33 = load i32, ptr %3, align 4
+  %34 = call i32 (ptr, ...) @printf(ptr noundef @.str.2, i32 noundef %33)
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
 define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
   %3 = alloca i32, align 4
   %4 = alloca i32, align 4
@@ -47,7 +108,7 @@ define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
   store i32 %0, ptr %4, align 4
   store ptr %1, ptr %5, align 8
   %7 = load i32, ptr %4, align 4
-  %8 = call i32 (ptr, ...) @printf(ptr noundef @.str.3, i32 noundef %7)
+  %8 = call i32 (ptr, ...) @printf(ptr noundef @.str.6, i32 noundef %7)
   %9 = load i32, ptr %4, align 4
   %10 = icmp eq i32 %9, 1
   br i1 %10, label %11, label %12
@@ -65,9 +126,12 @@ define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
   br label %17
 
 17:                                               ; preds = %12, %11
-  %18 = call i32 (ptr, ...) @printf(ptr noundef @.str.4)
+  %18 = call i32 (ptr, ...) @printf(ptr noundef @.str.7)
   %19 = load i32, ptr %6, align 4
   call void @_1_ifalone(i32 noundef %19)
+  %20 = call i32 (ptr, ...) @printf(ptr noundef @.str.7)
+  %21 = load i32, ptr %6, align 4
+  call void @_3_ifnested(i32 noundef %21)
   ret i32 0
 }
 

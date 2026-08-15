@@ -6,8 +6,11 @@ target triple = "x86_64-unknown-linux-gnu"
 @.str = private unnamed_addr constant [15 x i8] c"start: x = %d\0A\00", align 1
 @.str.1 = private unnamed_addr constant [16 x i8] c"condition true\0A\00", align 1
 @.str.2 = private unnamed_addr constant [13 x i8] c"end: y = %d\0A\00", align 1
-@.str.3 = private unnamed_addr constant [7 x i8] c"a: %d\0A\00", align 1
-@.str.4 = private unnamed_addr constant [20 x i8] c"_1_ifalone before:\0A\00", align 1
+@.str.3 = private unnamed_addr constant [12 x i8] c"outer true\0A\00", align 1
+@.str.4 = private unnamed_addr constant [19 x i8] c"inner true (even)\0A\00", align 1
+@.str.5 = private unnamed_addr constant [16 x i8] c"after inner if\0A\00", align 1
+@.str.6 = private unnamed_addr constant [7 x i8] c"a: %d\0A\00", align 1
+@.str.7 = private unnamed_addr constant [20 x i8] c"_1_ifalone before:\0A\00", align 1
 
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local void @_1_ifalone(i32 noundef %0) #0 {
@@ -21,24 +24,97 @@ define dso_local void @_1_ifalone(i32 noundef %0) #0 {
   %6 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %5)
   %7 = load i32, ptr %2, align 4
   store i32 %7, ptr %3, align 4
-  %8 = load i32, ptr %2, align 4
-  %9 = icmp sgt i32 %8, 0
-  br i1 %9, label %10, label %14
+  br label %8
 
-10:                                               ; preds = %4
-  %11 = call i32 (ptr, ...) @printf(ptr noundef @.str.1)
-  %12 = load i32, ptr %3, align 4
-  %13 = mul nsw i32 %12, 2
-  store i32 %13, ptr %3, align 4
-  br label %14
+8:                                                ; preds = %4
+  %9 = load i32, ptr %2, align 4
+  %10 = icmp sgt i32 %9, 0
+  br i1 %10, label %11, label %15
 
-14:                                               ; preds = %10, %4
-  %15 = load i32, ptr %3, align 4
-  %16 = call i32 (ptr, ...) @printf(ptr noundef @.str.2, i32 noundef %15)
+11:                                               ; preds = %8
+  %12 = call i32 (ptr, ...) @printf(ptr noundef @.str.1)
+  %13 = load i32, ptr %3, align 4
+  %14 = mul nsw i32 %13, 2
+  store i32 %14, ptr %3, align 4
+  br label %15
+
+15:                                               ; preds = %11, %8
+  %16 = load i32, ptr %3, align 4
+  %17 = call i32 (ptr, ...) @printf(ptr noundef @.str.2, i32 noundef %16)
   ret void
 }
 
 declare i32 @printf(ptr noundef, ...) #1
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local void @_3_ifnested(i32 noundef %0) #0 {
+  %2 = alloca i32, align 4
+  %3 = alloca i32, align 4
+  store i32 %0, ptr %2, align 4
+  br label %4
+
+4:                                                ; preds = %1
+  %5 = load i32, ptr %2, align 4
+  %6 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %5)
+  %7 = load i32, ptr %2, align 4
+  store i32 %7, ptr %3, align 4
+  br label %8
+
+8:                                                ; preds = %4
+  %9 = load i32, ptr %2, align 4
+  %10 = icmp sgt i32 %9, 0
+  br i1 %10, label %11, label %36
+
+11:                                               ; preds = %8
+  %12 = call i32 (ptr, ...) @printf(ptr noundef @.str.3)
+  %13 = load i32, ptr %3, align 4
+  %14 = add nsw i32 %13, 10
+  store i32 %14, ptr %3, align 4
+  br label %15
+
+15:                                               ; preds = %11
+  %16 = load i32, ptr %2, align 4
+  %17 = srem i32 %16, 2
+  %18 = icmp eq i32 %17, 0
+  br i1 %18, label %19, label %23
+
+19:                                               ; preds = %15
+  %20 = call i32 (ptr, ...) @printf(ptr noundef @.str.4)
+  %21 = load i32, ptr %3, align 4
+  %22 = mul nsw i32 %21, 3
+  store i32 %22, ptr %3, align 4
+  br label %32
+
+23:                                               ; preds = %15
+  %24 = load i32, ptr %2, align 4
+  %25 = srem i32 %24, 2
+  store i32 %25, ptr %2, align 4
+  br label %26
+
+26:                                               ; preds = %23
+  %27 = load i32, ptr %2, align 4
+  %28 = icmp eq i32 %27, 3
+  br i1 %28, label %29, label %31
+
+29:                                               ; preds = %26
+  %30 = call i32 (ptr, ...) @printf(ptr noundef @.str.4)
+  br label %31
+
+31:                                               ; preds = %29, %26
+  br label %32
+
+32:                                               ; preds = %31, %19
+  %33 = call i32 (ptr, ...) @printf(ptr noundef @.str.5)
+  %34 = load i32, ptr %3, align 4
+  %35 = add nsw i32 %34, 1
+  store i32 %35, ptr %3, align 4
+  br label %36
+
+36:                                               ; preds = %32, %8
+  %37 = load i32, ptr %3, align 4
+  %38 = call i32 (ptr, ...) @printf(ptr noundef @.str.2, i32 noundef %37)
+  ret void
+}
 
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
@@ -50,7 +126,7 @@ define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
   store i32 %0, ptr %4, align 4
   store ptr %1, ptr %5, align 8
   %7 = load i32, ptr %4, align 4
-  %8 = call i32 (ptr, ...) @printf(ptr noundef @.str.3, i32 noundef %7)
+  %8 = call i32 (ptr, ...) @printf(ptr noundef @.str.6, i32 noundef %7)
   %9 = load i32, ptr %4, align 4
   %10 = icmp eq i32 %9, 1
   br i1 %10, label %11, label %12
@@ -68,9 +144,12 @@ define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
   br label %17
 
 17:                                               ; preds = %12, %11
-  %18 = call i32 (ptr, ...) @printf(ptr noundef @.str.4)
+  %18 = call i32 (ptr, ...) @printf(ptr noundef @.str.7)
   %19 = load i32, ptr %6, align 4
   call void @_1_ifalone(i32 noundef %19)
+  %20 = call i32 (ptr, ...) @printf(ptr noundef @.str.7)
+  %21 = load i32, ptr %6, align 4
+  call void @_3_ifnested(i32 noundef %21)
   ret i32 0
 }
 
