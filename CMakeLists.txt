@@ -14,6 +14,7 @@ include_directories(${LLVM_INCLUDE_DIRS} include)
 add_llvm_library(miniObfuscator MODULE
 lib/SignatureObfuscatorPass.cpp
 lib/SignatureObfuscatorAnalysis.cpp
+lib/ControlFlowFlatteningPass.cpp
 lib/Plugin.cpp
 PLUGIN_TOOL
 opt

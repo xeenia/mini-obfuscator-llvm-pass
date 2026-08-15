@@ -1,4 +1,5 @@
 #include "SignatureObfuscatorAnalysis.h"
+#include "ControlFlowFlatteningPass.h"
 #include "SignatureObfuscatorPass.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
@@ -18,6 +19,10 @@ PassPluginLibraryInfo getPluginInfo(){
                     [](StringRef Name, ModulePassManager &MPM, ArrayRef<PassBuilder::PipelineElement>){
                         if(Name == "obfpass") {
                             MPM.addPass(SignatureObfuscatorPass());
+                            return true;
+                        }
+                        if(Name == "CFFPass"){
+                            MPM.addPass(ControlFlowFlatteningPass());
                             return true;
                         }
                         return false;
