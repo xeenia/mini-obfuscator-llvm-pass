@@ -56,8 +56,7 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
     entryBuilder.CreateStore(entryBuilder.getInt32(0), allocaIns);
 
     BasicBlock *defaultBB = BasicBlock::Create(Ctx, "default", &F);
-    IRBuilder<>(defaultBB).CreateUnreachable();
-
+    IRBuilder<> defaultBuilder(defaultBB);
     
     //creating the dispatcher using 3 blocks: while loop, switch, and break
     //all cases point to the break block, which points back to the loop
@@ -73,6 +72,7 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
     BasicBlock *breakBB = BasicBlock::Create(Ctx, "break", &F);
     IRBuilder<> breakBuilder(breakBB);
     breakBuilder.CreateBr(whileBB);
+    defaultBuilder.CreateBr(breakBB);
 
     //immediately we create all the cases and makes them point to all the blocks from the vector
     for (size_t i = 0; i < BBtoFlatten.size(); i++) {

@@ -56,7 +56,7 @@ define dso_local void @_1_ifalone(i32 noundef %0) #0 {
   ret void
 
 default:                                          ; preds = %switch
-  unreachable
+  br label %break
 
 switch:                                           ; preds = %while
   %b1 = load i32, ptr %b, align 4
@@ -72,7 +72,7 @@ switch:                                           ; preds = %while
 while:                                            ; preds = %1, %break
   br label %switch
 
-break:                                            ; preds = %15, %break_con4, %8, %break_con, %4
+break:                                            ; preds = %15, %break_con4, %8, %break_con, %4, %default
   br label %while
 
 true:                                             ; preds = %5
@@ -171,7 +171,7 @@ define dso_local void @_3_ifnested(i32 noundef %0) #0 {
   ret void
 
 default:                                          ; preds = %switch
-  unreachable
+  br label %break
 
 switch:                                           ; preds = %while
   %b1 = load i32, ptr %b, align 4
@@ -190,7 +190,7 @@ switch:                                           ; preds = %while
 while:                                            ; preds = %1, %break
   br label %switch
 
-break:                                            ; preds = %28, %26, %break_con7, %19, %break_con4, %11, %break_con, %4
+break:                                            ; preds = %28, %26, %break_con7, %19, %break_con4, %11, %break_con, %4, %default
   br label %while
 
 true:                                             ; preds = %8
