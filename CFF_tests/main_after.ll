@@ -3,149 +3,213 @@ source_filename = "/home/xenia/Projects/mini-obfuscator-llvm-pass/CFF_tests/main
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
-@.str = private unnamed_addr constant [15 x i8] c"start: x = %d\0A\00", align 1
-@.str.1 = private unnamed_addr constant [16 x i8] c"condition true\0A\00", align 1
-@.str.2 = private unnamed_addr constant [13 x i8] c"end: y = %d\0A\00", align 1
-@.str.3 = private unnamed_addr constant [12 x i8] c"outer true\0A\00", align 1
-@.str.4 = private unnamed_addr constant [19 x i8] c"inner true (even)\0A\00", align 1
-@.str.5 = private unnamed_addr constant [16 x i8] c"after inner if\0A\00", align 1
+@.str = private unnamed_addr constant [16 x i8] c"condition true\0A\00", align 1
+@.str.1 = private unnamed_addr constant [15 x i8] c"start: x = %d\0A\00", align 1
+@.str.2 = private unnamed_addr constant [12 x i8] c"outer true\0A\00", align 1
+@.str.3 = private unnamed_addr constant [19 x i8] c"inner true (even)\0A\00", align 1
+@.str.4 = private unnamed_addr constant [16 x i8] c"after inner if\0A\00", align 1
+@.str.5 = private unnamed_addr constant [13 x i8] c"end: y = %d\0A\00", align 1
 @.str.6 = private unnamed_addr constant [7 x i8] c"a: %d\0A\00", align 1
 @.str.7 = private unnamed_addr constant [20 x i8] c"_1_ifalone before:\0A\00", align 1
 
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local void @_1_ifalone(i32 noundef %0) #0 {
+  %b = alloca i32, align 4
+  store i32 0, ptr %b, align 4
   %2 = alloca i32, align 4
   %3 = alloca i32, align 4
   store i32 %0, ptr %2, align 4
-  %4 = alloca i32, align 4
-  store i32 0, ptr %4, align 4
-  br label %dispatcher
+  br label %while
 
-5:                                                ; preds = %swicth
+4:                                                ; preds = %switch
+  store i32 0, ptr %3, align 4
+  store i32 1, ptr %b, align 4
+  br label %break
+
+5:                                                ; preds = %switch
   %6 = load i32, ptr %2, align 4
-  %7 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %6)
-  %8 = load i32, ptr %2, align 4
-  store i32 %8, ptr %3, align 4
-  br label %9
+  %7 = icmp sgt i32 %6, 0
+  br i1 %7, label %true, label %false
 
-9:                                                ; preds = %5
-  %10 = load i32, ptr %2, align 4
-  %11 = icmp sgt i32 %10, 0
-  br i1 %11, label %12, label %16
+8:                                                ; preds = %switch
+  %9 = call i32 (ptr, ...) @printf(ptr noundef @.str)
+  %10 = load i32, ptr %3, align 4
+  %11 = mul nsw i32 %10, 2
+  store i32 %11, ptr %3, align 4
+  store i32 3, ptr %b, align 4
+  br label %break
 
-12:                                               ; preds = %9
-  %13 = call i32 (ptr, ...) @printf(ptr noundef @.str.1)
-  %14 = load i32, ptr %3, align 4
-  %15 = mul nsw i32 %14, 2
-  store i32 %15, ptr %3, align 4
-  store i32 1, ptr %4, align 4
-  br label %16
+12:                                               ; preds = %switch
+  %13 = load i32, ptr %2, align 4
+  %14 = icmp slt i32 %13, 0
+  br i1 %14, label %true2, label %false3
 
-16:                                               ; preds = %12, %9
+15:                                               ; preds = %switch
+  %16 = call i32 (ptr, ...) @printf(ptr noundef @.str)
   %17 = load i32, ptr %3, align 4
-  %18 = call i32 (ptr, ...) @printf(ptr noundef @.str.2, i32 noundef %17)
+  %18 = mul nsw i32 %17, 5
+  store i32 %18, ptr %3, align 4
+  store i32 5, ptr %b, align 4
+  br label %break
+
+19:                                               ; preds = %switch
   ret void
 
-dispatcher:                                       ; preds = %1, %default
-  br label %swicth
+default:                                          ; preds = %switch
+  unreachable
 
-default:                                          ; preds = %swicth
-  br label %dispatcher
-
-swicth:                                           ; preds = %dispatcher
-  %b = load i32, ptr %4, align 4
-  switch i32 %b, label %default [
-    i32 0, label %5
+switch:                                           ; preds = %while
+  %b1 = load i32, ptr %b, align 4
+  switch i32 %b1, label %default [
+    i32 0, label %4
+    i32 1, label %5
+    i32 2, label %8
+    i32 3, label %12
+    i32 4, label %15
+    i32 5, label %19
   ]
+
+while:                                            ; preds = %1, %break
+  br label %switch
+
+break:                                            ; preds = %15, %true2, %false3, %8, %true, %false, %4
+  br label %while
+
+true:                                             ; preds = %5
+  store i32 2, ptr %b, align 4
+  br label %break
+
+false:                                            ; preds = %5
+  store i32 3, ptr %b, align 4
+  br label %break
+
+true2:                                            ; preds = %12
+  store i32 4, ptr %b, align 4
+  br label %break
+
+false3:                                           ; preds = %12
+  store i32 5, ptr %b, align 4
+  br label %break
 }
 
 declare i32 @printf(ptr noundef, ...) #1
 
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local void @_3_ifnested(i32 noundef %0) #0 {
+  %b = alloca i32, align 4
+  store i32 0, ptr %b, align 4
   %2 = alloca i32, align 4
   %3 = alloca i32, align 4
   store i32 %0, ptr %2, align 4
-  %4 = alloca i32, align 4
-  store i32 0, ptr %4, align 4
-  br label %dispatcher
+  br label %while
 
-5:                                                ; preds = %swicth
-  %6 = load i32, ptr %2, align 4
-  %7 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %6)
-  %8 = load i32, ptr %2, align 4
-  store i32 %8, ptr %3, align 4
-  br label %9
+4:                                                ; preds = %switch
+  %5 = load i32, ptr %2, align 4
+  %6 = call i32 (ptr, ...) @printf(ptr noundef @.str.1, i32 noundef %5)
+  %7 = load i32, ptr %2, align 4
+  store i32 %7, ptr %3, align 4
+  store i32 1, ptr %b, align 4
+  br label %break
 
-9:                                                ; preds = %5
-  %10 = load i32, ptr %2, align 4
-  %11 = icmp sgt i32 %10, 0
-  br i1 %11, label %12, label %37
+8:                                                ; preds = %switch
+  %9 = load i32, ptr %2, align 4
+  %10 = icmp sgt i32 %9, 0
+  br i1 %10, label %true, label %false
 
-12:                                               ; preds = %9
-  %13 = call i32 (ptr, ...) @printf(ptr noundef @.str.3)
-  %14 = load i32, ptr %3, align 4
-  %15 = add nsw i32 %14, 10
-  store i32 %15, ptr %3, align 4
-  br label %16
+11:                                               ; preds = %switch
+  %12 = call i32 (ptr, ...) @printf(ptr noundef @.str.2)
+  %13 = load i32, ptr %3, align 4
+  %14 = add nsw i32 %13, 10
+  store i32 %14, ptr %3, align 4
+  store i32 3, ptr %b, align 4
+  br label %break
 
-16:                                               ; preds = %12
-  %17 = load i32, ptr %2, align 4
-  %18 = srem i32 %17, 2
-  %19 = icmp eq i32 %18, 0
-  br i1 %19, label %20, label %24
+15:                                               ; preds = %switch
+  %16 = load i32, ptr %2, align 4
+  %17 = srem i32 %16, 2
+  %18 = icmp eq i32 %17, 0
+  br i1 %18, label %true2, label %false3
 
-20:                                               ; preds = %16
-  %21 = call i32 (ptr, ...) @printf(ptr noundef @.str.4)
-  %22 = load i32, ptr %3, align 4
-  %23 = mul nsw i32 %22, 3
-  store i32 %23, ptr %3, align 4
-  store i32 1, ptr %4, align 4
+19:                                               ; preds = %switch
+  %20 = call i32 (ptr, ...) @printf(ptr noundef @.str.3)
+  %21 = load i32, ptr %3, align 4
+  %22 = mul nsw i32 %21, 3
+  store i32 %22, ptr %3, align 4
+  store i32 5, ptr %b, align 4
+  br label %break
+
+23:                                               ; preds = %switch
+  %24 = load i32, ptr %2, align 4
+  %25 = icmp eq i32 %24, 3
+  br i1 %25, label %true4, label %false5
+
+26:                                               ; preds = %switch
+  %27 = call i32 (ptr, ...) @printf(ptr noundef @.str.3)
+  store i32 7, ptr %b, align 4
+  br label %break
+
+28:                                               ; preds = %switch
+  store i32 8, ptr %b, align 4
+  br label %break
+
+29:                                               ; No predecessors!
+  %30 = call i32 (ptr, ...) @printf(ptr noundef @.str.4)
+  %31 = load i32, ptr %3, align 4
+  %32 = add nsw i32 %31, 1
+  store i32 %32, ptr %3, align 4
   br label %33
 
-24:                                               ; preds = %16
-  %25 = load i32, ptr %2, align 4
-  %26 = srem i32 %25, 2
-  store i32 %26, ptr %2, align 4
-  br label %27
-
-27:                                               ; preds = %24
-  %28 = load i32, ptr %2, align 4
-  %29 = icmp eq i32 %28, 3
-  br i1 %29, label %30, label %32
-
-30:                                               ; preds = %27
-  %31 = call i32 (ptr, ...) @printf(ptr noundef @.str.4)
-  store i32 2, ptr %4, align 4
-  br label %32
-
-32:                                               ; preds = %30, %27
-  store i32 3, ptr %4, align 4
-  br label %33
-
-33:                                               ; preds = %32, %20
-  %34 = call i32 (ptr, ...) @printf(ptr noundef @.str.5)
-  %35 = load i32, ptr %3, align 4
-  %36 = add nsw i32 %35, 1
-  store i32 %36, ptr %3, align 4
-  br label %37
-
-37:                                               ; preds = %33, %9
-  %38 = load i32, ptr %3, align 4
-  %39 = call i32 (ptr, ...) @printf(ptr noundef @.str.2, i32 noundef %38)
+33:                                               ; preds = %switch, %29
+  %34 = load i32, ptr %3, align 4
+  %35 = call i32 (ptr, ...) @printf(ptr noundef @.str.5, i32 noundef %34)
   ret void
 
-dispatcher:                                       ; preds = %1, %default
-  br label %swicth
+default:                                          ; preds = %switch
+  unreachable
 
-default:                                          ; preds = %swicth
-  br label %dispatcher
-
-swicth:                                           ; preds = %dispatcher
-  %b = load i32, ptr %4, align 4
-  switch i32 %b, label %default [
-    i32 0, label %5
+switch:                                           ; preds = %while
+  %b1 = load i32, ptr %b, align 4
+  switch i32 %b1, label %default [
+    i32 0, label %4
+    i32 1, label %8
+    i32 2, label %11
+    i32 3, label %15
+    i32 4, label %19
+    i32 5, label %23
+    i32 6, label %26
+    i32 7, label %28
+    i32 8, label %33
   ]
+
+while:                                            ; preds = %1, %break
+  br label %switch
+
+break:                                            ; preds = %28, %26, %true4, %false5, %19, %true2, %false3, %11, %true, %false, %4
+  br label %while
+
+true:                                             ; preds = %8
+  store i32 2, ptr %b, align 4
+  br label %break
+
+false:                                            ; preds = %8
+  store i32 8, ptr %b, align 4
+  br label %break
+
+true2:                                            ; preds = %15
+  store i32 4, ptr %b, align 4
+  br label %break
+
+false3:                                           ; preds = %15
+  store i32 5, ptr %b, align 4
+  br label %break
+
+true4:                                            ; preds = %23
+  store i32 6, ptr %b, align 4
+  br label %break
+
+false5:                                           ; preds = %23
+  store i32 7, ptr %b, align 4
+  br label %break
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
