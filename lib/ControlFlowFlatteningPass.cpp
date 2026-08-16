@@ -12,6 +12,22 @@
 
 using namespace llvm;
 
+//got this function 'demotePhiNodes' from this repo: https://github.com/samrussell/obfus
+static void demotePhiNodes(Function& F) {
+    std::vector<PHINode*> phiNodes;
+    do {
+        phiNodes.clear();
+        for (auto& BB : F) {
+            for (auto& I : BB.phis()) {
+                phiNodes.push_back(&I);
+            }
+        }
+        for (PHINode* phi : phiNodes) {
+            DemotePHIToStack(phi, F.begin()->getTerminator());
+        }
+    } while (!phiNodes.empty());
+}
+//this too from repo: https://github.com/samrussell/obfus
 static std::string getSimpleNodeLabel(const BasicBlock *Node) {
     if (!Node->getName().empty())
         return Node->getName().str();
@@ -31,9 +47,9 @@ static Argument* getlastArg(Function &F){
     return lastArg;
 }
 
-
 //NOTE: for now lets assume that the conditions dont have && and ||
-static void doZigZag(BasicBlock &BB, Instruction *I, SmallPtrSetImpl<Instruction*> &slice){ //needs a better name
+static void splitCodefromCondition(BasicBlock &BB, Instruction *I, SmallPtrSetImpl<Instruction*> &slice){ 
+    //zigzag logic
     if (!I || I->getParent() != &BB)
         return;
     if (!slice.insert(I).second)
@@ -41,7 +57,7 @@ static void doZigZag(BasicBlock &BB, Instruction *I, SmallPtrSetImpl<Instruction
 
     for (Use &U : I->operands()) {
         if (auto *OpInst = dyn_cast<Instruction>(U.get())) {
-            doZigZag(BB, OpInst, slice);
+            splitCodefromCondition(BB, OpInst, slice);
         }
     }
 }
@@ -147,7 +163,7 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
     return switchBB;
 }
 
-static void splitBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 20>* BBtoFlatten){
+static void splitAndGetBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 20>* BBtoFlatten){
     for(auto It = BB.begin(), End = BB.end(); It != End; ++It){ 
         Instruction *I=&*It;
         if(isa<AllocaInst>(I)){
@@ -159,7 +175,7 @@ static void splitBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 
             }
             BasicBlock *secondBlock = BB.splitBasicBlock(I->getNextNode());
             BasicBlock *firstBlock = &BB;
-            splitBB(*secondBlock,lastArg,BBtoFlatten);
+            splitAndGetBB(*secondBlock,lastArg,BBtoFlatten);
             return;
         }
         if (isa<ReturnInst>(I)) {
@@ -177,7 +193,7 @@ static void splitBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 
                 bool isFalseBlock = Pred && 
                                     Pred->getTerminator()->getNumSuccessors() > 1 &&
                                     Pred->getTerminator()->getSuccessor(1) == &BB;
-                if(isFalseBlock) splitBB(*BI->getSuccessor(0), lastArg, BBtoFlatten);
+                if(isFalseBlock) splitAndGetBB(*BI->getSuccessor(0), lastArg, BBtoFlatten);
                 return;
             }
 
@@ -189,7 +205,7 @@ static void splitBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 
             }
 
             SmallPtrSet<Instruction*, 16> slice;
-            doZigZag(BB, condInst, slice);
+            splitCodefromCondition(BB, condInst, slice);
 
             Instruction *earliestI = nullptr;
             for (Instruction &sliceSearchI : BB) {
@@ -205,8 +221,8 @@ static void splitBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 
                     firstBlock = &BB;
                      BBtoFlatten->push_back(firstBlock);
                     auto *br = dyn_cast<BranchInst>(firstBlock->getTerminator());
-                    splitBB(*br->getSuccessor(0), lastArg,BBtoFlatten);
-                    splitBB(*br->getSuccessor(1), lastArg,BBtoFlatten);
+                    splitAndGetBB(*br->getSuccessor(0), lastArg,BBtoFlatten);
+                    splitAndGetBB(*br->getSuccessor(1), lastArg,BBtoFlatten);
                 } else {
                     firstBlock = BB.splitBasicBlockBefore(earliestI);
                      //errs() << "FirstBlock: " << *firstBlock << "\n";
@@ -218,9 +234,9 @@ static void splitBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 
                     
                     br = dyn_cast<BranchInst>(secondBlock->getTerminator());
                     //errs() << "Going T: \n";
-                    splitBB(*br->getSuccessor(0), lastArg,BBtoFlatten);
+                    splitAndGetBB(*br->getSuccessor(0), lastArg,BBtoFlatten);
                     //errs() << "Going F: \n";
-                    splitBB(*br->getSuccessor(1), lastArg,BBtoFlatten);
+                    splitAndGetBB(*br->getSuccessor(1), lastArg,BBtoFlatten);
                 }
 
                
@@ -230,16 +246,16 @@ static void splitBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 
     }
 }
 
-
 static void flattenFunction(Function& F){
     SmallVector<BasicBlock*, 20> BBtoFlatten;
-    splitBB(F.getEntryBlock(), getlastArg(F),&BBtoFlatten);
+    splitAndGetBB(F.getEntryBlock(), getlastArg(F),&BBtoFlatten);
     for (auto BB : BBtoFlatten) {
         errs() << "BB to Flatten: " << getSimpleNodeLabel(BB) << "\n";
     }
+    demotePhiNodes(F);
     createAndBuildDispatcher(F, BBtoFlatten);
-    
 }
+
 PreservedAnalyses ControlFlowFlatteningPass::run(Module &M, ModuleAnalysisManager &MAM) {
     for (Function &F : M) {
         if(F.isDeclaration() || F.getName() == "main" ) continue;
