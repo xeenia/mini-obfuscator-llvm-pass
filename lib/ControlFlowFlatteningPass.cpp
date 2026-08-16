@@ -148,7 +148,7 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
 }
 
 static void splitBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 20>* BBtoFlatten){
-    for(auto It = BB.begin(), End = BB.end(); It != End; ++It){
+    for(auto It = BB.begin(), End = BB.end(); It != End; ++It){ 
         Instruction *I=&*It;
         if(isa<AllocaInst>(I)){
             for (User *U : lastArg->users()) {
@@ -167,22 +167,17 @@ static void splitBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 
             return;
         }
 
-        //Will check 2 type of blocks: 
-        //  1. if is conditional which means that there is an IF stmt -> it will split 
-        // it and seperate the code block before the if stmt and the if stmt itself. then it will 
-        //traversal onto the block from the True side (which is getSuccessor(0)). If nested it will go
-        //deep until it reaches to an uncoditional brance (see 2 below). then, it will go back and go
-        //check the False side and do the same. If stmt? -> then split
-        // 2. for uncoditional basic blocks it will just push it to the vector
         if(isa<BranchInst>(I)){ 
             auto *BI = dyn_cast<BranchInst>(I);
             if (!BI->isConditional()) {
                 //errs() << "Uncoditional Block: " << BB << "\n";
                 BBtoFlatten->push_back(&BB);
-                /*
-                BBtoFlatten->push_back(&BB);  
-                splitBB(*BI->getSuccessor(0), lastArg, BBtoFlatten);
-                */
+                BasicBlock *Pred = BB.getSinglePredecessor();
+
+                bool isFalseBlock = Pred && 
+                                    Pred->getTerminator()->getNumSuccessors() > 1 &&
+                                    Pred->getTerminator()->getSuccessor(1) == &BB;
+                if(isFalseBlock) splitBB(*BI->getSuccessor(0), lastArg, BBtoFlatten);
                 return;
             }
 
