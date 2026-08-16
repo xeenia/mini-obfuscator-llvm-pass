@@ -111,9 +111,11 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
             //creating also the new BBs to replace later as successors
             BasicBlock *trueBB = BasicBlock::Create(Ctx, "true", &F);
             BasicBlock *falseBB = BasicBlock::Create(Ctx, "false", &F);
+            BasicBlock *breakConBB = BasicBlock::Create(Ctx, "break_con", &F);
             
             IRBuilder<> trueBuilder(trueBB);
             IRBuilder<> falseBuilder(falseBB);
+            IRBuilder<> breakConBuilder(breakConBB);
         
             //a simple lambda function to find in which case the target BB is
             auto findIndex = [&](BasicBlock *Target) -> int {
@@ -127,8 +129,9 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
             trueBuilder.CreateStore(builder.getInt32(trueB), allocaIns);
             falseBuilder.CreateStore(builder.getInt32(falseB), allocaIns);
             //and finally we connect the new BBs toward the break BB
-            falseBuilder.CreateBr(breakBB);
-            trueBuilder.CreateBr(breakBB);
+            falseBuilder.CreateBr(breakConBB);
+            trueBuilder.CreateBr(breakConBB);
+            breakConBuilder.CreateBr(breakBB);
             //replacement
             BI->setSuccessor(0,trueBB);
             BI->setSuccessor(1,falseBB);

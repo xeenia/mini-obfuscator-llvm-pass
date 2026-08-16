@@ -72,23 +72,29 @@ switch:                                           ; preds = %while
 while:                                            ; preds = %1, %break
   br label %switch
 
-break:                                            ; preds = %15, %true2, %false3, %8, %true, %false, %4
+break:                                            ; preds = %15, %break_con4, %8, %break_con, %4
   br label %while
 
 true:                                             ; preds = %5
   store i32 2, ptr %b, align 4
-  br label %break
+  br label %break_con
 
 false:                                            ; preds = %5
   store i32 3, ptr %b, align 4
+  br label %break_con
+
+break_con:                                        ; preds = %true, %false
   br label %break
 
 true2:                                            ; preds = %12
   store i32 4, ptr %b, align 4
-  br label %break
+  br label %break_con4
 
 false3:                                           ; preds = %12
   store i32 5, ptr %b, align 4
+  br label %break_con4
+
+break_con4:                                       ; preds = %true2, %false3
   br label %break
 }
 
@@ -141,7 +147,7 @@ define dso_local void @_3_ifnested(i32 noundef %0) #0 {
 23:                                               ; preds = %switch
   %24 = load i32, ptr %2, align 4
   %25 = icmp eq i32 %24, 3
-  br i1 %25, label %true4, label %false5
+  br i1 %25, label %true5, label %false6
 
 26:                                               ; preds = %switch
   %27 = call i32 (ptr, ...) @printf(ptr noundef @.str.3)
@@ -184,31 +190,40 @@ switch:                                           ; preds = %while
 while:                                            ; preds = %1, %break
   br label %switch
 
-break:                                            ; preds = %28, %26, %true4, %false5, %19, %true2, %false3, %11, %true, %false, %4
+break:                                            ; preds = %28, %26, %break_con7, %19, %break_con4, %11, %break_con, %4
   br label %while
 
 true:                                             ; preds = %8
   store i32 2, ptr %b, align 4
-  br label %break
+  br label %break_con
 
 false:                                            ; preds = %8
   store i32 8, ptr %b, align 4
+  br label %break_con
+
+break_con:                                        ; preds = %true, %false
   br label %break
 
 true2:                                            ; preds = %15
   store i32 4, ptr %b, align 4
-  br label %break
+  br label %break_con4
 
 false3:                                           ; preds = %15
   store i32 5, ptr %b, align 4
+  br label %break_con4
+
+break_con4:                                       ; preds = %true2, %false3
   br label %break
 
-true4:                                            ; preds = %23
+true5:                                            ; preds = %23
   store i32 6, ptr %b, align 4
-  br label %break
+  br label %break_con7
 
-false5:                                           ; preds = %23
+false6:                                           ; preds = %23
   store i32 7, ptr %b, align 4
+  br label %break_con7
+
+break_con7:                                       ; preds = %true5, %false6
   br label %break
 }
 
