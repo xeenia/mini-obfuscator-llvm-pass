@@ -29,15 +29,21 @@ target triple = "x86_64-unknown-linux-gnu"
 @.str.23 = private unnamed_addr constant [63 x i8] c"[_5_multistage] branch: weighted=%d within limit=%d, boosting\0A\00", align 1
 @.str.24 = private unnamed_addr constant [48 x i8] c"[_5_multistage] computed final=%d (weighted-x)\0A\00", align 1
 @.str.25 = private unnamed_addr constant [31 x i8] c"[_5_multistage] end: final=%d\0A\00", align 1
-@.str.26 = private unnamed_addr constant [19 x i8] c"inner true (even)\0A\00", align 1
-@.str.27 = private unnamed_addr constant [13 x i8] c"end: y = %d\0A\00", align 1
-@.str.28 = private unnamed_addr constant [7 x i8] c"a: %d\0A\00", align 1
-@.str.29 = private unnamed_addr constant [20 x i8] c"_1_ifalone before:\0A\00", align 1
-@.str.30 = private unnamed_addr constant [19 x i8] c"_2_ifelse before:\0A\00", align 1
-@.str.31 = private unnamed_addr constant [19 x i8] c"_3_ifflat before:\0A\00", align 1
-@.str.32 = private unnamed_addr constant [24 x i8] c"_4_prefixheavy before:\0A\00", align 1
-@.str.33 = private unnamed_addr constant [23 x i8] c"_5_multistage before:\0A\00", align 1
-@.str.34 = private unnamed_addr constant [21 x i8] c"_6_ifnested before:\0A\00", align 1
+@.str.26 = private unnamed_addr constant [45 x i8] c"[_6_ifnested] start: x=%d, y=%d, divisor=%d\0A\00", align 1
+@.str.27 = private unnamed_addr constant [46 x i8] c"[_6_ifnested] outer branch: x=%d is positive\0A\00", align 1
+@.str.28 = private unnamed_addr constant [58 x i8] c"[_6_ifnested] inner branch: z=%d divisible by divisor=%d\0A\00", align 1
+@.str.29 = private unnamed_addr constant [62 x i8] c"[_6_ifnested] inner branch: z=%d not divisible by divisor=%d\0A\00", align 1
+@.str.30 = private unnamed_addr constant [50 x i8] c"[_6_ifnested] outer branch: x=%d is non-positive\0A\00", align 1
+@.str.31 = private unnamed_addr constant [25 x i8] c"[_6_ifnested] end: z=%d\0A\00", align 1
+@.str.32 = private unnamed_addr constant [19 x i8] c"inner true (even)\0A\00", align 1
+@.str.33 = private unnamed_addr constant [13 x i8] c"end: y = %d\0A\00", align 1
+@.str.34 = private unnamed_addr constant [7 x i8] c"a: %d\0A\00", align 1
+@.str.35 = private unnamed_addr constant [20 x i8] c"_1_ifalone before:\0A\00", align 1
+@.str.36 = private unnamed_addr constant [19 x i8] c"_2_ifelse before:\0A\00", align 1
+@.str.37 = private unnamed_addr constant [19 x i8] c"_3_ifflat before:\0A\00", align 1
+@.str.38 = private unnamed_addr constant [24 x i8] c"_4_prefixheavy before:\0A\00", align 1
+@.str.39 = private unnamed_addr constant [23 x i8] c"_5_multistage before:\0A\00", align 1
+@.str.40 = private unnamed_addr constant [21 x i8] c"_6_ifnested before:\0A\00", align 1
 
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local void @_1_ifalone(i32 noundef %0, i32 noundef %1, i32 noundef %2) #0 {
@@ -365,6 +371,73 @@ define dso_local void @_6_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
   %4 = alloca i32, align 4
   %5 = alloca i32, align 4
   %6 = alloca i32, align 4
+  %7 = alloca i32, align 4
+  store i32 %0, ptr %4, align 4
+  store i32 %1, ptr %5, align 4
+  store i32 %2, ptr %6, align 4
+  %8 = load i32, ptr %4, align 4
+  %9 = load i32, ptr %5, align 4
+  %10 = load i32, ptr %6, align 4
+  %11 = call i32 (ptr, ...) @printf(ptr noundef @.str.26, i32 noundef %8, i32 noundef %9, i32 noundef %10)
+  %12 = load i32, ptr %4, align 4
+  %13 = load i32, ptr %5, align 4
+  %14 = add nsw i32 %12, %13
+  store i32 %14, ptr %7, align 4
+  %15 = load i32, ptr %4, align 4
+  %16 = icmp sgt i32 %15, 0
+  br i1 %16, label %17, label %39
+
+17:                                               ; preds = %3
+  %18 = load i32, ptr %4, align 4
+  %19 = call i32 (ptr, ...) @printf(ptr noundef @.str.27, i32 noundef %18)
+  %20 = load i32, ptr %7, align 4
+  %21 = load i32, ptr %6, align 4
+  %22 = srem i32 %20, %21
+  %23 = icmp eq i32 %22, 0
+  br i1 %23, label %24, label %31
+
+24:                                               ; preds = %17
+  %25 = load i32, ptr %7, align 4
+  %26 = load i32, ptr %6, align 4
+  %27 = call i32 (ptr, ...) @printf(ptr noundef @.str.28, i32 noundef %25, i32 noundef %26)
+  %28 = load i32, ptr %7, align 4
+  %29 = load i32, ptr %6, align 4
+  %30 = sdiv i32 %28, %29
+  store i32 %30, ptr %7, align 4
+  br label %38
+
+31:                                               ; preds = %17
+  %32 = load i32, ptr %7, align 4
+  %33 = load i32, ptr %6, align 4
+  %34 = call i32 (ptr, ...) @printf(ptr noundef @.str.29, i32 noundef %32, i32 noundef %33)
+  %35 = load i32, ptr %7, align 4
+  %36 = load i32, ptr %6, align 4
+  %37 = add nsw i32 %35, %36
+  store i32 %37, ptr %7, align 4
+  br label %38
+
+38:                                               ; preds = %31, %24
+  br label %44
+
+39:                                               ; preds = %3
+  %40 = load i32, ptr %4, align 4
+  %41 = call i32 (ptr, ...) @printf(ptr noundef @.str.30, i32 noundef %40)
+  %42 = load i32, ptr %7, align 4
+  %43 = sub nsw i32 %42, 1
+  store i32 %43, ptr %7, align 4
+  br label %44
+
+44:                                               ; preds = %39, %38
+  %45 = load i32, ptr %7, align 4
+  %46 = call i32 (ptr, ...) @printf(ptr noundef @.str.31, i32 noundef %45)
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local void @_7_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %2) #0 {
+  %4 = alloca i32, align 4
+  %5 = alloca i32, align 4
+  %6 = alloca i32, align 4
   store i32 %0, ptr %4, align 4
   store i32 %1, ptr %5, align 4
   store i32 %2, ptr %6, align 4
@@ -379,7 +452,7 @@ define dso_local void @_6_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
   br i1 %12, label %13, label %15
 
 13:                                               ; preds = %9
-  %14 = call i32 (ptr, ...) @printf(ptr noundef @.str.26)
+  %14 = call i32 (ptr, ...) @printf(ptr noundef @.str.32)
   br label %32
 
 15:                                               ; preds = %9
@@ -393,14 +466,14 @@ define dso_local void @_6_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
   br i1 %20, label %21, label %23
 
 21:                                               ; preds = %18
-  %22 = call i32 (ptr, ...) @printf(ptr noundef @.str.26)
+  %22 = call i32 (ptr, ...) @printf(ptr noundef @.str.32)
   br label %23
 
 23:                                               ; preds = %21, %18
   br label %26
 
 24:                                               ; preds = %15
-  %25 = call i32 (ptr, ...) @printf(ptr noundef @.str.26)
+  %25 = call i32 (ptr, ...) @printf(ptr noundef @.str.32)
   br label %26
 
 26:                                               ; preds = %24, %23
@@ -424,7 +497,7 @@ define dso_local void @_6_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
 
 33:                                               ; preds = %32, %3
   %34 = load i32, ptr %4, align 4
-  %35 = call i32 (ptr, ...) @printf(ptr noundef @.str.27, i32 noundef %34)
+  %35 = call i32 (ptr, ...) @printf(ptr noundef @.str.33, i32 noundef %34)
   ret void
 }
 
@@ -438,7 +511,7 @@ define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
   store i32 %0, ptr %4, align 4
   store ptr %1, ptr %5, align 8
   %7 = load i32, ptr %4, align 4
-  %8 = call i32 (ptr, ...) @printf(ptr noundef @.str.28, i32 noundef %7)
+  %8 = call i32 (ptr, ...) @printf(ptr noundef @.str.34, i32 noundef %7)
   %9 = load i32, ptr %4, align 4
   %10 = icmp eq i32 %9, 1
   br i1 %10, label %11, label %12
@@ -456,22 +529,22 @@ define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
   br label %17
 
 17:                                               ; preds = %12, %11
-  %18 = call i32 (ptr, ...) @printf(ptr noundef @.str.29)
+  %18 = call i32 (ptr, ...) @printf(ptr noundef @.str.35)
   %19 = load i32, ptr %6, align 4
   call void @_1_ifalone(i32 noundef %19, i32 noundef 2, i32 noundef 0)
-  %20 = call i32 (ptr, ...) @printf(ptr noundef @.str.30)
+  %20 = call i32 (ptr, ...) @printf(ptr noundef @.str.36)
   %21 = load i32, ptr %6, align 4
   call void @_2_ifelse(i32 noundef %21, i32 noundef 2, i32 noundef 1)
-  %22 = call i32 (ptr, ...) @printf(ptr noundef @.str.31)
+  %22 = call i32 (ptr, ...) @printf(ptr noundef @.str.37)
   %23 = load i32, ptr %6, align 4
   call void @_3_ifflat(i32 noundef %23, i32 noundef 2, i32 noundef 10, i32 noundef 20)
-  %24 = call i32 (ptr, ...) @printf(ptr noundef @.str.32)
+  %24 = call i32 (ptr, ...) @printf(ptr noundef @.str.38)
   %25 = load i32, ptr %6, align 4
   call void @_4_prefixheavy(i32 noundef %25, i32 noundef 3, i32 noundef 5, i32 noundef 50)
-  %26 = call i32 (ptr, ...) @printf(ptr noundef @.str.33)
+  %26 = call i32 (ptr, ...) @printf(ptr noundef @.str.39)
   %27 = load i32, ptr %6, align 4
   call void @_5_multistage(i32 noundef %27, i32 noundef 4, i32 noundef 2, i32 noundef 30)
-  %28 = call i32 (ptr, ...) @printf(ptr noundef @.str.34)
+  %28 = call i32 (ptr, ...) @printf(ptr noundef @.str.40)
   %29 = load i32, ptr %6, align 4
   call void @_6_ifnested(i32 noundef %29, i32 noundef 7, i32 noundef 3)
   ret i32 0

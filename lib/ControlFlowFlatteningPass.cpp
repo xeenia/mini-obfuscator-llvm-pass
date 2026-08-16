@@ -112,11 +112,16 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
         if (!BI) continue;
 
         IRBuilder<> builder(BI);   
+        //a simple lambda function to find in which case the target BB is
+        auto findIndex = [&](BasicBlock *Target) -> int {
+            auto it = std::find(BBtoFlatten.begin(), BBtoFlatten.end(), Target);
+            return (it != BBtoFlatten.end()) ? (int)std::distance(BBtoFlatten.begin(), it) : -1;
+        };
 
         if (!BI->isConditional()) {
             //for uncoditional blocks is very straighforward, we just go to the next case
             //and we create store for the b variable 
-            int nextState = i + 1;
+            int nextState = findIndex(BI->getSuccessor(0));
             builder.CreateStore(builder.getInt32(nextState), allocaIns);
             BI->setSuccessor(0, breakBB);
         } else {
@@ -133,11 +138,7 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
             IRBuilder<> falseBuilder(falseBB);
             IRBuilder<> breakConBuilder(breakConBB);
         
-            //a simple lambda function to find in which case the target BB is
-            auto findIndex = [&](BasicBlock *Target) -> int {
-                auto it = std::find(BBtoFlatten.begin(), BBtoFlatten.end(), Target);
-                return (it != BBtoFlatten.end()) ? (int)std::distance(BBtoFlatten.begin(), it) : -1;
-            };
+            
             int trueB  = findIndex(trueTarget);
             int falseB = findIndex(falseTarget);
 
@@ -250,7 +251,7 @@ static void flattenFunction(Function& F){
     SmallVector<BasicBlock*, 20> BBtoFlatten;
     splitAndGetBB(F.getEntryBlock(), getlastArg(F),&BBtoFlatten);
     for (auto BB : BBtoFlatten) {
-        errs() << "BB to Flatten: " << getSimpleNodeLabel(BB) << "\n";
+        errs() << "BB to Flatten: " << /*getSimpleNodeLabel(BB)*/ *BB << "\n\n";
     }
     demotePhiNodes(F);
     createAndBuildDispatcher(F, BBtoFlatten);

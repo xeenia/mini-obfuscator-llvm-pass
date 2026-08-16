@@ -160,7 +160,7 @@ define dso_local void @_2_ifelse(i32 noundef %0, i32 noundef %1, i32 noundef %2)
   %23 = load i32, ptr %5, align 4
   %24 = mul nsw i32 %22, %23
   store i32 %24, ptr %7, align 4
-  store i32 3, ptr %b, align 4
+  store i32 4, ptr %b, align 4
   br label %break
 
 25:                                               ; preds = %switch
@@ -324,7 +324,7 @@ define dso_local void @_3_ifflat(i32 noundef %0, i32 noundef %1, i32 noundef %2,
   %63 = call i32 (ptr, ...) @printf(ptr noundef @.str.10, i32 noundef %61, i32 noundef %62)
   %64 = load i32, ptr %7, align 4
   store i32 %64, ptr %12, align 4
-  store i32 13, ptr %b, align 4
+  store i32 14, ptr %b, align 4
   br label %break
 
 65:                                               ; preds = %switch
@@ -474,7 +474,7 @@ define dso_local void @_4_prefixheavy(i32 noundef %0, i32 noundef %1, i32 nounde
 32:                                               ; preds = %switch
   %33 = load i32, ptr %8, align 4
   store i32 %33, ptr %.reg2mem, align 4
-  store i32 3, ptr %b, align 4
+  store i32 4, ptr %b, align 4
   br label %break
 
 34:                                               ; preds = %switch
@@ -608,7 +608,7 @@ define dso_local void @_5_multistage(i32 noundef %0, i32 noundef %1, i32 noundef
   %36 = load i32, ptr %10, align 4
   %37 = sdiv i32 %36, 2
   store i32 %37, ptr %10, align 4
-  store i32 3, ptr %b, align 4
+  store i32 4, ptr %b, align 4
   br label %break
 
 38:                                               ; preds = %switch
@@ -714,7 +714,7 @@ define dso_local void @_6_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
   %32 = load i32, ptr %6, align 4
   %33 = sdiv i32 %31, %32
   store i32 %33, ptr %7, align 4
-  store i32 5, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %break
 
 34:                                               ; preds = %switch
@@ -729,7 +729,7 @@ define dso_local void @_6_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
   br label %break
 
 41:                                               ; preds = %switch
-  store i32 7, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %break
 
 42:                                               ; preds = %switch
@@ -817,7 +817,7 @@ define dso_local void @_7_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
 
 14:                                               ; preds = %switch
   %15 = call i32 (ptr, ...) @printf(ptr noundef @.str.32)
-  store i32 3, ptr %b, align 4
+  store i32 -1, ptr %b, align 4
   br label %break
 
 16:                                               ; preds = %switch
@@ -836,7 +836,7 @@ define dso_local void @_7_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
   br label %break
 
 24:                                               ; preds = %switch
-  store i32 7, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %break
 
 25:                                               ; preds = %switch
@@ -851,7 +851,7 @@ define dso_local void @_7_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
 
 30:                                               ; preds = %switch
   store i32 10, ptr %4, align 4
-  store i32 10, ptr %b, align 4
+  store i32 11, ptr %b, align 4
   br label %break
 
 31:                                               ; preds = %switch
@@ -860,7 +860,7 @@ define dso_local void @_7_ifnested(i32 noundef %0, i32 noundef %1, i32 noundef %
   br label %break
 
 32:                                               ; preds = %switch
-  store i32 12, ptr %b, align 4
+  store i32 -1, ptr %b, align 4
   br label %break
 
 33:                                               ; No predecessors!
