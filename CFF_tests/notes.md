@@ -2,7 +2,7 @@
 * [Preparation & Design](#design)
 * [Algorithm/Logic](#algo-logic)
 * [Limitations & Current Issues](#limitations)
-* [Future Ideas](#future-ideas)
+* [Ideas for Better Obfuscation](#future-ideas)
 * [Before/After Results](#results)
 
 ## Preparation & Design <a id="design"></a>
@@ -21,7 +21,7 @@ After generating the CFG images, I started taking notes, spotting patterns, and 
 
 |  |  |  |
 | --- | --- | --- |
-| <img width="1920" height="1080" alt="ifelse_both_return" src="https://github.com/user-attachments/assets/a7347c67-e3be-49cd-a8e9-0daec31807be" /> | <img width="1920" height="1080" alt="Copy of ifelse_both_return (7)" src="https://github.com/user-attachments/assets/cbc46e72-5e43-4639-bd37-2327999e6772" />| <img width="1920" height="1080" alt="Copy of ifelse_both_return (2)" src="https://github.com/user-attachments/assets/dcd4f0fe-09ae-40d8-ab7a-62c5d54ad45e" /> |
+| <img width="1920" height="1080" alt="ifelse_both_return" src="https://github.com/user-attachments/assets/a7347c67-e3be-49cd-a8e9-0daec31807be" /> |<img width="1920" height="1080" alt="notes" src="https://github.com/user-attachments/assets/96023118-533f-4fdc-b75e-9fa995440f27" />| <img width="1920" height="1080" alt="Copy of ifelse_both_return (2)" src="https://github.com/user-attachments/assets/dcd4f0fe-09ae-40d8-ab7a-62c5d54ad45e" /> |
 
 As I experimented more, I narrowed down what I wanted to focus on for this initial version.
 
@@ -29,7 +29,7 @@ As I experimented more, I narrowed down what I wanted to focus on for this initi
 Focus area:
 
 - `void` functions
-- `if`, `if-else` and nested `if` statements (along with any extra code blocks around them)
+- `if`, `if-else` and nested `if` statements 
 - code blocks before, inside, and after an `if` statement
 
 
@@ -81,7 +81,7 @@ Here is why the current implementation is easy to analyze:
 
 ---
 
-## Future Ideas <a id="future-ideas"></a>
+## Ideas for Better Obfuscation <a id="future-ideas"></a>
 
 While building this technique, I thought of a few ways to make the obfuscation harder to reverse engineer:
 
@@ -105,7 +105,15 @@ The idea is:
 
 This removes the explicit `int b = 0;` initialization from inside the target function, adding an extra layer of analysis difficulty.
 
-> **Note:** These ideas are based on my own logical reasoning rather than hands-on reverse engineering experience, but I plan to test and implement them in future updates.
+Also, this idea cannot be implemented in main or variadic functions. It only works on candidate functions where dummy parameters can be added.
+
+For main or variadic functions, I'm considering the approach below:
+
+#### 3. Using 2 Formulas for the Initial State
+
+Assuming case shuffling and dummy parameters are implemented, we can hide the starting state even further instead of assigning an explicit integer value (e.g., 0, 5, 22) right away. One way to do this is by using a mathematical formula to compute the starting state dynamically. For example, if the target starting state is 5, we could pass 12 into a formula that evaluates to 5.
+
+I mentioned using two or more formulas to add variety. For instance, we could use one formula for functions with dummy parameters and another for standard functions like main. Using multiple formulas makes it harder to spot a pattern across the code, but even a single formula is still harder to analyze than a fixed, hardcoded number.
 
 ## Before/After results <a id="results"></a>
 Here is a quick before-and-after comparison of the code and IR graphs:
@@ -125,7 +133,10 @@ Here is a quick before-and-after comparison of the code and IR graphs:
     printf("end: y = %d\n", y);
 }
 ```
-<img width="1920" height="1080" alt="Copy of ifelse_both_return (5)" src="https://github.com/user-attachments/assets/0db6e16b-2432-44bd-8ea2-2a3920814af0" />
+| before | splitted | after |
+| --- | --- | --- |
+| <img width="769" height="664" alt="_1_ifalone_before" src="https://github.com/user-attachments/assets/aa77ce2b-1447-45c8-b105-8132219dc876" />| <img width="769" height="904" alt="_1_ifalone_splitted" src="https://github.com/user-attachments/assets/7d1e6b0b-dd9e-4ff0-b99c-f72d1a470a67" />| <img width="1659" height="1275" alt="_1_ifalone_after" src="https://github.com/user-attachments/assets/eebb09ba-10bf-4564-b26e-7c4de42976d6" /> |
+
 
 ### `if-else` statement
 ```cpp
@@ -146,7 +157,9 @@ void _2_ifelse(int x, int a, int b) {
     printf("end: y = %d\n", y);
 }
 ```
-<img width="1920" height="1080" alt="Copy of ifelse_both_return (6)" src="https://github.com/user-attachments/assets/8c421a10-daca-4cc4-91c0-4f0f2bfc3779" />
+| before | splitted | after |
+| --- | --- | --- |
+| <img width="1080" height="844" alt="_2_ifelse_before" src="https://github.com/user-attachments/assets/62cef90a-c578-4889-a69a-ac979cb970a1" />| <img width="1080" height="1084" alt="_2_ifelse_splitted" src="https://github.com/user-attachments/assets/f848c23d-9a56-4d1c-a60b-f0d66a6eb501" />| <img width="1625" height="1475" alt="_2_ifelse_after" src="https://github.com/user-attachments/assets/d2672bff-2dfa-4dcc-9930-af4e6d92920f" />|
 
 ## flat `if`s
 ```cpp
@@ -173,5 +186,41 @@ void _3_flat_ifs(int x) {
     printf("end: y = %d\n", y);
 }
 ```
-<img width="1920" height="1080" alt="Copy of ifelse_both_return (3)" src="https://github.com/user-attachments/assets/d1c79ef5-583a-4144-a06c-f019b7cbff39" />
+| before | splitted | after |
+| --- | --- | --- |
+| <img width="772" height="1445" alt="_3_ifflat_before" src="https://github.com/user-attachments/assets/071acd8b-5021-4d76-ab6d-be32a2463b41" />| <img width="769" height="1685" alt="_3_ifflat_splitted" src="https://github.com/user-attachments/assets/8d9cec6a-598c-486b-ad31-d2e043159887" />|<img width="3501" height="1284" alt="_3_ifflat_after" src="https://github.com/user-attachments/assets/fa956dca-3d07-46b4-8a0b-bb8289cf515f" />|
 
+## nested `if`
+```cpp
+void _6_ifnested(int x, int a, int b) {
+    // code block 0
+    printf("start: x = %d, a = %d, b = %d\n", x, a, b);
+    int y = x + 1;
+
+    if (x > a) {
+        // code block 1
+        printf("outer condition true (x > a)\n");
+        y = y + 5;
+
+        if (y > b) {
+            // code block 2
+            printf("inner condition true (y > b)\n");
+            y = y * 2;
+        } else {
+            // code block 3
+            printf("inner condition false (y <= b)\n");
+            y = y - 3;
+        }
+    } else {
+        // code block 4
+        printf("outer condition false (x <= a)\n");
+        y = y * 0;
+    }
+
+    // code block 5
+    printf("end: y = %d\n\n", y);
+}
+```
+| before | splitted | after |
+| --- | --- | --- |
+|<img width="1408" height="1335" alt="_6_ifnested_before" src="https://github.com/user-attachments/assets/7a710abe-b3ef-4811-b328-a7e515037d4a" />|<img width="1408" height="1615" alt="_6_ifnested_splitted" src="https://github.com/user-attachments/assets/bd5c8076-ed41-40b5-b7fb-0196901f9587" />|<img width="3063" height="1564" alt="_6_ifnested_after" src="https://github.com/user-attachments/assets/8c334d8e-a21a-49ae-a162-22f59bd44e71" />|
