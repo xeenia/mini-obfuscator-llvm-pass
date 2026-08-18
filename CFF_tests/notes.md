@@ -115,6 +115,7 @@ Assuming case shuffling and dummy parameters are implemented, we can hide the st
 
 I mentioned using two or more formulas to add variety. For instance, we could use one formula for functions with dummy parameters and another for standard functions like main. Using multiple formulas makes it harder to spot a pattern across the code, but even a single formula is still harder to analyze than a fixed, hardcoded number.
 
+>**Note:** These ideas are based on my own logical reasoning rather than hands-on reverse engineering experience, but I plan to test and implement them in future updates.
 ## Before/After results <a id="results"></a>
 Here is a quick before-and-after comparison of the code and IR graphs:
 
