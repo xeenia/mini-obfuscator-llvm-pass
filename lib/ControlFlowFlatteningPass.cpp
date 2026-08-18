@@ -48,7 +48,7 @@ static Argument* getlastArg(Function &F){
 }
 
 //NOTE: for now lets assume that the conditions dont have && and ||
-static void splitCodefromCondition(BasicBlock &BB, Instruction *I, SmallPtrSetImpl<Instruction*> &slice){ 
+static void splitCodeBlockfromCondition(BasicBlock &BB, Instruction *I, SmallPtrSetImpl<Instruction*> &slice){ 
     //zigzag logic
     if (!I || I->getParent() != &BB)
         return;
@@ -57,20 +57,33 @@ static void splitCodefromCondition(BasicBlock &BB, Instruction *I, SmallPtrSetIm
 
     for (Use &U : I->operands()) {
         if (auto *OpInst = dyn_cast<Instruction>(U.get())) {
-            splitCodefromCondition(BB, OpInst, slice);
+            splitCodeBlockfromCondition(BB, OpInst, slice);
         }
     }
+}
+
+static AllocaInst* addStateVarToEntryBB(BasicBlock *EntryBB, size_t argSize){
+    auto it = EntryBB->begin();
+    std::advance(it, argSize);
+    IRBuilder<> entryBuilder(&*it);
+    AllocaInst *allocaIns = entryBuilder.CreateAlloca(entryBuilder.getInt32Ty(), nullptr, "b");
+    for (; it != EntryBB->end(); ++it) {
+        if (llvm::isa<llvm::StoreInst>(*it)) {
+            std::advance(it, argSize);
+            entryBuilder.SetInsertPoint(&*it);
+            entryBuilder.CreateStore(entryBuilder.getInt32(0), allocaIns);
+            break; 
+        }
+    }
+    return allocaIns;
 }
 
 static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock*, 20> &BBtoFlatten) {
     LLVMContext &Ctx = F.getContext();
     BasicBlock &EntryBB = F.getEntryBlock();
 
-    //we add the b variable in the entry block
-    IRBuilder<> entryBuilder(&EntryBB, EntryBB.begin());
-    AllocaInst *allocaIns = entryBuilder.CreateAlloca(entryBuilder.getInt32Ty(), nullptr, "b");
-    entryBuilder.CreateStore(entryBuilder.getInt32(0), allocaIns);
-
+    AllocaInst *allocaIns = addStateVarToEntryBB(&EntryBB, F.arg_size());
+    
     BasicBlock *defaultBB = BasicBlock::Create(Ctx, "default", &F);
     IRBuilder<> defaultBuilder(defaultBB);
     
@@ -138,7 +151,6 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
             IRBuilder<> falseBuilder(falseBB);
             IRBuilder<> breakConBuilder(breakConBB);
         
-            
             int trueB  = findIndex(trueTarget);
             int falseB = findIndex(falseTarget);
 
@@ -165,39 +177,31 @@ static BasicBlock* createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock
 }
 
 static void splitAndGetBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBlock*, 20>* BBtoFlatten){
-    for(auto It = BB.begin(), End = BB.end(); It != End; ++It){ 
-        Instruction *I=&*It;
-        if(isa<AllocaInst>(I)){
-            for (User *U : lastArg->users()) {
-                if (auto *SI = dyn_cast<StoreInst>(U)) {
-                    I=SI;
-                    break;
-                }
+    Instruction *I = &BB.front();
+    if(isa<AllocaInst>(I)){
+        for (User *U : lastArg->users()) {
+            if (auto *SI = dyn_cast<StoreInst>(U)) {
+                I=SI;
+                break;
             }
-            BasicBlock *secondBlock = BB.splitBasicBlock(I->getNextNode());
-            BasicBlock *firstBlock = &BB;
-            splitAndGetBB(*secondBlock,lastArg,BBtoFlatten);
-            return;
         }
-        if (isa<ReturnInst>(I)) {
-            BBtoFlatten->push_back(&BB); 
-            return;
-        }
+        BasicBlock *secondBlock = BB.splitBasicBlock(I->getNextNode());
+        BasicBlock *firstBlock = &BB;
+        splitAndGetBB(*secondBlock,lastArg,BBtoFlatten);
+        return;
+    }
+    I = BB.getTerminator();
+    if (isa<ReturnInst>(I)) {
+            if(!is_contained(*BBtoFlatten, &BB)) BBtoFlatten->push_back(&BB);
+        return;
+    }
 
-        if(isa<BranchInst>(I)){ 
-            auto *BI = dyn_cast<BranchInst>(I);
-            if (!BI->isConditional()) {
-                //errs() << "Uncoditional Block: " << BB << "\n";
-                BBtoFlatten->push_back(&BB);
-                BasicBlock *Pred = BB.getSinglePredecessor();
-
-                bool isFalseBlock = Pred && 
-                                    Pred->getTerminator()->getNumSuccessors() > 1 &&
-                                    Pred->getTerminator()->getSuccessor(1) == &BB;
-                if(isFalseBlock) splitAndGetBB(*BI->getSuccessor(0), lastArg, BBtoFlatten);
-                return;
-            }
-
+    if(isa<BranchInst>(I)){ 
+        auto *BI = dyn_cast<BranchInst>(I);
+        if (!BI->isConditional()) {
+            if(!is_contained(*BBtoFlatten, &BB))  BBtoFlatten->push_back(&BB);
+            splitAndGetBB(*BI->getSuccessor(0),lastArg,BBtoFlatten);
+        }else{
             Value *condVal = BI->getCondition();
             auto *condInst = dyn_cast<Instruction>(condVal);
             if (!condInst) {
@@ -205,8 +209,8 @@ static void splitAndGetBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBl
                 return;
             }
 
-            SmallPtrSet<Instruction*, 16> slice;
-            splitCodefromCondition(BB, condInst, slice);
+            SmallPtrSet<Instruction*, 15> slice;
+            splitCodeBlockfromCondition(BB, condInst, slice);
 
             Instruction *earliestI = nullptr;
             for (Instruction &sliceSearchI : BB) {
@@ -220,30 +224,25 @@ static void splitAndGetBB(BasicBlock &BB, Argument *lastArg, SmallVector<BasicBl
                 BasicBlock *firstBlock = nullptr;
                 if (earliestI == &*BB.begin()) {
                     firstBlock = &BB;
-                     BBtoFlatten->push_back(firstBlock);
+                    if(!is_contained(*BBtoFlatten, firstBlock))  BBtoFlatten->push_back(firstBlock);
                     auto *br = dyn_cast<BranchInst>(firstBlock->getTerminator());
                     splitAndGetBB(*br->getSuccessor(0), lastArg,BBtoFlatten);
                     splitAndGetBB(*br->getSuccessor(1), lastArg,BBtoFlatten);
                 } else {
                     firstBlock = BB.splitBasicBlockBefore(earliestI);
-                     //errs() << "FirstBlock: " << *firstBlock << "\n";
-                     BBtoFlatten->push_back(firstBlock);
                     auto *br = dyn_cast<BranchInst>(firstBlock->getTerminator());
                     BasicBlock *secondBlock = br->getSuccessor(0);
-                    BBtoFlatten->push_back(secondBlock);
-                   //errs() << "secondBlock: " << *secondBlock << "\n";
-                    
+
+                    if(!is_contained(*BBtoFlatten, firstBlock))  BBtoFlatten->push_back(firstBlock);
+                    if(!is_contained(*BBtoFlatten, secondBlock))  BBtoFlatten->push_back(secondBlock);     
+
                     br = dyn_cast<BranchInst>(secondBlock->getTerminator());
-                    //errs() << "Going T: \n";
                     splitAndGetBB(*br->getSuccessor(0), lastArg,BBtoFlatten);
-                    //errs() << "Going F: \n";
                     splitAndGetBB(*br->getSuccessor(1), lastArg,BBtoFlatten);
                 }
-
-               
             }
-            return;
         }
+        return;
     }
 }
 
@@ -251,7 +250,7 @@ static void flattenFunction(Function& F){
     SmallVector<BasicBlock*, 20> BBtoFlatten;
     splitAndGetBB(F.getEntryBlock(), getlastArg(F),&BBtoFlatten);
     for (auto BB : BBtoFlatten) {
-        errs() << "BB to Flatten: " << /*getSimpleNodeLabel(BB)*/ *BB << "\n\n";
+        errs() << "BB to Flatten: " << getSimpleNodeLabel(BB)<< "\n";
     }
     demotePhiNodes(F);
     createAndBuildDispatcher(F, BBtoFlatten);
@@ -259,7 +258,7 @@ static void flattenFunction(Function& F){
 
 PreservedAnalyses ControlFlowFlatteningPass::run(Module &M, ModuleAnalysisManager &MAM) {
     for (Function &F : M) {
-        if(F.isDeclaration() || F.getName() == "main" ) continue;
+        if(F.isDeclaration()) continue;
         errs() << "Function: " << F.getName() << "\n\n";
         flattenFunction(F);
     }

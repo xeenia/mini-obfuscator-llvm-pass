@@ -1,0 +1,97 @@
+~/Projects/mini-obfuscator-llvm-pass/CFF_tests$ ./main_before
+a: 1
+
+=== _1_ifalone ===
+_1_ifalone (x > 0 [TRUE]):
+before if 1
+inside if 1
+after if 1
+_1_ifalone (x > 0 [FALSE]):
+before if 1
+after if 1
+
+=== _2_ifelse ===
+_2_ifelse (x > 0 [TRUE]):
+before if 1
+inside if 1
+after if 1
+_2_ifelse (x > 0 [FALSE]):
+before if 1
+inside if 1 else
+after if 1
+
+=== _3_ifflat ===
+_3_ifflat (is_even [TRUE], x == threshold [TRUE]):
+before if 1
+inside if 1
+before if 3
+inside if 3
+after if 3
+_3_ifflat (is_even [TRUE], x == threshold [FALSE]):
+before if 1
+inside if 1
+before if 3
+inside if 3 else
+after if 3
+_3_ifflat (is_positive_odd [TRUE], x == threshold [TRUE]):
+before if 1
+inside if 2
+before if 3
+inside if 3
+after if 3
+_3_ifflat (is_positive_odd [TRUE], x == threshold [FALSE]):
+before if 1
+inside if 2
+before if 3
+inside if 3 else
+after if 3
+_3_ifflat (neither even nor odd positive, x == threshold [FALSE]):
+before if 1
+before if 3
+inside if 3 else
+after if 3
+
+=== _4_prefixheavy ===
+_4_prefixheavy (clamped == cap [TRUE]):
+before if 1
+inside if 1
+after if 1
+_4_prefixheavy (clamped == cap [FALSE]):
+before if 1
+after if 1
+
+=== _5_multistage ===
+_5_multistage (weighted > limit [TRUE]):
+before if 1
+before if 2
+inside if 2
+after if 2
+_5_multistage (weighted > limit [FALSE]):
+before if 1
+before if 2
+inside if 2 else
+after if 2
+
+=== _6_ifnested ===
+_6_ifnested (Path 1: Outer x > 0 [FALSE]):
+before if 1
+inside if 1 else
+after if 1
+_6_ifnested (Path 2: x > 0 [TRUE], x mod 2 == 0 [TRUE]):
+before if 1
+inside if 1
+inside if 1.2
+after if 1
+_6_ifnested (Path 3: x > 0 [TRUE], x mod 2 != 0, x == 3 [FALSE]):
+before if 1
+inside if 1
+inside if 1.2 else
+inside if 1.2.3 else
+after if 1
+_6_ifnested (Path 4: x > 0 [TRUE], x mod 2 != 0, x == 3 [TRUE], x == 20 [FALSE]):
+before if 1
+inside if 1
+inside if 1.2 else
+inside if 1.2.3
+inside if 1.2.3.4 else
+after if 1

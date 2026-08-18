@@ -2,140 +2,106 @@
 #include <stdlib.h>
 
 void _1_ifalone(int x, int multiplier, int offset) {
-    printf("[_1_ifalone] start: x=%d, multiplier=%d, offset=%d\n", x, multiplier, offset);
+    printf("before if 1\n");
     int y = x + offset;
-
     if (x > 0) {
-        printf("[_1_ifalone] branch: x=%d is positive, applying multiplier %d\n", x, multiplier);
+        printf("inside if 1\n");
         y = y * multiplier;
     }
-
-    printf("[_1_ifalone] end: y=%d\n", y);
+    printf("after if 1\n");
 }
 
 void _2_ifelse(int x, int pos_factor, int neg_offset) {
-    printf("[_2_ifelse] start: x=%d, pos_factor=%d, neg_offset=%d\n", x, pos_factor, neg_offset);
+    printf("before if 1\n");
     int y = x + 1;
-
     if (x > 0) {
-        printf("[_2_ifelse] branch: x=%d is positive, scaling by %d\n", x, pos_factor);
+        printf("inside if 1\n");
         y = y * pos_factor;
     } else {
-        printf("[_2_ifelse] branch: x=%d is non-positive, adjusting by %d\n", x, neg_offset);
+        printf("inside if 1 else\n");
         y = y - neg_offset;
     }
-
-    printf("[_2_ifelse] end: y=%d\n", y);
+    printf("after if 1\n");
 }
 
 void _3_ifflat(int x, int mod, int threshold, int alt_value) {
-    printf("[_3_ifflat] start: x=%d, mod=%d, threshold=%d, alt_value=%d\n", x, mod, threshold, alt_value);
-
+    printf("before if 1\n");
     int is_positive     = (x > 0);
     int is_even         = is_positive && (x % mod == 0);
     int is_positive_odd = is_positive && !is_even;
     int result          = x;
-
     if (is_even) {
-        printf("[_3_ifflat] branch A: x=%d is positive and divisible by %d\n", x, mod);
+        printf("inside if 1\n");
     }
-
     if (is_positive_odd) {
-        printf("[_3_ifflat] branch B: x=%d is positive and not divisible by %d\n", x, mod);
+        printf("inside if 2\n");
     }
-
+    printf("before if 3\n");
     if (x == threshold) {
-        printf("[_3_ifflat] branch C: x=%d equals threshold %d\n", x, threshold);
+        printf("inside if 3\n");
         result = threshold;
     } else {
-        printf("[_3_ifflat] branch D: x=%d differs from threshold %d\n", x, threshold);
+        printf("inside if 3 else\n");
         result = alt_value;
     }
-
-    printf("[_3_ifflat] end: result=%d\n", result);
+    printf("after if 3\n");
 }
 
 void _4_prefixheavy(int x, int scale, int bias, int cap) {
-    printf("[_4_prefixheavy] start: x=%d, scale=%d, bias=%d, cap=%d\n", x, scale, bias, cap);
-
+    printf("before if 1\n");
     int step1 = x * scale;
-    printf("[_4_prefixheavy] computed step1=%d (x*scale)\n", step1);
-
     int step2 = step1 + bias;
-    printf("[_4_prefixheavy] computed step2=%d (step1+bias)\n", step2);
-
     int clamped = step2 > cap ? cap : step2;
-    printf("[_4_prefixheavy] computed clamped=%d (min of step2, cap)\n", clamped);
-
     if (clamped == cap) {
-        printf("[_4_prefixheavy] branch: clamped value %d hit the cap %d\n", clamped, cap);
+        printf("inside if 1\n");
         clamped = clamped - 1;
     }
-
-    printf("[_4_prefixheavy] end: clamped=%d\n", clamped);
+    printf("after if 1\n");
 }
 
 void _5_multistage(int x, int y, int weight, int limit) {
-    printf("[_5_multistage] start: x=%d, y=%d, weight=%d, limit=%d\n", x, y, weight, limit);
-
+    printf("before if 1\n");
     int sum = x + y;
-    printf("[_5_multistage] computed sum=%d\n", sum);
-
     int weighted = sum * weight;
-    printf("[_5_multistage] computed weighted=%d\n", weighted);
-
+    printf("before if 2\n");
     if (weighted > limit) {
-        printf("[_5_multistage] branch: weighted=%d exceeds limit=%d, scaling down\n", weighted, limit);
+        printf("inside if 2\n");
         weighted = weighted / 2;
     } else {
-        printf("[_5_multistage] branch: weighted=%d within limit=%d, boosting\n", weighted, limit);
+        printf("inside if 2 else\n");
         weighted = weighted + 10;
     }
-
     int final = weighted - x;
-    printf("[_5_multistage] computed final=%d (weighted-x)\n", final);
-
-    printf("[_5_multistage] end: final=%d\n", final);
+    printf("after if 2\n");
 }
 
 void _6_ifnested(int x, int y, int divisor) {
-    printf("[_6_ifnested] start: x=%d, y=%d, divisor=%d\n", x, y, divisor);
-    int z = x + y;
-
+    printf("before if 1\n");
     if (x > 0) {
-        printf("[_6_ifnested] outer branch: x=%d is positive\n", x);
+        printf("inside if 1\n");
 
-        if (z % divisor == 0) {
-            printf("[_6_ifnested] inner branch: z=%d divisible by divisor=%d\n", z, divisor);
-            z = z / divisor;
+        if (x % 2 == 0) {
+            printf("inside if 1.2\n");
         } else {
-            printf("[_6_ifnested] inner branch: z=%d not divisible by divisor=%d\n", z, divisor);
-            z = z + divisor;
+            printf("inside if 1.2 else\n");
+
+            if (x == 3) {
+                printf("inside if 1.2.3\n");
+
+                if (x == 20) {
+                    printf("inside if 1.2.3.4\n");
+                } else {
+                    printf("inside if 1.2.3.4 else\n");
+                }
+            } else {
+                printf("inside if 1.2.3 else\n");
+            }
         }
     } else {
-        printf("[_6_ifnested] outer branch: x=%d is non-positive\n", x);
-        z = z - 1;
+        printf("inside if 1 else\n");
     }
-
-    printf("[_6_ifnested] end: z=%d\n", z);
+    printf("after if 1\n");
 }
-void _7_ifnested(int x, int y, int divisor) { //produces a bug 
-     if (x > 0) { 
-        if (x % 2 == 0) {
-            printf("inner true (even)\n");
-        }else{
-            if(x == 3){ 
-                 if(x==20) printf("inner true (even)\n"); 
-            }else{ 
-                printf("inner true (even)\n");
-            }
-            if(x == 10) x =10;
-            else x=20; 
-        }
-    }
-    printf("end: y = %d\n", x);
-}
-
 
 int main(int argc, char** argv) {
     int a;
@@ -143,12 +109,61 @@ int main(int argc, char** argv) {
     if (argc == 1) a = 0;
     else a = atoi(argv[1]);
 
-    printf("_1_ifalone before:\n");     _1_ifalone(a, 2, 0);
-    printf("_2_ifelse before:\n");      _2_ifelse(a, 2, 1);
-    printf("_3_ifflat before:\n");      _3_ifflat(a, 2, 10, 20);
-    printf("_4_prefixheavy before:\n"); _4_prefixheavy(a, 3, 5, 50);
-    printf("_5_multistage before:\n");  _5_multistage(a, 4, 2, 30);
-    printf("_6_ifnested before:\n");    _6_ifnested(a, 7, 3);
+    /* --- 1. _1_ifalone (2 paths: if condition TRUE / FALSE) --- */
+    printf("\n=== _1_ifalone ===\n");
+    printf("_1_ifalone (x > 0 [TRUE]):\n");
+    _1_ifalone(5, 2, 0);
+    printf("_1_ifalone (x > 0 [FALSE]):\n");
+    _1_ifalone(-1, 2, 0);
+
+    /* --- 2. _2_ifelse (2 paths: IF block / ELSE block) --- */
+    printf("\n=== _2_ifelse ===\n");
+    printf("_2_ifelse (x > 0 [TRUE]):\n");
+    _2_ifelse(5, 2, 1);
+    printf("_2_ifelse (x > 0 [FALSE]):\n");
+    _2_ifelse(-1, 2, 1);
+
+    /* --- 3. _3_ifflat (4 path combinations across independent IFs) --- */
+    printf("\n=== _3_ifflat ===\n");
+    printf("_3_ifflat (is_even [TRUE], x == threshold [TRUE]):\n");
+    _3_ifflat(10, 2, 10, 20);
+    printf("_3_ifflat (is_even [TRUE], x == threshold [FALSE]):\n");
+    _3_ifflat(4, 2, 10, 20);
+    printf("_3_ifflat (is_positive_odd [TRUE], x == threshold [TRUE]):\n");
+    _3_ifflat(5, 2, 5, 20);
+    printf("_3_ifflat (is_positive_odd [TRUE], x == threshold [FALSE]):\n");
+    _3_ifflat(3, 2, 10, 20);
+    printf("_3_ifflat (neither even nor odd positive, x == threshold [FALSE]):\n");
+    _3_ifflat(-2, 2, 10, 20);
+
+    /* --- 4. _4_prefixheavy (2 paths: clamped == cap [TRUE / FALSE]) --- */
+    printf("\n=== _4_prefixheavy ===\n");
+    printf("_4_prefixheavy (clamped == cap [TRUE]):\n");
+    _4_prefixheavy(20, 3, 5, 50); 
+    printf("_4_prefixheavy (clamped == cap [FALSE]):\n");
+    _4_prefixheavy(10, 3, 5, 50);
+
+    /* --- 5. _5_multistage (2 paths: IF block / ELSE block) --- */
+    printf("\n=== _5_multistage ===\n");
+    printf("_5_multistage (weighted > limit [TRUE]):\n");
+    _5_multistage(10, 10, 2, 30); 
+    printf("_5_multistage (weighted > limit [FALSE]):\n");
+    _5_multistage(1, 4, 2, 30);  
+
+    /* --- 6. _6_ifnested (4 distinct execution paths through the nest) --- */
+    printf("\n=== _6_ifnested ===\n");
+    printf("_6_ifnested (Path 1: Outer x > 0 [FALSE]):\n");
+    _6_ifnested(-1, 7, 3);
+    
+    printf("_6_ifnested (Path 2: x > 0 [TRUE], x mod 2 == 0 [TRUE]):\n");
+    _6_ifnested(4, 7, 3);
+    
+    printf("_6_ifnested (Path 3: x > 0 [TRUE], x mod 2 != 0, x == 3 [FALSE]):\n");
+    _6_ifnested(5, 7, 3);
+    
+    printf("_6_ifnested (Path 4: x > 0 [TRUE], x mod 2 != 0, x == 3 [TRUE], x == 20 [FALSE]):\n");
+    _6_ifnested(3, 7, 3);
+
 
     return 0;
 }
