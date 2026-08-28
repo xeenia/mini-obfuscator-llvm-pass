@@ -7,7 +7,7 @@
 
 ## Preparation & Design <a id="design"></a>
 
-Before starting the implementation, I spent time getting familiar with Control Flow Flattening and its purpose. To do this, I collected a few small code examples, wrote out the expected high-level code, and generated Control Flow Graphs (CFGs) to get a clear visual representation.
+Before starting the implementation, I spent time getting familiar with Control Flow Flattening and its purpose. To do this, I collected a few small code examples, wrote out the expected high-level code, and designed Control Flow Graphs (CFGs) to get a clear visual representation.
 
 | Simple `if` | `if-else` | Nested `if` |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ Before starting the implementation, I spent time getting familiar with Control F
 Once I had a clear idea of how the technique worked, I needed to figure out how to implement it at the IR level for my mini-obfuscator project. I looked at how Clang generates LLVM IR from my CFF code examples, 
 which helped me get familiar with the IR syntax, especially for the `switch`, and spot useful patterns for my algorithm.
 
-After generating the CFG images, I started taking notes, spotting patterns, and planning my approach.
+After designing the CFG images, I started taking notes, spotting patterns, and planning my approach.
 > **Note:** Some of these notes are from the very beginning. My final design changed while coding, but I kept these notes here for context.
 
 |  |  |  |
@@ -30,7 +30,7 @@ Focus area:
 
 - `void` functions
 - `if`, `if-else` and nested `if` statements 
-- code blocks before, inside, and after an `if` statement
+- code blocks before, inside, and after an `if` statement or no code blocks before if stmts
 
 
 ## Algorithm/Logic <a id="algo-logic"></a>
@@ -71,7 +71,7 @@ anyone familiar with  CFF or reverse engineering can reverse it fairly easily.
 
 Here is why the current implementation is easy to analyze:
 
-* **Sequential case ordering:** The switch cases are stored and emitted in their original execution order because of how the traversal vector works.
+* **Sequential case ordering:** Basic blocks are stored and emitted as switch cases in top-down discovery order.
 * **Predictable state variable:** The state variable (named `b` in my implementation) is initialized at the top of the entry block as `int b = 0;`. Spotting this pattern makes it obvious how the control flow is being managed.
 
 **Other current limitations:**
@@ -87,7 +87,7 @@ While building this technique, I thought of a few ways to make the obfuscation h
 
 #### 1. Case Shuffling
 
-Currently, the switch cases follow the original execution order, making them simple to follow in a decompiler. Randomizing and rearranging the case order will 
+Currently, the switch cases follow the top-down discovery order, which can still appear sequential and easy to follow in a decompiler. Randomizing and rearranging the case order will 
 force anyone analyzing the binary to jump around between non-sequential blocks, making manual analysis much more time-consuming. (I believe at least)
 
 #### 2. Passing the Initial State via Dummy Parameters
@@ -99,8 +99,8 @@ I knew the initial value would need to change anyway once the order was randomiz
 
 The idea is:
 
-1. The signature pass renames the function and adds extra dummy parameters.
-2. The CFF pass shuffles the switch cases so the starting case ID is randomized.
+1. The CFF pass shuffles the switch cases so the starting case ID is randomized. 
+2. The signature pass renames the function and adds extra dummy parameters.
 3. At the call site, the caller passes the required starting state value directly into one of the dummy parameters.
 
 This removes the explicit `int b = 0;` initialization from inside the target function, adding an extra layer of analysis difficulty.

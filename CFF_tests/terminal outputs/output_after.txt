@@ -1,57 +1,108 @@
-~/Projects/mini-obfuscator-llvm-pass/CFF_tests$ ./main_after 
 a: 1
+
+=== _0_nocodeifalone ===
+_0_nocodeifalone (globalvar > 0 [TRUE]):
+condition true
+_0_nocodeifalone (globalvar > 0 [FALSE]):
+
+=== _0_nocodeifelse ===
+_0_nocodeifelse (globalvar > 0 [TRUE]):
+condition true
+_0_nocodeifelse (globalvar > 0 [FALSE]):
+condition false
+
+=== _0_global ===
+_0_global (globalvar > 0 [TRUE]):
+start: x = 5
+condition true
+end: y = 10
+_0_global (globalvar > 0 [FALSE]):
+start: x = 0
+end: y = 0
 
 === _1_ifalone ===
 _1_ifalone (x > 0 [TRUE]):
-before if 1
-inside if 1
-after if 1
+start: x = 5, z = 0
+condition true
+end: y = 10
 _1_ifalone (x > 0 [FALSE]):
-before if 1
-after if 1
+start: x = -1, z = 5
+end: y = 4
+start: x = 0, z = 5
+end: y = 5
+_1_ifalone_arg_condition (cond [TRUE]):
+start: x = 1, z = 4
+condition true
+end: y = 10
+_1_ifalone_arg_condition (cond [FALSE]):
+start: x = 1, z = 4
+end: y = 5
 
 === _2_ifelse ===
-_2_ifelse (x > 0 [TRUE]):
-before if 1
-inside if 1
-after if 1
-_2_ifelse (x > 0 [FALSE]):
-before if 1
-inside if 1 else
-after if 1
+_2_ifelse (x > (a == b) [TRUE]):
+start: x = 5, a = 2, b = 1
+condition true
+end: y = 12
+_2_ifelse (x > (a == b) [FALSE]:
+start: x = -1, a = 2, b = 1
+condition false
+end: y = 0
+start: x = -1, a = 0, b = 1
+condition false
+end: y = 0
 
 === _3_ifflat ===
-_3_ifflat (is_even [TRUE], x == threshold [TRUE]):
-before if 1
-inside if 1
-before if 3
-inside if 3
-after if 3
-_3_ifflat (is_even [TRUE], x == threshold [FALSE]):
-before if 1
-inside if 1
-before if 3
-inside if 3 else
-after if 3
-_3_ifflat (is_positive_odd [TRUE], x == threshold [TRUE]):
-before if 1
-inside if 2
-before if 3
-inside if 3
-after if 3
-_3_ifflat (is_positive_odd [TRUE], x == threshold [FALSE]):
-before if 1
-inside if 2
-before if 3
-inside if 3 else
-after if 3
-_3_ifflat (neither even nor odd positive, x == threshold [FALSE]):
-before if 1
-before if 3
-inside if 3 else
-after if 3
+_3_ifflat (x < 0 [FALSE], x % 2 == 0 [FALSE], x % 3 == 0 [FALSE]):
+start: x = 1
+end: y = 1
+_3_ifflat (x < 0 [FALSE], x % 2 == 0 [FALSE], x % 3 == 0 [TRUE]):
+start: x = 3
+if 3: x is divisible by 3
+end: y = 6
+_3_ifflat (x < 0 [FALSE], x % 2 == 0 [TRUE], x % 3 == 0 [FALSE]):
+start: x = 2
+if 2: x is even
+end: y = 102
+_3_ifflat (x < 0 [FALSE], x % 2 == 0 [TRUE], x % 3 == 0 [TRUE]):
+start: x = 6
+if 2: x is even
+if 3: x is divisible by 3
+end: y = 212
+_3_ifflat (x < 0 [TRUE], x % 2 == 0 [FALSE], x % 3 == 0 [FALSE]):
+start: x = -1
+if 1: x is negative
+end: y = 9
+_3_ifflat (x < 0 [TRUE], x % 2 == 0 [FALSE], x % 3 == 0 [TRUE]):
+start: x = -3
+if 1: x is negative
+if 3: x is divisible by 3
+end: y = 14
+_3_ifflat (x < 0 [TRUE], x % 2 == 0 [TRUE], x % 3 == 0 [FALSE]):
+start: x = -2
+if 1: x is negative
+if 2: x is even
+end: y = 108
+_3_ifflat (x < 0 [TRUE], x % 2 == 0 [TRUE], x % 3 == 0 [TRUE]):
+start: x = -6
+if 1: x is negative
+if 2: x is even
+if 3: x is divisible by 3
+end: y = 208
+start: x = -2
+if 1: x is negative
+if 2: x is even
+end: y = 108
 
 === _4_prefixheavy ===
+_4_prefixheavy (clamped == cap [TRUE]):
+before if 1
+inside if 1
+after if 1
+_4_prefixheavy (clamped == cap [FALSE], using dynamic 'a'):
+before if 1
+after if 1
+
+=== _5_multistage ===
 _4_prefixheavy (clamped == cap [TRUE]):
 before if 1
 inside if 1
@@ -71,27 +122,81 @@ before if 1
 before if 2
 inside if 2 else
 after if 2
+before if 1
+before if 2
+inside if 2 else
+after if 2
 
 === _6_ifnested ===
-_6_ifnested (Path 1: Outer x > 0 [FALSE]):
-before if 1
-inside if 1 else
-after if 1
-_6_ifnested (Path 2: x > 0 [TRUE], x mod 2 == 0 [TRUE]):
-before if 1
-inside if 1
-inside if 1.2
-after if 1
-_6_ifnested (Path 3: x > 0 [TRUE], x mod 2 != 0, x == 3 [FALSE]):
-before if 1
-inside if 1
-inside if 1.2 else
-inside if 1.2.3 else
-after if 1
-_6_ifnested (Path 4: x > 0 [TRUE], x mod 2 != 0, x == 3 [TRUE], x == 20 [FALSE]):
-before if 1
-inside if 1
-inside if 1.2 else
-inside if 1.2.3
-inside if 1.2.3.4 else
-after if 1
+_6_ifnested (Path 1: (x % 3) > a [FALSE]):
+start: x = 2, a = 5, b = 3
+outer condition false ((x % 3) <= a)
+end: y = 0
+
+_6_ifnested (Path 2: (x % 3) > a [TRUE], y > b [TRUE]):
+start: x = 5, a = 1, b = 3
+outer condition true ((x % 3) > a)
+inner condition true (y > b)
+end: y = 22
+
+_6_ifnested (Path 3: (x % 3) > a [TRUE], y <= b [FALSE]):
+start: x = 2, a = 1, b = 10
+outer condition true ((x % 3) > a)
+inner condition false (y <= b)
+end: y = 5
+
+start: x = 5, a = 0, b = 20
+outer condition true ((x % 3) > a)
+inner condition false (y <= b)
+end: y = 8
+
+
+=== _7_multiifnested ===
+_7_multiifnested (Path 1: x > a [FALSE]):
+start: x = 1, a = 5, b = 3
+outer condition false (x <= a)
+end: y = 0
+
+_7_multiifnested (Path 2: x > a [TRUE], y > (b + globalvar) [TRUE]):
+start: x = 10, a = 2, b = 1
+outer condition true (x > a)
+inner condition true (y > b + globalvar)
+end: y = 32
+
+_7_multiifnested (Path 3: x > a [TRUE], y <= (b + globalvar), y % 5 == 0 [TRUE]):
+start: x = 4, a = 2, b = 10
+outer condition true (x > a)
+nested check true ((y % 5) == 0)
+inner condition false (y <= b + globalvar)
+end: y = 7
+
+_7_multiifnested (Path 4: x > a [TRUE], y <= (b + globalvar), y % 5 == 0 [FALSE]):
+start: x = 5, a = 2, b = 10
+outer condition true (x > a)
+inner condition true (y > b + globalvar)
+end: y = 22
+
+start: x = 5, a = 0, b = 10
+outer condition true (x > a)
+inner condition true (y > b + globalvar)
+end: y = 22
+
+
+=== _8_ifelseifelse ===
+_8_ifelseifelse (x > 10 [TRUE]):
+start: x = 20
+if branch: x > 10
+after conditions: y = 120
+end: result = 240
+
+_8_ifelseifelse (x > 10 [FALSE], x > 5 [TRUE]):
+start: x = 8
+else if branch: x > 5
+after conditions: y = 58
+end: result = 116
+
+_8_ifelseifelse (x > 10 [FALSE], x > 5 [FALSE]):
+start: x = 3
+else branch: x <= 5
+after conditions: y = 13
+end: result = 26
