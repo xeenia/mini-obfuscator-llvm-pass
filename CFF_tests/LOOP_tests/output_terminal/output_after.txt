@@ -1,0 +1,20 @@
+a: 1
+--- _1 call 1 (only path) ---
+_1_loop_with_if_inside: c=0 even
+_1_loop_with_if_inside: c=1 odd
+_1_loop_with_if_inside: c=2 even
+_1_loop_with_if_inside: c=3 odd
+_1_loop_with_if_inside: c=4 even
+--- _2 call 1 (a > b) ---
+_2_if_with_loop_in_both_branches: a>b, c=0
+_2_if_with_loop_in_both_branches: a>b, c=1
+_2_if_with_loop_in_both_branches: a>b, c=2
+--- _2 call 2 (a <= b) ---
+_2_if_with_loop_in_both_branches: a<=b, c=0
+_2_if_with_loop_in_both_branches: a<=b, c=1
+_2_if_with_loop_in_both_branches: a<=b, c=2
+--- _3 call 1 (only path) ---
+_3_nested_loop_if_loop: c=0, no inner loop
+_3_nested_loop_if_loop: c=1, inner d=0
+_3_nested_loop_if_loop: c=1, inner d=1
+_3_nested_loop_if_loop: c=2, no inner loop

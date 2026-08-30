@@ -226,8 +226,10 @@ static void splitAndGetBB(BasicBlock *BB, Argument *lastArg, SmallVector<BasicBl
     if(isa<BranchInst>(I)){ 
         auto *BI = dyn_cast<BranchInst>(I);
         if (!BI->isConditional()) {
-            if(!is_contained(BBtoFlatten, BB))  BBtoFlatten.push_back(BB);
-            splitAndGetBB(BI->getSuccessor(0),lastArg,BBtoFlatten);
+            if(!is_contained(BBtoFlatten, BB))  {
+                BBtoFlatten.push_back(BB);
+                splitAndGetBB(BI->getSuccessor(0),lastArg,BBtoFlatten);
+            }
         }else{
             Value *condVal = BI->getCondition();
             auto *condInst = dyn_cast<Instruction>(condVal);
@@ -245,26 +247,29 @@ static void splitAndGetBB(BasicBlock *BB, Argument *lastArg, SmallVector<BasicBl
                     break;
                 }
             }
-
+            
             if (earliestI) {
                 BasicBlock *firstBlock = nullptr;
                 if (earliestI == &*BB->begin()) {
                     firstBlock = BB;
-                    if(!is_contained(BBtoFlatten, firstBlock))  BBtoFlatten.push_back(firstBlock);
-                    auto *br = dyn_cast<BranchInst>(firstBlock->getTerminator());
-                    splitAndGetBB(br->getSuccessor(0), lastArg,BBtoFlatten);
-                    splitAndGetBB(br->getSuccessor(1), lastArg,BBtoFlatten);
+                    if(!is_contained(BBtoFlatten, firstBlock))  {
+                        BBtoFlatten.push_back(firstBlock);
+                        auto *br = dyn_cast<BranchInst>(firstBlock->getTerminator());
+                        splitAndGetBB(br->getSuccessor(0), lastArg,BBtoFlatten);
+                        splitAndGetBB(br->getSuccessor(1), lastArg,BBtoFlatten);
+                    }
                 } else {
                     firstBlock = BB->splitBasicBlockBefore(earliestI);
                     auto *br = dyn_cast<BranchInst>(firstBlock->getTerminator());
                     BasicBlock *secondBlock = br->getSuccessor(0);
 
                     if(!is_contained(BBtoFlatten, firstBlock))  BBtoFlatten.push_back(firstBlock);
-                    if(!is_contained(BBtoFlatten, secondBlock))  BBtoFlatten.push_back(secondBlock);     
-
-                    br = dyn_cast<BranchInst>(secondBlock->getTerminator());
-                    splitAndGetBB(br->getSuccessor(0), lastArg,BBtoFlatten);
-                    splitAndGetBB(br->getSuccessor(1), lastArg,BBtoFlatten);
+                    if(!is_contained(BBtoFlatten, secondBlock))  {
+                        BBtoFlatten.push_back(secondBlock);     
+                        br = dyn_cast<BranchInst>(secondBlock->getTerminator());
+                        splitAndGetBB(br->getSuccessor(0), lastArg,BBtoFlatten);
+                        splitAndGetBB(br->getSuccessor(1), lastArg,BBtoFlatten);
+                    }
                 }
             }
         }
