@@ -82,8 +82,30 @@ Function *appendDummyParams(Function &Old, unsigned N){
         VMap[&OldArg] = &*NewArgIt;
         ++NewArgIt;
     }
-    for (unsigned i = 0; i < N; ++i, ++NewArgIt)
-    NewArgIt->setName("dummy" + Twine(i));
+    int argSize = Old.arg_size();
+    errs() << "ArgSize: " <<  argSize << "\n";
+    BasicBlock *BB = &Old.getEntryBlock();
+    auto it_alloca = BB->begin();
+    auto it_store = BB->begin();
+    IRBuilder<> allocaBuilder(&*it_alloca);
+    IRBuilder<> storeBuilder(&*it_store);
+    std::advance(it_alloca, argSize);
+    allocaBuilder.SetInsertPoint(&*it_alloca);
+    for (; it_store != BB->end(); ++it_store) {
+        if (llvm::isa<llvm::StoreInst>(*it_store)) {
+            std::advance(it_store, argSize);
+            storeBuilder.SetInsertPoint(&*it_store);
+            break; 
+        }
+    }
+
+    for (unsigned i = 0; i < N; ++i, ++NewArgIt, ++it_alloca, ++it_store){
+      NewArgIt->setName("dummy" + Twine(i));
+      AllocaInst *allocaIns = allocaBuilder.CreateAlloca(NewArgIt->getType(), nullptr);
+       Value *ArgVal = NewArgIt;
+      storeBuilder.CreateStore(ArgVal, allocaIns);
+    }
+
 
     SmallVector<ReturnInst *, 4> Returns;
     CloneFunctionInto(newF, &Old, VMap, CloneFunctionChangeType::LocalChangesOnly, Returns);
@@ -120,7 +142,7 @@ void rewriteDummyCallSites(Function &Old, Function &newF, unsigned N) {
 static Function *addDummies(Function *F, unsigned padCount){
     Function *newF = appendDummyParams(*F, padCount);
     rewriteDummyCallSites(*F, *newF, padCount);
-    keepFunctionOrder(*F, *newF);
+    keepFunctionOrder(*F,*newF);
     newF->takeName(F);
     F->eraseFromParent();
     errs() << "     (2) dummy parameters:  +" << padCount << " (now " << newF->arg_size() << " total args)\n";
@@ -203,8 +225,8 @@ static Function *shuffleParameters(Function *F) {
   }
   std::vector<unsigned> perm;
   Function *newF = shuffleSlots(*F, perm);
+  keepFunctionOrder(*F,*newF);
   rewriteShuffledCallSites(*F, *newF, perm);
-  keepFunctionOrder(*F, *newF);
   newF->takeName(F);
   F->eraseFromParent();
   errs() << "     (3) shuffle parameters: [";
@@ -248,10 +270,9 @@ PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager 
         if(Info.dummyAllowed && (doShuffle || doDummyShuffle)){
             curFn = shuffleParameters(curFn);
         }
-            
         Changed = true;
     }
-
+    
     if (Changed && verifyModule(M, &errs()))
     report_fatal_error("SignatureObfuscatorPass produced an invalid module");
 
