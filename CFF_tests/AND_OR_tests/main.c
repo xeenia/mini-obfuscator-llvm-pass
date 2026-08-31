@@ -4,11 +4,11 @@
 
 int globalvar = 10;
 
-void _0_code_AND(int a, int b) {
-    if (a == 0 && b > 10) {
-       a=10;
+int _0_code_AND(int a, int b) {
+    if (a == 0 && a > 10) {
+       return a+b;
     }else{
-        b=0;
+        return a-b;
     }
 }
 
@@ -20,7 +20,7 @@ void _0_code_OR(int a, int b) {
     }
 }
 
-void _0_cff_AND(int a, int b) {
+/*void _0_cff_AND(int a, int b) {
     int c = 0;
     while(1){
         switch(c){
@@ -69,7 +69,7 @@ void _0_cff_OR(int a, int b) {
         }
     }
 }
-
+*/
 int main(int argc, char** argv) {
     int a;
     printf("a: %d\n", argc);
@@ -79,11 +79,11 @@ int main(int argc, char** argv) {
     /* --- 0. _0_nocodeifalone (2 paths: if condition TRUE / FALSE) --- */
     printf("\n=== _0_nocodeifalone ===\n");
     printf("_0_nocodeifalone (globalvar > 0 [TRUE]):\n");
-    _0_code_AND(2,0);
-    _0_cff_AND(2,0);
+    printf("%d\n", _0_code_AND(a,a+5));
+    //_0_cff_AND(2,0);
 
-    _0_code_OR(2,0);
-    _0_cff_OR(2,0);
+    _0_code_OR(a,a+10);
+    //_0_cff_OR(2,0);
 
    
     return 0;

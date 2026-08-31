@@ -11,6 +11,11 @@
 
 using namespace llvm;
 
+static cl::opt<bool> OnlySplitted(
+    "only-splitted",
+    cl::init(false),
+    cl::desc("apply only splitted version"));
+
 //got this function 'demotePhiNodes' from this repo: https://github.com/samrussell/obfus
 static void demotePhiNodes(Function& F) {
     std::vector<PHINode*> phiNodes;
@@ -284,7 +289,10 @@ static void flattenFunction(Function& F){
         errs() << "BB to Flatten: " << getSimpleNodeLabel(BB)<< "\n";
     }
     demotePhiNodes(F);
-    createAndBuildDispatcher(F, BBtoFlatten);
+    if(!OnlySplitted){
+        createAndBuildDispatcher(F, BBtoFlatten);
+    }
+    
 }
 
 PreservedAnalyses ControlFlowFlatteningPass::run(Module &M, ModuleAnalysisManager &MAM) {
