@@ -1,10 +1,11 @@
 a: 1
---- _1 call 1 (only path) ---
+--- _1 normal ---
 _1_loop_with_if_inside: c=0 even
 _1_loop_with_if_inside: c=1 odd
 _1_loop_with_if_inside: c=2 even
 _1_loop_with_if_inside: c=3 odd
 _1_loop_with_if_inside: c=4 even
+--- _1 CFF (high-level) ---
 --- _2 call 1 (a > b) ---
 _2_if_with_loop_in_both_branches: a>b, c=0
 _2_if_with_loop_in_both_branches: a>b, c=1
@@ -18,3 +19,14 @@ _3_nested_loop_if_loop: c=0, no inner loop
 _3_nested_loop_if_loop: c=1, inner d=0
 _3_nested_loop_if_loop: c=1, inner d=1
 _3_nested_loop_if_loop: c=2, no inner loop
+--- _4 call 1 ---
+_4_manyblocks_loop: c=0 even and diff>0
+_4_manyblocks_loop: c=1 other
+_4_manyblocks_loop: c=2 even and diff>0
+_4_manyblocks_loop: c=3 other
+_4_manyblocks_loop: c=4 even and diff>0
+--- _5 call 1 ---
+_5_ternary_loop: c=0 label=1
+_5_ternary_loop: c=1 label=3
+_5_ternary_loop: c=2 label=1
+_5_ternary_loop: c=3 label=2

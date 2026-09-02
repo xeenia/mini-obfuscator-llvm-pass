@@ -1,0 +1,24 @@
+Number: -4
+Absolute value: 4
+Negative
+Number: 0
+Absolute value: 0
+Zero
+Number: 3
+Absolute value: 3
+Positive odd
+Number: 8
+Absolute value: 8
+Positive even
+Number: 11
+Absolute value: 11
+Positive odd
+Sum until 10: 10
+First number divisible by 7: 7
+Score: 24
+Pair found at: 101
+Pair found at: -1
+First negative: -1
+First negative: 0
+_7_validate_and_print: invalid input
+_7_validate_and_print: valid input 5
