@@ -27,7 +27,7 @@ static void demotePhiNodes(Function& F) {
             }
         }
         for (PHINode* phi : phiNodes) {
-            DemotePHIToStack(phi, F.begin()->getTerminator());
+            DemotePHIToStack(phi);
         }
     } while (!phiNodes.empty());
 }
@@ -282,7 +282,7 @@ static void splitAndGetBB(BasicBlock *BB, Argument *lastArg, SmallVector<BasicBl
     }
 }
 
-static void flattenFunction(Function& F){
+static bool flattenFunction(Function& F){
     SmallVector<BasicBlock*, 20> BBtoFlatten;
     splitAndGetBB(&F.getEntryBlock(), getlastArg(F),BBtoFlatten);
     for (auto BB : BBtoFlatten) {
@@ -292,16 +292,38 @@ static void flattenFunction(Function& F){
     if(!OnlySplitted){
         createAndBuildDispatcher(F, BBtoFlatten);
     }
+    return true; //to fix
     
 }
-
+bool isCFFCandidate(Function &F){
+    if(F.isDeclaration()) return false;
+    if(F.size() < 3) return false;
+    errs() << "Function " << F.getName() << ": " << F.size() << "\n";
+    bool toSkip = false;
+    for(BasicBlock &BB: F){
+        Instruction *I = BB.getTerminator();
+        if(isa<InvokeInst>(I) || \
+        isa<IndirectBrInst>(I) || \
+        isa<CallBrInst>(I) || \
+        isa<ResumeInst>(I) || \
+        isa<CatchSwitchInst>(I) || \
+        isa<CatchReturnInst>(I) || \
+        isa<CleanupReturnInst>(I)) {
+            toSkip = true; 
+            break;
+        }
+    }
+    if(toSkip) return false;
+    return true;
+}
 PreservedAnalyses ControlFlowFlatteningPass::run(Module &M, ModuleAnalysisManager &MAM) {
     bool Changed{false};
     for (Function &F : M) {
-        if(F.isDeclaration()) continue;
-        errs() << "Function: " << F.getName() << "\n\n";
-        flattenFunction(F);
-        Changed = true;
+        if(!isCFFCandidate(F)) continue;
+        
+        Changed = flattenFunction(F);
+        if (verifyFunction(F, &errs()))
+            report_fatal_error("ControlFlowFlatteningPass produced an invalid function");
     }
     if (Changed && verifyModule(M, &errs()))
         report_fatal_error("ControlFlowFlatteningPass produced an invalid module");
