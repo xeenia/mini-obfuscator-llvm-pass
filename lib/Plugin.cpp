@@ -3,6 +3,7 @@
 #include "SignatureObfuscatorPass.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
+#include "llvm/IR/PassManager.h"
 
 using namespace llvm;
 
@@ -22,9 +23,13 @@ PassPluginLibraryInfo getPluginInfo(){
                             return true;
                         }
                         if(Name == "CFFPass"){
-                            MPM.addPass(ControlFlowFlatteningPass());
+                            MPM.addPass(
+                                createModuleToFunctionPassAdaptor(
+                                    ControlFlowFlatteningPass()
+                                )
+                            );
                             return true;
-                        }
+                        }  
                         return false;
                     }
                 );
