@@ -5756,365 +5756,411 @@ entry:
 
 ; Function Attrs: noinline nounwind optnone uwtable
 define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
+entry:
+  %.reg2mem1 = alloca i32, align 4
+  %.reg2mem = alloca i32, align 4
+  %2 = alloca i32, align 4
   %3 = alloca i32, align 4
-  %4 = alloca i32, align 4
-  %5 = alloca ptr, align 8
+  %4 = alloca ptr, align 8
+  %5 = alloca i32, align 4
   %6 = alloca i32, align 4
   %7 = alloca i32, align 4
   %8 = alloca i32, align 4
-  %9 = alloca i32, align 4
-  %10 = alloca [8 x i32], align 16
-  %11 = alloca i32, align 4
-  store i32 0, ptr %3, align 4
-  store i32 %0, ptr %4, align 4
-  store ptr %1, ptr %5, align 8
-  %12 = load i32, ptr %4, align 4
-  %13 = icmp sgt i32 %12, 1
-  br i1 %13, label %14, label %19
+  %9 = alloca [8 x i32], align 16
+  %10 = alloca i32, align 4
+  br label %11
 
-14:                                               ; preds = %2
-  %15 = load ptr, ptr %5, align 8
-  %16 = getelementptr inbounds ptr, ptr %15, i64 1
-  %17 = load ptr, ptr %16, align 8
-  %18 = call i32 @atoi(ptr noundef %17) #10
-  br label %20
+11:                                               ; preds = %entry
+  store i32 0, ptr %2, align 4
+  store i32 %0, ptr %3, align 4
+  store ptr %1, ptr %4, align 8
+  br label %12
 
-19:                                               ; preds = %2
-  br label %20
+12:                                               ; preds = %11
+  %13 = load i32, ptr %3, align 4
+  %14 = icmp sgt i32 %13, 1
+  br i1 %14, label %15, label %20
 
-20:                                               ; preds = %19, %14
-  %21 = phi i32 [ %18, %14 ], [ 4, %19 ]
-  store i32 %21, ptr %6, align 4
-  %22 = load i32, ptr %4, align 4
-  %23 = icmp sgt i32 %22, 2
-  br i1 %23, label %24, label %29
+15:                                               ; preds = %12
+  %16 = load ptr, ptr %4, align 8
+  %17 = getelementptr inbounds ptr, ptr %16, i64 1
+  %18 = load ptr, ptr %17, align 8
+  %19 = call i32 @atoi(ptr noundef %18) #10
+  store i32 %19, ptr %.reg2mem, align 4
+  br label %21
 
-24:                                               ; preds = %20
-  %25 = load ptr, ptr %5, align 8
-  %26 = getelementptr inbounds ptr, ptr %25, i64 2
-  %27 = load ptr, ptr %26, align 8
-  %28 = call i32 @atoi(ptr noundef %27) #10
-  br label %30
+20:                                               ; preds = %12
+  store i32 4, ptr %.reg2mem, align 4
+  br label %21
 
-29:                                               ; preds = %20
-  br label %30
+21:                                               ; preds = %15, %20
+  %.reload = load i32, ptr %.reg2mem, align 4
+  store i32 %.reload, ptr %5, align 4
+  br label %22
 
-30:                                               ; preds = %29, %24
-  %31 = phi i32 [ %28, %24 ], [ -1, %29 ]
-  store i32 %31, ptr %7, align 4
-  store i32 0, ptr %8, align 4
-  %32 = load i32, ptr %6, align 4
+22:                                               ; preds = %21
+  %23 = load i32, ptr %3, align 4
+  %24 = icmp sgt i32 %23, 2
+  br i1 %24, label %25, label %30
+
+25:                                               ; preds = %22
+  %26 = load ptr, ptr %4, align 8
+  %27 = getelementptr inbounds ptr, ptr %26, i64 2
+  %28 = load ptr, ptr %27, align 8
+  %29 = call i32 @atoi(ptr noundef %28) #10
+  store i32 %29, ptr %.reg2mem1, align 4
+  br label %31
+
+30:                                               ; preds = %22
+  store i32 -1, ptr %.reg2mem1, align 4
+  br label %31
+
+31:                                               ; preds = %25, %30
+  %.reload2 = load i32, ptr %.reg2mem1, align 4
+  store i32 %.reload2, ptr %6, align 4
+  store i32 0, ptr %7, align 4
+  %32 = load i32, ptr %5, align 4
   %33 = call i32 @abs(i32 noundef %32) #11
-  store i32 %33, ptr %9, align 4
-  %34 = load i32, ptr %9, align 4
-  %35 = icmp eq i32 %34, 0
-  br i1 %35, label %36, label %37
+  store i32 %33, ptr %8, align 4
+  br label %34
 
-36:                                               ; preds = %30
-  store i32 1, ptr %9, align 4
-  br label %37
+34:                                               ; preds = %31
+  %35 = load i32, ptr %8, align 4
+  %36 = icmp eq i32 %35, 0
+  br i1 %36, label %37, label %38
 
-37:                                               ; preds = %36, %30
-  %38 = load i32, ptr @g_step, align 4
-  %39 = icmp sle i32 %38, 0
-  br i1 %39, label %40, label %41
+37:                                               ; preds = %34
+  store i32 1, ptr %8, align 4
+  br label %38
 
-40:                                               ; preds = %37
+38:                                               ; preds = %37, %34
+  %39 = load i32, ptr @g_step, align 4
+  %40 = icmp sle i32 %39, 0
+  br i1 %40, label %41, label %42
+
+41:                                               ; preds = %38
   store i32 1, ptr @g_step, align 4
-  br label %41
+  br label %42
 
-41:                                               ; preds = %40, %37
-  %42 = load i32, ptr @g_limit, align 4
-  %43 = icmp sle i32 %42, 0
-  br i1 %43, label %44, label %45
+42:                                               ; preds = %41, %38
+  %43 = load i32, ptr @g_limit, align 4
+  %44 = icmp sle i32 %43, 0
+  br i1 %44, label %45, label %46
 
-44:                                               ; preds = %41
+45:                                               ; preds = %42
   store i32 10, ptr @g_limit, align 4
-  br label %45
+  br label %46
 
-45:                                               ; preds = %44, %41
-  %46 = load i32, ptr %9, align 4
-  %47 = call i32 @_0_for_simple(i32 noundef %46)
-  %48 = load i32, ptr %8, align 4
-  %49 = add nsw i32 %48, %47
-  store i32 %49, ptr %8, align 4
-  %50 = load i32, ptr %9, align 4
-  %51 = call i32 @_1_while_simple(i32 noundef %50)
-  %52 = load i32, ptr %8, align 4
-  %53 = add nsw i32 %52, %51
-  store i32 %53, ptr %8, align 4
-  %54 = load i32, ptr %9, align 4
-  %55 = call i32 @_2_dowhile_simple(i32 noundef %54)
-  %56 = load i32, ptr %8, align 4
-  %57 = add nsw i32 %56, %55
-  store i32 %57, ptr %8, align 4
-  %58 = call i32 @_3_for_empty_body(i32 noundef 3)
-  %59 = load i32, ptr %8, align 4
-  %60 = add nsw i32 %59, %58
-  store i32 %60, ptr %8, align 4
-  %61 = load i32, ptr %9, align 4
-  %62 = call i32 @_4_while_true_break(i32 noundef %61)
-  %63 = load i32, ptr %8, align 4
-  %64 = add nsw i32 %63, %62
-  store i32 %64, ptr %8, align 4
-  %65 = load i32, ptr %9, align 4
-  %66 = call i32 @_5_for_continue(i32 noundef %65)
-  %67 = load i32, ptr %8, align 4
-  %68 = add nsw i32 %67, %66
-  store i32 %68, ptr %8, align 4
-  %69 = load i32, ptr %7, align 4
-  %70 = icmp eq i32 %69, 0
-  br i1 %70, label %71, label %74
+46:                                               ; preds = %42, %45
+  %47 = load i32, ptr %8, align 4
+  %48 = call i32 @_0_for_simple(i32 noundef %47)
+  %49 = load i32, ptr %7, align 4
+  %50 = add nsw i32 %49, %48
+  store i32 %50, ptr %7, align 4
+  %51 = load i32, ptr %8, align 4
+  %52 = call i32 @_1_while_simple(i32 noundef %51)
+  %53 = load i32, ptr %7, align 4
+  %54 = add nsw i32 %53, %52
+  store i32 %54, ptr %7, align 4
+  %55 = load i32, ptr %8, align 4
+  %56 = call i32 @_2_dowhile_simple(i32 noundef %55)
+  %57 = load i32, ptr %7, align 4
+  %58 = add nsw i32 %57, %56
+  store i32 %58, ptr %7, align 4
+  %59 = call i32 @_3_for_empty_body(i32 noundef 3)
+  %60 = load i32, ptr %7, align 4
+  %61 = add nsw i32 %60, %59
+  store i32 %61, ptr %7, align 4
+  %62 = load i32, ptr %8, align 4
+  %63 = call i32 @_4_while_true_break(i32 noundef %62)
+  %64 = load i32, ptr %7, align 4
+  %65 = add nsw i32 %64, %63
+  store i32 %65, ptr %7, align 4
+  %66 = load i32, ptr %8, align 4
+  %67 = call i32 @_5_for_continue(i32 noundef %66)
+  %68 = load i32, ptr %7, align 4
+  %69 = add nsw i32 %68, %67
+  store i32 %69, ptr %7, align 4
+  br label %70
 
-71:                                               ; preds = %45
-  %72 = load i32, ptr %8, align 4
-  %73 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %72)
-  store i32 0, ptr %3, align 4
-  br label %484
+70:                                               ; preds = %46
+  %71 = load i32, ptr %6, align 4
+  %72 = icmp eq i32 %71, 0
+  br i1 %72, label %73, label %76
 
-74:                                               ; preds = %45
-  %75 = load i32, ptr %9, align 4
-  %76 = load i32, ptr %9, align 4
-  %77 = add nsw i32 %76, 6
-  %78 = call i32 @_6_relational_loop(i32 noundef %75, i32 noundef %77)
-  %79 = load i32, ptr %8, align 4
-  %80 = add nsw i32 %79, %78
-  store i32 %80, ptr %8, align 4
-  %81 = load i32, ptr %9, align 4
-  %82 = call i32 @_7_not_equal_loop(i32 noundef %81)
+73:                                               ; preds = %70
+  %74 = load i32, ptr %7, align 4
+  %75 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %74)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+76:                                               ; preds = %70
+  %77 = load i32, ptr %8, align 4
+  %78 = load i32, ptr %8, align 4
+  %79 = add nsw i32 %78, 6
+  %80 = call i32 @_6_relational_loop(i32 noundef %77, i32 noundef %79)
+  %81 = load i32, ptr %7, align 4
+  %82 = add nsw i32 %81, %80
+  store i32 %82, ptr %7, align 4
   %83 = load i32, ptr %8, align 4
-  %84 = add nsw i32 %83, %82
-  store i32 %84, ptr %8, align 4
-  %85 = load i32, ptr %9, align 4
-  %86 = call i32 @_8_loop_and(i32 noundef %85, i32 noundef 5)
+  %84 = call i32 @_7_not_equal_loop(i32 noundef %83)
+  %85 = load i32, ptr %7, align 4
+  %86 = add nsw i32 %85, %84
+  store i32 %86, ptr %7, align 4
   %87 = load i32, ptr %8, align 4
-  %88 = add nsw i32 %87, %86
-  store i32 %88, ptr %8, align 4
-  %89 = load i32, ptr %9, align 4
-  %90 = call i32 @_9_loop_or(i32 noundef %89, i32 noundef 5)
+  %88 = call i32 @_8_loop_and(i32 noundef %87, i32 noundef 5)
+  %89 = load i32, ptr %7, align 4
+  %90 = add nsw i32 %89, %88
+  store i32 %90, ptr %7, align 4
   %91 = load i32, ptr %8, align 4
-  %92 = add nsw i32 %91, %90
-  store i32 %92, ptr %8, align 4
-  %93 = load i32, ptr %9, align 4
-  %94 = call i32 @_10_nested_loop_condition(i32 noundef %93, i32 noundef 6, i32 noundef 3, i32 noundef 4)
+  %92 = call i32 @_9_loop_or(i32 noundef %91, i32 noundef 5)
+  %93 = load i32, ptr %7, align 4
+  %94 = add nsw i32 %93, %92
+  store i32 %94, ptr %7, align 4
   %95 = load i32, ptr %8, align 4
-  %96 = add nsw i32 %95, %94
-  store i32 %96, ptr %8, align 4
+  %96 = call i32 @_10_nested_loop_condition(i32 noundef %95, i32 noundef 6, i32 noundef 3, i32 noundef 4)
   %97 = load i32, ptr %7, align 4
-  %98 = icmp eq i32 %97, 1
-  br i1 %98, label %99, label %102
+  %98 = add nsw i32 %97, %96
+  store i32 %98, ptr %7, align 4
+  br label %99
 
-99:                                               ; preds = %74
-  %100 = load i32, ptr %8, align 4
-  %101 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %100)
-  store i32 0, ptr %3, align 4
-  br label %484
+99:                                               ; preds = %76
+  %100 = load i32, ptr %6, align 4
+  %101 = icmp eq i32 %100, 1
+  br i1 %101, label %102, label %105
 
-102:                                              ; preds = %74
-  %103 = load i32, ptr %9, align 4
-  %104 = call i32 @_11_arithmetic_loop(i32 noundef %103)
-  %105 = load i32, ptr %8, align 4
-  %106 = add nsw i32 %105, %104
-  store i32 %106, ptr %8, align 4
-  %107 = load i32, ptr %9, align 4
-  %108 = call i32 @_12_nested_arithmetic_loop(i32 noundef %107)
-  %109 = load i32, ptr %8, align 4
-  %110 = add nsw i32 %109, %108
-  store i32 %110, ptr %8, align 4
-  %111 = load i32, ptr %9, align 4
-  %112 = call i32 @_13_ternary_loop_body(i32 noundef %111)
-  %113 = load i32, ptr %8, align 4
-  %114 = add nsw i32 %113, %112
-  store i32 %114, ptr %8, align 4
-  %115 = load i32, ptr %9, align 4
-  %116 = call i32 @_14_multiple_accumulators(i32 noundef %115)
-  %117 = load i32, ptr %8, align 4
-  %118 = add nsw i32 %117, %116
-  store i32 %118, ptr %8, align 4
-  %119 = load i32, ptr %7, align 4
-  %120 = icmp eq i32 %119, 2
-  br i1 %120, label %121, label %124
+102:                                              ; preds = %99
+  %103 = load i32, ptr %7, align 4
+  %104 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %103)
+  store i32 0, ptr %2, align 4
+  br label %507
 
-121:                                              ; preds = %102
-  %122 = load i32, ptr %8, align 4
-  %123 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %122)
-  store i32 0, ptr %3, align 4
-  br label %484
+105:                                              ; preds = %99
+  %106 = load i32, ptr %8, align 4
+  %107 = call i32 @_11_arithmetic_loop(i32 noundef %106)
+  %108 = load i32, ptr %7, align 4
+  %109 = add nsw i32 %108, %107
+  store i32 %109, ptr %7, align 4
+  %110 = load i32, ptr %8, align 4
+  %111 = call i32 @_12_nested_arithmetic_loop(i32 noundef %110)
+  %112 = load i32, ptr %7, align 4
+  %113 = add nsw i32 %112, %111
+  store i32 %113, ptr %7, align 4
+  %114 = load i32, ptr %8, align 4
+  %115 = call i32 @_13_ternary_loop_body(i32 noundef %114)
+  %116 = load i32, ptr %7, align 4
+  %117 = add nsw i32 %116, %115
+  store i32 %117, ptr %7, align 4
+  %118 = load i32, ptr %8, align 4
+  %119 = call i32 @_14_multiple_accumulators(i32 noundef %118)
+  %120 = load i32, ptr %7, align 4
+  %121 = add nsw i32 %120, %119
+  store i32 %121, ptr %7, align 4
+  br label %122
 
-124:                                              ; preds = %102
-  %125 = call i32 @_15_nested_for(i32 noundef 3)
-  %126 = load i32, ptr %8, align 4
-  %127 = add nsw i32 %126, %125
-  store i32 %127, ptr %8, align 4
-  %128 = call i32 @_16_for_while(i32 noundef 4)
-  %129 = load i32, ptr %8, align 4
-  %130 = add nsw i32 %129, %128
-  store i32 %130, ptr %8, align 4
-  %131 = call i32 @_17_while_dowhile(i32 noundef 3)
-  %132 = load i32, ptr %8, align 4
-  %133 = add nsw i32 %132, %131
-  store i32 %133, ptr %8, align 4
-  %134 = call i32 @_18_triple_for(i32 noundef 2)
-  %135 = load i32, ptr %8, align 4
-  %136 = add nsw i32 %135, %134
-  store i32 %136, ptr %8, align 4
-  %137 = call i32 @_19_mixed_nested_loops(i32 noundef 3)
-  %138 = load i32, ptr %8, align 4
-  %139 = add nsw i32 %138, %137
-  store i32 %139, ptr %8, align 4
-  %140 = load i32, ptr %7, align 4
-  %141 = icmp eq i32 %140, 3
-  br i1 %141, label %142, label %145
+122:                                              ; preds = %105
+  %123 = load i32, ptr %6, align 4
+  %124 = icmp eq i32 %123, 2
+  br i1 %124, label %125, label %128
 
-142:                                              ; preds = %124
-  %143 = load i32, ptr %8, align 4
-  %144 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %143)
-  store i32 0, ptr %3, align 4
-  br label %484
+125:                                              ; preds = %122
+  %126 = load i32, ptr %7, align 4
+  %127 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %126)
+  store i32 0, ptr %2, align 4
+  br label %507
 
-145:                                              ; preds = %124
-  %146 = call i32 @_20_inner_break(i32 noundef 5)
-  %147 = load i32, ptr %8, align 4
-  %148 = add nsw i32 %147, %146
-  store i32 %148, ptr %8, align 4
-  %149 = call i32 @_21_inner_continue(i32 noundef 5)
-  %150 = load i32, ptr %8, align 4
-  %151 = add nsw i32 %150, %149
-  store i32 %151, ptr %8, align 4
-  %152 = call i32 @_22_break_with_ternary(i32 noundef 5)
-  %153 = load i32, ptr %8, align 4
-  %154 = add nsw i32 %153, %152
-  store i32 %154, ptr %8, align 4
-  %155 = call i32 @_23_continue_and_break(i32 noundef 6)
-  %156 = load i32, ptr %8, align 4
-  %157 = add nsw i32 %156, %155
-  store i32 %157, ptr %8, align 4
+128:                                              ; preds = %122
+  %129 = call i32 @_15_nested_for(i32 noundef 3)
+  %130 = load i32, ptr %7, align 4
+  %131 = add nsw i32 %130, %129
+  store i32 %131, ptr %7, align 4
+  %132 = call i32 @_16_for_while(i32 noundef 4)
+  %133 = load i32, ptr %7, align 4
+  %134 = add nsw i32 %133, %132
+  store i32 %134, ptr %7, align 4
+  %135 = call i32 @_17_while_dowhile(i32 noundef 3)
+  %136 = load i32, ptr %7, align 4
+  %137 = add nsw i32 %136, %135
+  store i32 %137, ptr %7, align 4
+  %138 = call i32 @_18_triple_for(i32 noundef 2)
+  %139 = load i32, ptr %7, align 4
+  %140 = add nsw i32 %139, %138
+  store i32 %140, ptr %7, align 4
+  %141 = call i32 @_19_mixed_nested_loops(i32 noundef 3)
+  %142 = load i32, ptr %7, align 4
+  %143 = add nsw i32 %142, %141
+  store i32 %143, ptr %7, align 4
+  br label %144
+
+144:                                              ; preds = %128
+  %145 = load i32, ptr %6, align 4
+  %146 = icmp eq i32 %145, 3
+  br i1 %146, label %147, label %150
+
+147:                                              ; preds = %144
+  %148 = load i32, ptr %7, align 4
+  %149 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %148)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+150:                                              ; preds = %144
+  %151 = call i32 @_20_inner_break(i32 noundef 5)
+  %152 = load i32, ptr %7, align 4
+  %153 = add nsw i32 %152, %151
+  store i32 %153, ptr %7, align 4
+  %154 = call i32 @_21_inner_continue(i32 noundef 5)
+  %155 = load i32, ptr %7, align 4
+  %156 = add nsw i32 %155, %154
+  store i32 %156, ptr %7, align 4
+  %157 = call i32 @_22_break_with_ternary(i32 noundef 5)
   %158 = load i32, ptr %7, align 4
-  %159 = icmp eq i32 %158, 4
-  br i1 %159, label %160, label %163
+  %159 = add nsw i32 %158, %157
+  store i32 %159, ptr %7, align 4
+  %160 = call i32 @_23_continue_and_break(i32 noundef 6)
+  %161 = load i32, ptr %7, align 4
+  %162 = add nsw i32 %161, %160
+  store i32 %162, ptr %7, align 4
+  br label %163
 
-160:                                              ; preds = %145
-  %161 = load i32, ptr %8, align 4
-  %162 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %161)
-  store i32 0, ptr %3, align 4
-  br label %484
+163:                                              ; preds = %150
+  %164 = load i32, ptr %6, align 4
+  %165 = icmp eq i32 %164, 4
+  br i1 %165, label %166, label %169
 
-163:                                              ; preds = %145
-  %164 = load i32, ptr %9, align 4
-  %165 = call i32 @_24_early_return(i32 noundef %164)
-  %166 = load i32, ptr %8, align 4
-  %167 = add nsw i32 %166, %165
-  store i32 %167, ptr %8, align 4
-  %168 = load i32, ptr %9, align 4
-  %169 = call i32 @_25_nested_early_return(i32 noundef %168)
+166:                                              ; preds = %163
+  %167 = load i32, ptr %7, align 4
+  %168 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %167)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+169:                                              ; preds = %163
   %170 = load i32, ptr %8, align 4
-  %171 = add nsw i32 %170, %169
-  store i32 %171, ptr %8, align 4
-  %172 = load i32, ptr %9, align 4
-  %173 = call i32 @_26_multiple_returns(i32 noundef %172)
+  %171 = call i32 @_24_early_return(i32 noundef %170)
+  %172 = load i32, ptr %7, align 4
+  %173 = add nsw i32 %172, %171
+  store i32 %173, ptr %7, align 4
   %174 = load i32, ptr %8, align 4
-  %175 = add nsw i32 %174, %173
-  store i32 %175, ptr %8, align 4
-  %176 = load i32, ptr %9, align 4
-  %177 = call i32 @_27_dowhile_return(i32 noundef %176)
+  %175 = call i32 @_25_nested_early_return(i32 noundef %174)
+  %176 = load i32, ptr %7, align 4
+  %177 = add nsw i32 %176, %175
+  store i32 %177, ptr %7, align 4
   %178 = load i32, ptr %8, align 4
-  %179 = add nsw i32 %178, %177
-  store i32 %179, ptr %8, align 4
+  %179 = call i32 @_26_multiple_returns(i32 noundef %178)
   %180 = load i32, ptr %7, align 4
-  %181 = icmp eq i32 %180, 5
-  br i1 %181, label %182, label %185
+  %181 = add nsw i32 %180, %179
+  store i32 %181, ptr %7, align 4
+  %182 = load i32, ptr %8, align 4
+  %183 = call i32 @_27_dowhile_return(i32 noundef %182)
+  %184 = load i32, ptr %7, align 4
+  %185 = add nsw i32 %184, %183
+  store i32 %185, ptr %7, align 4
+  br label %186
 
-182:                                              ; preds = %163
-  %183 = load i32, ptr %8, align 4
-  %184 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %183)
-  store i32 0, ptr %3, align 4
-  br label %484
+186:                                              ; preds = %169
+  %187 = load i32, ptr %6, align 4
+  %188 = icmp eq i32 %187, 5
+  br i1 %188, label %189, label %192
 
-185:                                              ; preds = %163
-  %186 = call i32 @_28_for_while_for(i32 noundef 3)
-  %187 = load i32, ptr %8, align 4
-  %188 = add nsw i32 %187, %186
-  store i32 %188, ptr %8, align 4
-  %189 = call i32 @_29_while_for_dowhile(i32 noundef 3)
-  %190 = load i32, ptr %8, align 4
-  %191 = add nsw i32 %190, %189
-  store i32 %191, ptr %8, align 4
-  %192 = call i32 @_30_four_level_nesting(i32 noundef 2)
-  %193 = load i32, ptr %8, align 4
-  %194 = add nsw i32 %193, %192
-  store i32 %194, ptr %8, align 4
-  %195 = load i32, ptr %7, align 4
-  %196 = icmp eq i32 %195, 6
-  br i1 %196, label %197, label %200
+189:                                              ; preds = %186
+  %190 = load i32, ptr %7, align 4
+  %191 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %190)
+  store i32 0, ptr %2, align 4
+  br label %507
 
-197:                                              ; preds = %185
-  %198 = load i32, ptr %8, align 4
-  %199 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %198)
-  store i32 0, ptr %3, align 4
-  br label %484
+192:                                              ; preds = %186
+  %193 = call i32 @_28_for_while_for(i32 noundef 3)
+  %194 = load i32, ptr %7, align 4
+  %195 = add nsw i32 %194, %193
+  store i32 %195, ptr %7, align 4
+  %196 = call i32 @_29_while_for_dowhile(i32 noundef 3)
+  %197 = load i32, ptr %7, align 4
+  %198 = add nsw i32 %197, %196
+  store i32 %198, ptr %7, align 4
+  %199 = call i32 @_30_four_level_nesting(i32 noundef 2)
+  %200 = load i32, ptr %7, align 4
+  %201 = add nsw i32 %200, %199
+  store i32 %201, ptr %7, align 4
+  br label %202
 
-200:                                              ; preds = %185
-  %201 = call i32 @_31_multiple_loop_variables(i32 noundef 6)
-  %202 = load i32, ptr %8, align 4
-  %203 = add nsw i32 %202, %201
-  store i32 %203, ptr %8, align 4
-  %204 = load i32, ptr %9, align 4
-  %205 = call i32 @_32_complex_update(i32 noundef %204)
-  %206 = load i32, ptr %8, align 4
-  %207 = add nsw i32 %206, %205
-  store i32 %207, ptr %8, align 4
-  %208 = call i32 @_33_decreasing_loop(i32 noundef 6)
-  %209 = load i32, ptr %8, align 4
-  %210 = add nsw i32 %209, %208
-  store i32 %210, ptr %8, align 4
-  %211 = load i32, ptr %9, align 4
-  %212 = call i32 @_34_multiple_condition_values(i32 noundef %211, i32 noundef 6, i32 noundef 4)
-  %213 = load i32, ptr %8, align 4
-  %214 = add nsw i32 %213, %212
-  store i32 %214, ptr %8, align 4
-  %215 = load i32, ptr %9, align 4
-  %216 = call i32 @_35_computed_loop_limit(i32 noundef %215, i32 noundef 3)
-  %217 = load i32, ptr %8, align 4
+202:                                              ; preds = %192
+  %203 = load i32, ptr %6, align 4
+  %204 = icmp eq i32 %203, 6
+  br i1 %204, label %205, label %208
+
+205:                                              ; preds = %202
+  %206 = load i32, ptr %7, align 4
+  %207 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %206)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+208:                                              ; preds = %202
+  %209 = call i32 @_31_multiple_loop_variables(i32 noundef 6)
+  %210 = load i32, ptr %7, align 4
+  %211 = add nsw i32 %210, %209
+  store i32 %211, ptr %7, align 4
+  %212 = load i32, ptr %8, align 4
+  %213 = call i32 @_32_complex_update(i32 noundef %212)
+  %214 = load i32, ptr %7, align 4
+  %215 = add nsw i32 %214, %213
+  store i32 %215, ptr %7, align 4
+  %216 = call i32 @_33_decreasing_loop(i32 noundef 6)
+  %217 = load i32, ptr %7, align 4
   %218 = add nsw i32 %217, %216
-  store i32 %218, ptr %8, align 4
-  %219 = load i32, ptr %7, align 4
-  %220 = icmp eq i32 %219, 7
-  br i1 %220, label %221, label %224
+  store i32 %218, ptr %7, align 4
+  %219 = load i32, ptr %8, align 4
+  %220 = call i32 @_34_multiple_condition_values(i32 noundef %219, i32 noundef 6, i32 noundef 4)
+  %221 = load i32, ptr %7, align 4
+  %222 = add nsw i32 %221, %220
+  store i32 %222, ptr %7, align 4
+  %223 = load i32, ptr %8, align 4
+  %224 = call i32 @_35_computed_loop_limit(i32 noundef %223, i32 noundef 3)
+  %225 = load i32, ptr %7, align 4
+  %226 = add nsw i32 %225, %224
+  store i32 %226, ptr %7, align 4
+  br label %227
 
-221:                                              ; preds = %200
-  %222 = load i32, ptr %8, align 4
-  %223 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %222)
-  store i32 0, ptr %3, align 4
-  br label %484
+227:                                              ; preds = %208
+  %228 = load i32, ptr %6, align 4
+  %229 = icmp eq i32 %228, 7
+  br i1 %229, label %230, label %233
 
-224:                                              ; preds = %200
-  %225 = call i32 @_36_array_for(i32 noundef 6)
-  %226 = load i32, ptr %8, align 4
-  %227 = add nsw i32 %226, %225
-  store i32 %227, ptr %8, align 4
-  %228 = call i32 @_37_array_while(i32 noundef 6)
-  %229 = load i32, ptr %8, align 4
-  %230 = add nsw i32 %229, %228
-  store i32 %230, ptr %8, align 4
-  %231 = call i32 @_38_matrix_nested(i32 noundef 3)
-  %232 = load i32, ptr %8, align 4
-  %233 = add nsw i32 %232, %231
-  store i32 %233, ptr %8, align 4
-  %234 = call i32 @_39_array_controlled_loop(i32 noundef 6)
-  %235 = load i32, ptr %8, align 4
+230:                                              ; preds = %227
+  %231 = load i32, ptr %7, align 4
+  %232 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %231)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+233:                                              ; preds = %227
+  %234 = call i32 @_36_array_for(i32 noundef 6)
+  %235 = load i32, ptr %7, align 4
   %236 = add nsw i32 %235, %234
-  store i32 %236, ptr %8, align 4
-  %237 = load i32, ptr %7, align 4
-  %238 = icmp eq i32 %237, 8
-  br i1 %238, label %239, label %242
+  store i32 %236, ptr %7, align 4
+  %237 = call i32 @_37_array_while(i32 noundef 6)
+  %238 = load i32, ptr %7, align 4
+  %239 = add nsw i32 %238, %237
+  store i32 %239, ptr %7, align 4
+  %240 = call i32 @_38_matrix_nested(i32 noundef 3)
+  %241 = load i32, ptr %7, align 4
+  %242 = add nsw i32 %241, %240
+  store i32 %242, ptr %7, align 4
+  %243 = call i32 @_39_array_controlled_loop(i32 noundef 6)
+  %244 = load i32, ptr %7, align 4
+  %245 = add nsw i32 %244, %243
+  store i32 %245, ptr %7, align 4
+  br label %246
 
-239:                                              ; preds = %224
-  %240 = load i32, ptr %8, align 4
-  %241 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %240)
-  store i32 0, ptr %3, align 4
-  br label %484
+246:                                              ; preds = %233
+  %247 = load i32, ptr %6, align 4
+  %248 = icmp eq i32 %247, 8
+  br i1 %248, label %249, label %252
 
-242:                                              ; preds = %224
+249:                                              ; preds = %246
+  %250 = load i32, ptr %7, align 4
+  %251 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %250)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+252:                                              ; preds = %246
   store i32 0, ptr @g_arr, align 16
   store i32 1, ptr getelementptr inbounds ([8 x i32], ptr @g_arr, i64 0, i64 1), align 4
   store i32 -2, ptr getelementptr inbounds ([8 x i32], ptr @g_arr, i64 0, i64 2), align 8
@@ -6123,388 +6169,427 @@ define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
   store i32 5, ptr getelementptr inbounds ([8 x i32], ptr @g_arr, i64 0, i64 5), align 4
   store i32 6, ptr getelementptr inbounds ([8 x i32], ptr @g_arr, i64 0, i64 6), align 8
   store i32 -7, ptr getelementptr inbounds ([8 x i32], ptr @g_arr, i64 0, i64 7), align 4
-  %243 = call i32 @_40_array_write_loop(i32 noundef 6)
-  %244 = load i32, ptr %8, align 4
-  %245 = add nsw i32 %244, %243
-  store i32 %245, ptr %8, align 4
-  %246 = load i32, ptr %7, align 4
-  %247 = icmp eq i32 %246, 9
-  br i1 %247, label %248, label %251
-
-248:                                              ; preds = %242
-  %249 = load i32, ptr %8, align 4
-  %250 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %249)
-  store i32 0, ptr %3, align 4
-  br label %484
-
-251:                                              ; preds = %242
-  call void @llvm.memcpy.p0.p0.i64(ptr align 16 %10, ptr align 16 @__const.main.pointer_data, i64 32, i1 false)
-  %252 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 0
-  %253 = call i32 @_41_pointer_loop(ptr noundef %252, i32 noundef 6)
-  %254 = load i32, ptr %8, align 4
+  %253 = call i32 @_40_array_write_loop(i32 noundef 6)
+  %254 = load i32, ptr %7, align 4
   %255 = add nsw i32 %254, %253
-  store i32 %255, ptr %8, align 4
-  %256 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 0
-  %257 = call i32 @_42_pointer_increment(ptr noundef %256, i32 noundef 6)
-  %258 = load i32, ptr %8, align 4
-  %259 = add nsw i32 %258, %257
-  store i32 %259, ptr %8, align 4
-  %260 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 0
-  %261 = call i32 @_43_pointer_write_loop(ptr noundef %260, i32 noundef 6)
-  %262 = load i32, ptr %8, align 4
-  %263 = add nsw i32 %262, %261
-  store i32 %263, ptr %8, align 4
-  %264 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 0
-  %265 = call i32 @_44_pointer_array_loop(ptr noundef %264, i32 noundef 6)
-  %266 = load i32, ptr %8, align 4
-  %267 = add nsw i32 %266, %265
-  store i32 %267, ptr %8, align 4
-  %268 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 0
-  %269 = call i32 @_45_pointer_nested_loop(ptr noundef %268, i32 noundef 4)
-  %270 = load i32, ptr %8, align 4
-  %271 = add nsw i32 %270, %269
-  store i32 %271, ptr %8, align 4
-  %272 = load i32, ptr %7, align 4
-  %273 = icmp eq i32 %272, 10
-  br i1 %273, label %274, label %277
+  store i32 %255, ptr %7, align 4
+  br label %256
 
-274:                                              ; preds = %251
-  %275 = load i32, ptr %8, align 4
-  %276 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %275)
-  store i32 0, ptr %3, align 4
-  br label %484
+256:                                              ; preds = %252
+  %257 = load i32, ptr %6, align 4
+  %258 = icmp eq i32 %257, 9
+  br i1 %258, label %259, label %262
 
-277:                                              ; preds = %251
+259:                                              ; preds = %256
+  %260 = load i32, ptr %7, align 4
+  %261 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %260)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+262:                                              ; preds = %256
+  call void @llvm.memcpy.p0.p0.i64(ptr align 16 %9, ptr align 16 @__const.main.pointer_data, i64 32, i1 false)
+  %263 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 0
+  %264 = call i32 @_41_pointer_loop(ptr noundef %263, i32 noundef 6)
+  %265 = load i32, ptr %7, align 4
+  %266 = add nsw i32 %265, %264
+  store i32 %266, ptr %7, align 4
+  %267 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 0
+  %268 = call i32 @_42_pointer_increment(ptr noundef %267, i32 noundef 6)
+  %269 = load i32, ptr %7, align 4
+  %270 = add nsw i32 %269, %268
+  store i32 %270, ptr %7, align 4
+  %271 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 0
+  %272 = call i32 @_43_pointer_write_loop(ptr noundef %271, i32 noundef 6)
+  %273 = load i32, ptr %7, align 4
+  %274 = add nsw i32 %273, %272
+  store i32 %274, ptr %7, align 4
+  %275 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 0
+  %276 = call i32 @_44_pointer_array_loop(ptr noundef %275, i32 noundef 6)
+  %277 = load i32, ptr %7, align 4
+  %278 = add nsw i32 %277, %276
+  store i32 %278, ptr %7, align 4
+  %279 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 0
+  %280 = call i32 @_45_pointer_nested_loop(ptr noundef %279, i32 noundef 4)
+  %281 = load i32, ptr %7, align 4
+  %282 = add nsw i32 %281, %280
+  store i32 %282, ptr %7, align 4
+  br label %283
+
+283:                                              ; preds = %262
+  %284 = load i32, ptr %6, align 4
+  %285 = icmp eq i32 %284, 10
+  br i1 %285, label %286, label %289
+
+286:                                              ; preds = %283
+  %287 = load i32, ptr %7, align 4
+  %288 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %287)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+289:                                              ; preds = %283
   store i32 0, ptr @g_x, align 4
   store i32 -3, ptr @g_y, align 4
   store i32 7, ptr @g_z, align 4
-  %278 = call i32 @_46_global_for()
-  %279 = load i32, ptr %8, align 4
-  %280 = add nsw i32 %279, %278
-  store i32 %280, ptr %8, align 4
-  %281 = call i32 @_47_global_while()
-  %282 = load i32, ptr %8, align 4
-  %283 = add nsw i32 %282, %281
-  store i32 %283, ptr %8, align 4
-  %284 = call i32 @_48_global_array_loop()
-  %285 = load i32, ptr %8, align 4
-  %286 = add nsw i32 %285, %284
-  store i32 %286, ptr %8, align 4
-  %287 = call i32 @_49_global_matrix_loop()
-  %288 = load i32, ptr %8, align 4
-  %289 = add nsw i32 %288, %287
-  store i32 %289, ptr %8, align 4
-  %290 = load i32, ptr %9, align 4
-  store i32 %290, ptr @g_x, align 4
+  %290 = call i32 @_46_global_for()
+  %291 = load i32, ptr %7, align 4
+  %292 = add nsw i32 %291, %290
+  store i32 %292, ptr %7, align 4
+  %293 = call i32 @_47_global_while()
+  %294 = load i32, ptr %7, align 4
+  %295 = add nsw i32 %294, %293
+  store i32 %295, ptr %7, align 4
+  %296 = call i32 @_48_global_array_loop()
+  %297 = load i32, ptr %7, align 4
+  %298 = add nsw i32 %297, %296
+  store i32 %298, ptr %7, align 4
+  %299 = call i32 @_49_global_matrix_loop()
+  %300 = load i32, ptr %7, align 4
+  %301 = add nsw i32 %300, %299
+  store i32 %301, ptr %7, align 4
+  %302 = load i32, ptr %8, align 4
+  store i32 %302, ptr @g_x, align 4
   store i32 0, ptr @g_y, align 4
   store i32 7, ptr @g_z, align 4
-  %291 = call i32 @_50_global_state_loop()
-  %292 = load i32, ptr %8, align 4
-  %293 = add nsw i32 %292, %291
-  store i32 %293, ptr %8, align 4
+  %303 = call i32 @_50_global_state_loop()
+  %304 = load i32, ptr %7, align 4
+  %305 = add nsw i32 %304, %303
+  store i32 %305, ptr %7, align 4
   store i32 0, ptr @g_x, align 4
   store i32 0, ptr @g_y, align 4
   store i32 7, ptr @g_z, align 4
-  %294 = call i32 @_51_global_nested()
-  %295 = load i32, ptr %8, align 4
-  %296 = add nsw i32 %295, %294
-  store i32 %296, ptr %8, align 4
-  %297 = load i32, ptr %7, align 4
-  %298 = icmp eq i32 %297, 11
-  br i1 %298, label %299, label %302
+  %306 = call i32 @_51_global_nested()
+  %307 = load i32, ptr %7, align 4
+  %308 = add nsw i32 %307, %306
+  store i32 %308, ptr %7, align 4
+  br label %309
 
-299:                                              ; preds = %277
-  %300 = load i32, ptr %8, align 4
-  %301 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %300)
-  store i32 0, ptr %3, align 4
-  br label %484
+309:                                              ; preds = %289
+  %310 = load i32, ptr %6, align 4
+  %311 = icmp eq i32 %310, 11
+  br i1 %311, label %312, label %315
 
-302:                                              ; preds = %277
-  %303 = load i32, ptr %9, align 4
-  %304 = call i32 @_52_loop_carried_value(i32 noundef %303)
-  %305 = load i32, ptr %8, align 4
-  %306 = add nsw i32 %305, %304
-  store i32 %306, ptr %8, align 4
-  %307 = load i32, ptr %9, align 4
-  %308 = call i32 @_53_multiple_loop_carried(i32 noundef %307)
-  %309 = load i32, ptr %8, align 4
-  %310 = add nsw i32 %309, %308
-  store i32 %310, ptr %8, align 4
-  %311 = load i32, ptr %9, align 4
-  %312 = call i32 @_54_nested_loop_carried(i32 noundef %311)
-  %313 = load i32, ptr %8, align 4
-  %314 = add nsw i32 %313, %312
-  store i32 %314, ptr %8, align 4
-  %315 = load i32, ptr %9, align 4
-  %316 = call i32 @_55_value_after_loop(i32 noundef %315)
-  %317 = load i32, ptr %8, align 4
-  %318 = add nsw i32 %317, %316
-  store i32 %318, ptr %8, align 4
-  %319 = load i32, ptr %7, align 4
-  %320 = icmp eq i32 %319, 12
-  br i1 %320, label %321, label %324
+312:                                              ; preds = %309
+  %313 = load i32, ptr %7, align 4
+  %314 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %313)
+  store i32 0, ptr %2, align 4
+  br label %507
 
-321:                                              ; preds = %302
-  %322 = load i32, ptr %8, align 4
-  %323 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %322)
-  store i32 0, ptr %3, align 4
-  br label %484
+315:                                              ; preds = %309
+  %316 = load i32, ptr %8, align 4
+  %317 = call i32 @_52_loop_carried_value(i32 noundef %316)
+  %318 = load i32, ptr %7, align 4
+  %319 = add nsw i32 %318, %317
+  store i32 %319, ptr %7, align 4
+  %320 = load i32, ptr %8, align 4
+  %321 = call i32 @_53_multiple_loop_carried(i32 noundef %320)
+  %322 = load i32, ptr %7, align 4
+  %323 = add nsw i32 %322, %321
+  store i32 %323, ptr %7, align 4
+  %324 = load i32, ptr %8, align 4
+  %325 = call i32 @_54_nested_loop_carried(i32 noundef %324)
+  %326 = load i32, ptr %7, align 4
+  %327 = add nsw i32 %326, %325
+  store i32 %327, ptr %7, align 4
+  %328 = load i32, ptr %8, align 4
+  %329 = call i32 @_55_value_after_loop(i32 noundef %328)
+  %330 = load i32, ptr %7, align 4
+  %331 = add nsw i32 %330, %329
+  store i32 %331, ptr %7, align 4
+  br label %332
 
-324:                                              ; preds = %302
-  %325 = load i32, ptr %9, align 4
-  %326 = call i32 @_56_prefix_loop(i32 noundef %325, i32 noundef 2, i32 noundef 4)
-  %327 = load i32, ptr %8, align 4
-  %328 = add nsw i32 %327, %326
-  store i32 %328, ptr %8, align 4
-  %329 = load i32, ptr %9, align 4
-  %330 = call i32 @_57_suffix_loop(i32 noundef %329)
-  %331 = load i32, ptr %8, align 4
-  %332 = add nsw i32 %331, %330
-  store i32 %332, ptr %8, align 4
-  %333 = load i32, ptr %9, align 4
-  %334 = call i32 @_58_prefix_nested_suffix(i32 noundef %333, i32 noundef 4)
-  %335 = load i32, ptr %8, align 4
-  %336 = add nsw i32 %335, %334
-  store i32 %336, ptr %8, align 4
-  %337 = load i32, ptr %7, align 4
-  %338 = icmp eq i32 %337, 13
-  br i1 %338, label %339, label %342
+332:                                              ; preds = %315
+  %333 = load i32, ptr %6, align 4
+  %334 = icmp eq i32 %333, 12
+  br i1 %334, label %335, label %338
 
-339:                                              ; preds = %324
-  %340 = load i32, ptr %8, align 4
-  %341 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %340)
-  store i32 0, ptr %3, align 4
-  br label %484
+335:                                              ; preds = %332
+  %336 = load i32, ptr %7, align 4
+  %337 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %336)
+  store i32 0, ptr %2, align 4
+  br label %507
 
-342:                                              ; preds = %324
-  %343 = load i32, ptr %9, align 4
-  %344 = call i32 @_59_ternary_loop_limit(i32 noundef %343, i32 noundef 5)
-  %345 = load i32, ptr %8, align 4
+338:                                              ; preds = %332
+  %339 = load i32, ptr %8, align 4
+  %340 = call i32 @_56_prefix_loop(i32 noundef %339, i32 noundef 2, i32 noundef 4)
+  %341 = load i32, ptr %7, align 4
+  %342 = add nsw i32 %341, %340
+  store i32 %342, ptr %7, align 4
+  %343 = load i32, ptr %8, align 4
+  %344 = call i32 @_57_suffix_loop(i32 noundef %343)
+  %345 = load i32, ptr %7, align 4
   %346 = add nsw i32 %345, %344
-  store i32 %346, ptr %8, align 4
-  %347 = call i32 @_60_ternary_loop_update(i32 noundef 6)
-  %348 = load i32, ptr %8, align 4
-  %349 = add nsw i32 %348, %347
-  store i32 %349, ptr %8, align 4
-  %350 = call i32 @_61_nested_ternary_loops(i32 noundef 6)
-  %351 = load i32, ptr %8, align 4
-  %352 = add nsw i32 %351, %350
-  store i32 %352, ptr %8, align 4
-  %353 = load i32, ptr %7, align 4
-  %354 = icmp eq i32 %353, 14
-  br i1 %354, label %355, label %358
+  store i32 %346, ptr %7, align 4
+  %347 = load i32, ptr %8, align 4
+  %348 = call i32 @_58_prefix_nested_suffix(i32 noundef %347, i32 noundef 4)
+  %349 = load i32, ptr %7, align 4
+  %350 = add nsw i32 %349, %348
+  store i32 %350, ptr %7, align 4
+  br label %351
 
-355:                                              ; preds = %342
-  %356 = load i32, ptr %8, align 4
-  %357 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %356)
-  store i32 0, ptr %3, align 4
-  br label %484
+351:                                              ; preds = %338
+  %352 = load i32, ptr %6, align 4
+  %353 = icmp eq i32 %352, 13
+  br i1 %353, label %354, label %357
 
-358:                                              ; preds = %342
-  %359 = load i32, ptr %9, align 4
-  %360 = call i32 @_62_dynamic_alloca(i32 noundef 4, i32 noundef %359)
-  %361 = load i32, ptr %8, align 4
-  %362 = add nsw i32 %361, %360
-  store i32 %362, ptr %8, align 4
-  %363 = load i32, ptr %9, align 4
-  %364 = call i32 @_63_dynamic_alloca_pointer(i32 noundef 5, i32 noundef %363)
-  %365 = load i32, ptr %8, align 4
-  %366 = add nsw i32 %365, %364
-  store i32 %366, ptr %8, align 4
-  %367 = load i32, ptr %9, align 4
-  %368 = call i32 @_64_dynamic_alloca_nested(i32 noundef 4, i32 noundef %367)
-  %369 = load i32, ptr %8, align 4
-  %370 = add nsw i32 %369, %368
-  store i32 %370, ptr %8, align 4
-  %371 = load i32, ptr %7, align 4
-  %372 = icmp eq i32 %371, 15
-  br i1 %372, label %373, label %376
+354:                                              ; preds = %351
+  %355 = load i32, ptr %7, align 4
+  %356 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %355)
+  store i32 0, ptr %2, align 4
+  br label %507
 
-373:                                              ; preds = %358
-  %374 = load i32, ptr %8, align 4
-  %375 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %374)
-  store i32 0, ptr %3, align 4
-  br label %484
+357:                                              ; preds = %351
+  %358 = load i32, ptr %8, align 4
+  %359 = call i32 @_59_ternary_loop_limit(i32 noundef %358, i32 noundef 5)
+  %360 = load i32, ptr %7, align 4
+  %361 = add nsw i32 %360, %359
+  store i32 %361, ptr %7, align 4
+  %362 = call i32 @_60_ternary_loop_update(i32 noundef 6)
+  %363 = load i32, ptr %7, align 4
+  %364 = add nsw i32 %363, %362
+  store i32 %364, ptr %7, align 4
+  %365 = call i32 @_61_nested_ternary_loops(i32 noundef 6)
+  %366 = load i32, ptr %7, align 4
+  %367 = add nsw i32 %366, %365
+  store i32 %367, ptr %7, align 4
+  br label %368
 
-376:                                              ; preds = %358
-  %377 = load i32, ptr %9, align 4
-  %378 = call i32 @_65_malloc_loop(i32 noundef 4, i32 noundef %377)
+368:                                              ; preds = %357
+  %369 = load i32, ptr %6, align 4
+  %370 = icmp eq i32 %369, 14
+  br i1 %370, label %371, label %374
+
+371:                                              ; preds = %368
+  %372 = load i32, ptr %7, align 4
+  %373 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %372)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+374:                                              ; preds = %368
+  %375 = load i32, ptr %8, align 4
+  %376 = call i32 @_62_dynamic_alloca(i32 noundef 4, i32 noundef %375)
+  %377 = load i32, ptr %7, align 4
+  %378 = add nsw i32 %377, %376
+  store i32 %378, ptr %7, align 4
   %379 = load i32, ptr %8, align 4
-  %380 = add nsw i32 %379, %378
-  store i32 %380, ptr %8, align 4
-  %381 = load i32, ptr %9, align 4
-  %382 = call i32 @_66_malloc_nested(i32 noundef 4, i32 noundef %381, i32 noundef 3)
+  %380 = call i32 @_63_dynamic_alloca_pointer(i32 noundef 5, i32 noundef %379)
+  %381 = load i32, ptr %7, align 4
+  %382 = add nsw i32 %381, %380
+  store i32 %382, ptr %7, align 4
   %383 = load i32, ptr %8, align 4
-  %384 = add nsw i32 %383, %382
-  store i32 %384, ptr %8, align 4
+  %384 = call i32 @_64_dynamic_alloca_nested(i32 noundef 4, i32 noundef %383)
   %385 = load i32, ptr %7, align 4
-  %386 = icmp eq i32 %385, 16
-  br i1 %386, label %387, label %390
+  %386 = add nsw i32 %385, %384
+  store i32 %386, ptr %7, align 4
+  br label %387
 
-387:                                              ; preds = %376
-  %388 = load i32, ptr %8, align 4
-  %389 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %388)
-  store i32 0, ptr %3, align 4
-  br label %484
+387:                                              ; preds = %374
+  %388 = load i32, ptr %6, align 4
+  %389 = icmp eq i32 %388, 15
+  br i1 %389, label %390, label %393
 
-390:                                              ; preds = %376
+390:                                              ; preds = %387
+  %391 = load i32, ptr %7, align 4
+  %392 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %391)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+393:                                              ; preds = %387
+  %394 = load i32, ptr %8, align 4
+  %395 = call i32 @_65_malloc_loop(i32 noundef 4, i32 noundef %394)
+  %396 = load i32, ptr %7, align 4
+  %397 = add nsw i32 %396, %395
+  store i32 %397, ptr %7, align 4
+  %398 = load i32, ptr %8, align 4
+  %399 = call i32 @_66_malloc_nested(i32 noundef 4, i32 noundef %398, i32 noundef 3)
+  %400 = load i32, ptr %7, align 4
+  %401 = add nsw i32 %400, %399
+  store i32 %401, ptr %7, align 4
+  br label %402
+
+402:                                              ; preds = %393
+  %403 = load i32, ptr %6, align 4
+  %404 = icmp eq i32 %403, 16
+  br i1 %404, label %405, label %408
+
+405:                                              ; preds = %402
+  %406 = load i32, ptr %7, align 4
+  %407 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %406)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+408:                                              ; preds = %402
   store i32 0, ptr @g_void_result, align 4
-  %391 = load i32, ptr %9, align 4
-  call void @_67_void_for(i32 noundef %391)
-  %392 = load i32, ptr %9, align 4
-  call void @_68_void_while(i32 noundef %392)
-  %393 = load i32, ptr %9, align 4
-  call void @_69_void_dowhile(i32 noundef %393)
-  %394 = load i32, ptr %9, align 4
-  call void @_70_void_nested(i32 noundef %394)
-  %395 = load i32, ptr %9, align 4
-  call void @_71_void_continue(i32 noundef %395)
+  %409 = load i32, ptr %8, align 4
+  call void @_67_void_for(i32 noundef %409)
+  %410 = load i32, ptr %8, align 4
+  call void @_68_void_while(i32 noundef %410)
+  %411 = load i32, ptr %8, align 4
+  call void @_69_void_dowhile(i32 noundef %411)
+  %412 = load i32, ptr %8, align 4
+  call void @_70_void_nested(i32 noundef %412)
+  %413 = load i32, ptr %8, align 4
+  call void @_71_void_continue(i32 noundef %413)
   store i32 0, ptr @g_x, align 4
   store i32 0, ptr @g_y, align 4
   store i32 7, ptr @g_z, align 4
   call void @_72_void_global_only()
-  %396 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 0
-  call void @_73_void_pointer(ptr noundef %396, i32 noundef 6)
+  %414 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 0
+  call void @_73_void_pointer(ptr noundef %414, i32 noundef 6)
   call void @_74_void_array(i32 noundef 6)
-  %397 = load i32, ptr @g_void_result, align 4
-  %398 = load i32, ptr %8, align 4
-  %399 = add nsw i32 %398, %397
-  store i32 %399, ptr %8, align 4
-  %400 = load i32, ptr %7, align 4
-  %401 = icmp eq i32 %400, 17
-  br i1 %401, label %402, label %405
-
-402:                                              ; preds = %390
-  %403 = load i32, ptr %8, align 4
-  %404 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %403)
-  store i32 0, ptr %3, align 4
-  br label %484
-
-405:                                              ; preds = %390
-  %406 = load i32, ptr %9, align 4
-  %407 = call i32 @_75_loop_return_paths(i32 noundef %406)
-  %408 = load i32, ptr %8, align 4
-  %409 = add nsw i32 %408, %407
-  store i32 %409, ptr %8, align 4
-  %410 = load i32, ptr %9, align 4
-  %411 = call i32 @_76_nested_return_paths(i32 noundef %410)
-  %412 = load i32, ptr %8, align 4
-  %413 = add nsw i32 %412, %411
-  store i32 %413, ptr %8, align 4
-  %414 = load i32, ptr %9, align 4
-  %415 = call i32 @_77_loop_final_returns(i32 noundef %414)
-  %416 = load i32, ptr %8, align 4
+  %415 = load i32, ptr @g_void_result, align 4
+  %416 = load i32, ptr %7, align 4
   %417 = add nsw i32 %416, %415
-  store i32 %417, ptr %8, align 4
-  %418 = load i32, ptr %7, align 4
-  %419 = icmp eq i32 %418, 18
-  br i1 %419, label %420, label %423
+  store i32 %417, ptr %7, align 4
+  br label %418
 
-420:                                              ; preds = %405
-  %421 = load i32, ptr %8, align 4
-  %422 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %421)
-  store i32 0, ptr %3, align 4
-  br label %484
+418:                                              ; preds = %408
+  %419 = load i32, ptr %6, align 4
+  %420 = icmp eq i32 %419, 17
+  br i1 %420, label %421, label %424
 
-423:                                              ; preds = %405
-  %424 = load i32, ptr %9, align 4
-  %425 = call i32 @_78_state_machine_loop(i32 noundef %424)
-  %426 = load i32, ptr %8, align 4
-  %427 = add nsw i32 %426, %425
-  store i32 %427, ptr %8, align 4
-  %428 = load i32, ptr %9, align 4
-  %429 = call i32 @_79_multiple_backedge_values(i32 noundef %428)
-  %430 = load i32, ptr %8, align 4
-  %431 = add nsw i32 %430, %429
-  store i32 %431, ptr %8, align 4
-  %432 = load i32, ptr %9, align 4
-  %433 = call i32 @_80_nested_state(i32 noundef %432)
-  %434 = load i32, ptr %8, align 4
-  %435 = add nsw i32 %434, %433
-  store i32 %435, ptr %8, align 4
-  %436 = load i32, ptr %7, align 4
-  %437 = icmp eq i32 %436, 19
-  br i1 %437, label %438, label %441
+421:                                              ; preds = %418
+  %422 = load i32, ptr %7, align 4
+  %423 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %422)
+  store i32 0, ptr %2, align 4
+  br label %507
 
-438:                                              ; preds = %423
-  %439 = load i32, ptr %8, align 4
-  %440 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %439)
-  store i32 0, ptr %3, align 4
-  br label %484
+424:                                              ; preds = %418
+  %425 = load i32, ptr %8, align 4
+  %426 = call i32 @_75_loop_return_paths(i32 noundef %425)
+  %427 = load i32, ptr %7, align 4
+  %428 = add nsw i32 %427, %426
+  store i32 %428, ptr %7, align 4
+  %429 = load i32, ptr %8, align 4
+  %430 = call i32 @_76_nested_return_paths(i32 noundef %429)
+  %431 = load i32, ptr %7, align 4
+  %432 = add nsw i32 %431, %430
+  store i32 %432, ptr %7, align 4
+  %433 = load i32, ptr %8, align 4
+  %434 = call i32 @_77_loop_final_returns(i32 noundef %433)
+  %435 = load i32, ptr %7, align 4
+  %436 = add nsw i32 %435, %434
+  store i32 %436, ptr %7, align 4
+  br label %437
 
-441:                                              ; preds = %423
-  %442 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 0
-  store i32 1, ptr %442, align 16
-  %443 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 1
-  store i32 2, ptr %443, align 4
-  %444 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 2
-  store i32 3, ptr %444, align 8
-  %445 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 3
-  store i32 4, ptr %445, align 4
-  %446 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 4
-  store i32 5, ptr %446, align 16
-  %447 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 5
-  store i32 6, ptr %447, align 4
-  %448 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 6
-  store i32 7, ptr %448, align 8
-  %449 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 7
-  store i32 8, ptr %449, align 4
-  %450 = getelementptr inbounds [8 x i32], ptr %10, i64 0, i64 0
-  %451 = call i32 @_81_array_pointer_nested(ptr noundef %450, i32 noundef 5)
+437:                                              ; preds = %424
+  %438 = load i32, ptr %6, align 4
+  %439 = icmp eq i32 %438, 18
+  br i1 %439, label %440, label %443
+
+440:                                              ; preds = %437
+  %441 = load i32, ptr %7, align 4
+  %442 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %441)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+443:                                              ; preds = %437
+  %444 = load i32, ptr %8, align 4
+  %445 = call i32 @_78_state_machine_loop(i32 noundef %444)
+  %446 = load i32, ptr %7, align 4
+  %447 = add nsw i32 %446, %445
+  store i32 %447, ptr %7, align 4
+  %448 = load i32, ptr %8, align 4
+  %449 = call i32 @_79_multiple_backedge_values(i32 noundef %448)
+  %450 = load i32, ptr %7, align 4
+  %451 = add nsw i32 %450, %449
+  store i32 %451, ptr %7, align 4
   %452 = load i32, ptr %8, align 4
-  %453 = add nsw i32 %452, %451
-  store i32 %453, ptr %8, align 4
-  %454 = call i32 @_82_matrix_state(i32 noundef 3)
-  %455 = load i32, ptr %8, align 4
-  %456 = add nsw i32 %455, %454
-  store i32 %456, ptr %8, align 4
-  %457 = load i32, ptr %7, align 4
-  %458 = icmp eq i32 %457, 20
+  %453 = call i32 @_80_nested_state(i32 noundef %452)
+  %454 = load i32, ptr %7, align 4
+  %455 = add nsw i32 %454, %453
+  store i32 %455, ptr %7, align 4
+  br label %456
+
+456:                                              ; preds = %443
+  %457 = load i32, ptr %6, align 4
+  %458 = icmp eq i32 %457, 19
   br i1 %458, label %459, label %462
 
-459:                                              ; preds = %441
-  %460 = load i32, ptr %8, align 4
+459:                                              ; preds = %456
+  %460 = load i32, ptr %7, align 4
   %461 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %460)
-  store i32 0, ptr %3, align 4
-  br label %484
+  store i32 0, ptr %2, align 4
+  br label %507
 
-462:                                              ; preds = %441
-  %463 = load i32, ptr %9, align 4
-  store i32 %463, ptr %11, align 4
-  %464 = load i32, ptr %9, align 4
-  %465 = call i32 @_83_complex_loop_control(ptr noundef %11, i32 noundef 5, i32 noundef %464, i32 noundef 3)
-  %466 = load i32, ptr %8, align 4
-  %467 = add nsw i32 %466, %465
-  store i32 %467, ptr %8, align 4
-  %468 = load i32, ptr %9, align 4
-  %469 = call i32 @_84_complex_loop_state(ptr noundef %11, i32 noundef 6, i32 noundef %468, i32 noundef 3, i32 noundef 5)
-  %470 = load i32, ptr %8, align 4
-  %471 = add nsw i32 %470, %469
-  store i32 %471, ptr %8, align 4
-  %472 = load i32, ptr %9, align 4
-  %473 = call i32 @_85_loop_stress(ptr noundef %11, i32 noundef 6, i32 noundef %472, i32 noundef 3, i32 noundef 5)
-  %474 = load i32, ptr %8, align 4
-  %475 = add nsw i32 %474, %473
-  store i32 %475, ptr %8, align 4
+462:                                              ; preds = %456
+  %463 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 0
+  store i32 1, ptr %463, align 16
+  %464 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 1
+  store i32 2, ptr %464, align 4
+  %465 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 2
+  store i32 3, ptr %465, align 8
+  %466 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 3
+  store i32 4, ptr %466, align 4
+  %467 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 4
+  store i32 5, ptr %467, align 16
+  %468 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 5
+  store i32 6, ptr %468, align 4
+  %469 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 6
+  store i32 7, ptr %469, align 8
+  %470 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 7
+  store i32 8, ptr %470, align 4
+  %471 = getelementptr inbounds [8 x i32], ptr %9, i64 0, i64 0
+  %472 = call i32 @_81_array_pointer_nested(ptr noundef %471, i32 noundef 5)
+  %473 = load i32, ptr %7, align 4
+  %474 = add nsw i32 %473, %472
+  store i32 %474, ptr %7, align 4
+  %475 = call i32 @_82_matrix_state(i32 noundef 3)
   %476 = load i32, ptr %7, align 4
-  %477 = icmp eq i32 %476, 21
-  br i1 %477, label %478, label %481
+  %477 = add nsw i32 %476, %475
+  store i32 %477, ptr %7, align 4
+  br label %478
 
 478:                                              ; preds = %462
-  %479 = load i32, ptr %8, align 4
-  %480 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %479)
-  store i32 0, ptr %3, align 4
-  br label %484
+  %479 = load i32, ptr %6, align 4
+  %480 = icmp eq i32 %479, 20
+  br i1 %480, label %481, label %484
 
-481:                                              ; preds = %462
-  %482 = load i32, ptr %8, align 4
+481:                                              ; preds = %478
+  %482 = load i32, ptr %7, align 4
   %483 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %482)
-  store i32 0, ptr %3, align 4
-  br label %484
+  store i32 0, ptr %2, align 4
+  br label %507
 
-484:                                              ; preds = %481, %478, %459, %438, %420, %402, %387, %373, %355, %339, %321, %299, %274, %248, %239, %221, %197, %182, %160, %142, %121, %99, %71
-  %485 = load i32, ptr %3, align 4
-  ret i32 %485
+484:                                              ; preds = %478
+  %485 = load i32, ptr %8, align 4
+  store i32 %485, ptr %10, align 4
+  %486 = load i32, ptr %8, align 4
+  %487 = call i32 @_83_complex_loop_control(ptr noundef %10, i32 noundef 5, i32 noundef %486, i32 noundef 3)
+  %488 = load i32, ptr %7, align 4
+  %489 = add nsw i32 %488, %487
+  store i32 %489, ptr %7, align 4
+  %490 = load i32, ptr %8, align 4
+  %491 = call i32 @_84_complex_loop_state(ptr noundef %10, i32 noundef 6, i32 noundef %490, i32 noundef 3, i32 noundef 5)
+  %492 = load i32, ptr %7, align 4
+  %493 = add nsw i32 %492, %491
+  store i32 %493, ptr %7, align 4
+  %494 = load i32, ptr %8, align 4
+  %495 = call i32 @_85_loop_stress(ptr noundef %10, i32 noundef 6, i32 noundef %494, i32 noundef 3, i32 noundef 5)
+  %496 = load i32, ptr %7, align 4
+  %497 = add nsw i32 %496, %495
+  store i32 %497, ptr %7, align 4
+  br label %498
+
+498:                                              ; preds = %484
+  %499 = load i32, ptr %6, align 4
+  %500 = icmp eq i32 %499, 21
+  br i1 %500, label %501, label %504
+
+501:                                              ; preds = %498
+  %502 = load i32, ptr %7, align 4
+  %503 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %502)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+504:                                              ; preds = %498
+  %505 = load i32, ptr %7, align 4
+  %506 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %505)
+  store i32 0, ptr %2, align 4
+  br label %507
+
+507:                                              ; preds = %504, %501, %481, %459, %440, %421, %405, %390, %371, %354, %335, %312, %286, %259, %249, %230, %205, %189, %166, %147, %125, %102, %73
+  %508 = load i32, ptr %2, align 4
+  ret i32 %508
 }
 
 ; Function Attrs: nounwind willreturn memory(read)

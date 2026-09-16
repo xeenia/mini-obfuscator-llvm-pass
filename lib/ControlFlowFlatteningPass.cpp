@@ -233,7 +233,6 @@ static SmallVector<AllocaInst *, 16> demoteFunction(Function& F) {
 
     for (BasicBlock &UserBB : F) {
         for (Instruction &User : UserBB) {
-            // Skip PHIs.
             if (isa<PHINode>(User))
                 continue;
 
@@ -253,7 +252,6 @@ static SmallVector<AllocaInst *, 16> demoteFunction(Function& F) {
                 if (AI && AI->isStaticAlloca() && DefBB == &F.getEntryBlock())
                     continue;
 
-                // Store the actual SSA value/definition.
                 ValuesToDemote.insert(Def);
             }
         }
@@ -283,7 +281,6 @@ static bool promoteFunction(DominatorTree &DT, AssumptionCache &AC, ArrayRef<All
 }
 
 static void splitCodeBlockfromCondition(BasicBlock *BB, Instruction *I, SmallPtrSetImpl<Instruction*> &slice){ 
-    //zigzag logic
     if (!I || I->getParent() != BB)
         return;
     if (!slice.insert(I).second)
@@ -373,15 +370,16 @@ static void createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock*, 20> 
             BasicBlock *trueTarget  = BI->getSuccessor(0);
             BasicBlock *falseTarget = BI->getSuccessor(1);
 
+            /* OLD VERSION -> if( cond ) b=X; else b=Y;
             //creating also the new BBs to replace later as successors
             BasicBlock *trueBB = BasicBlock::Create(Ctx, "true", &F);
             BasicBlock *falseBB = BasicBlock::Create(Ctx, "false", &F);
             BasicBlock *breakConBB = BasicBlock::Create(Ctx, "break_con", &F);
-            
+
             IRBuilder<> trueBuilder(trueBB);
             IRBuilder<> falseBuilder(falseBB);
             IRBuilder<> breakConBuilder(breakConBB);
-        
+
             int trueB  = findIndex(trueTarget);
             int falseB = findIndex(falseTarget);
             if (trueB == -1 || falseB == -1) report_fatal_error("Target block not in flatten set.");
@@ -397,6 +395,19 @@ static void createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock*, 20> 
             BI->setSuccessor(0,trueBB);
             BI->setSuccessor(1,falseBB);
             BI->dropUnknownNonDebugMetadata();
+            */
+            int trueB  = findIndex(trueTarget);
+            int falseB = findIndex(falseTarget);
+            if (trueB == -1 || falseB == -1) report_fatal_error("Target block not in flatten set.");
+            Value *selectI = builder.CreateSelect(BI->getCondition(), builder.getInt32(trueB), builder.getInt32(falseB));
+            builder.CreateStore(selectI, allocaIns);
+
+            IRBuilder<> Builder(BI);
+            Builder.CreateBr(breakBB);
+
+            BI->eraseFromParent();
+
+
         }
     }
 
