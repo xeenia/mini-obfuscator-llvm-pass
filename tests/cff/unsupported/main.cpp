@@ -6,59 +6,6 @@ int g_void_result = 0;
 int g_x = 10;
 int g_y = -3;
 
-/* ================================================================== */
-/* 1. SWITCH                                                          */
-/* ================================================================== */
-
-/* 0: basic switch */
-int _0_switch_simple(int x)
-{
-    int result = 0;
-
-    switch (x) {
-        case 1:  result = 10;  break;
-        case 2:  result = 20;  break;
-        case 3:  result = 30;  break;
-        default: result = -1;  break;
-    }
-
-    return result;
-}
-
-/* 1: switch inside if */
-int _1_switch_in_if(int x, int flag)
-{
-    int result = 0;
-
-    if (flag > 0) {
-        switch (x) {
-            case 0:  result = 100; break;
-            case 1:  result = 200; break;
-            case 2:  result = 300; break;
-            default: result = 400; break;
-        }
-    } else {
-        result = -x;
-    }
-
-    return result;
-}
-
-/* 2: switch with fallthrough */
-int _2_switch_fallthrough(int x)
-{
-    int result = 0;
-
-    switch (x) {
-        case 1:
-        case 2:  result = 10;  break;
-        case 3:  result = 20;
-        case 4:  result += 5;  break;
-        default: result = -1;  break;
-    }
-
-    return result;
-}
 
 /* ================================================================== */
 /* 2. COMPUTED GOTO (indirectbr + blockaddress)                       */

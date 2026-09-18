@@ -19,8 +19,27 @@ mkdir -p "$DEST_DIR"
 # Navigate to the target directory
 cd "$SOURCE_DIR"
 
+# Collect targets: if arguments are passed, gather matching files; otherwise process all .c files
+files=()
+if [ $# -gt 0 ]; then
+    for arg in "$@"; do
+        matches=( *"$arg"*.c )
+        if [ -e "${matches[0]}" ]; then
+            files+=("${matches[@]}")
+        else
+            echo "Warning: No file matching '*$arg*.c' found."
+        fi
+    done
+    if [ ${#files[@]} -eq 0 ]; then
+        echo "Error: No matching C files found for provided argument(s)."
+        exit 1
+    fi
+else
+    files=( *.c )
+fi
+
 # Process each C file
-for file in *.c; do
+for file in "${files[@]}"; do
     # Handle case where no .c files exist
     [ -e "$file" ] || continue
 

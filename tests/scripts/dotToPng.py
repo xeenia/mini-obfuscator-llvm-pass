@@ -5,7 +5,7 @@ import sys
 
 # Define relative source and target base paths
 SOURCE_DIR = os.path.abspath(os.path.join(os.getcwd(), "..", "cff", "ir"))
-TARGET_BASE_DIR = os.path.abspath(os.path.join(os.getcwd(), "..", "cff", "supported"))
+TARGET_BASE_DIR = os.path.abspath(os.path.join(os.getcwd(), "..", "cff", "CFGs"))
 
 if not os.path.exists(SOURCE_DIR):
     sys.exit(f"Error: Source directory non-existent -> {SOURCE_DIR}")
@@ -48,7 +48,7 @@ for ll_file in ll_files:
 
     processed_count += 1
 
-    # Define target output folder: ../cff/supported/[name]_CFGs/
+    # Define target output folder: ../cff/CFGs/[name]/
     cfg_dir = os.path.join(TARGET_BASE_DIR, f"{core_name}_CFGs")
     os.makedirs(cfg_dir, exist_ok=True)
 

@@ -50,7 +50,7 @@ static cl::opt<bool> CFFNoDispatch(
 
 static cl::opt<unsigned> CFFMaxBlocks(
     "cff-max-blocks",
-    cl::init(100),
+    cl::init(0),
     cl::desc("Maximum number of original basic blocks permitted in a function to apply flattening (0 = unlimited)"),
     cl::cat(CFFCategory));
 
@@ -352,7 +352,17 @@ static void createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock*, 20> 
         if (isa<ReturnInst>(Term)) {  
             continue;  
         }
-
+        SwitchInst *SI = dyn_cast<SwitchInst>(Term);
+        if(SI){
+            for (unsigned i = 0; i < SI->getNumSuccessors(); ++i) {
+                int nextState = findIndex(SI->getSuccessor(i));
+                BasicBlock *caseBB = BasicBlock::Create(Ctx, "case", &F);
+                IRBuilder<> caseBuilder(caseBB);
+                caseBuilder.CreateStore(caseBuilder.getInt32(nextState), allocaIns);
+                caseBuilder.CreateBr(breakBB);
+                SI->setSuccessor(i, caseBB);
+            }
+        }
         auto *BI = dyn_cast<BranchInst>(Term);
         if (!BI) continue;
 
@@ -510,7 +520,8 @@ static void flattenFunction(Function& F){
 static bool isSupportedTerminator(const Instruction *I) {
     return isa<BranchInst>(I) ||
            isa<ReturnInst>(I) ||
-           isa<UnreachableInst>(I);
+           isa<UnreachableInst>(I) ||
+           isa<SwitchInst>(I);
 }
 
 
