@@ -33,7 +33,7 @@ int g_void_result = 0;
 /* ================================================================== */
 
 /* 0: bare if, no else */
-int _0_if_only(int x)
+int _00_if_only(int x)
 {
     if (x > 0)
         return x * 2;
@@ -43,7 +43,7 @@ int _0_if_only(int x)
 
 
 /* 1: if / else */
-int _1_if_else(int x)
+int _01_if_else(int x)
 {
     if (x > 0)
         return x + 10;
@@ -53,7 +53,7 @@ int _1_if_else(int x)
 
 
 /* 2: if with code before and after */
-int _2_if_with_surrounding_code(int x)
+int _02_if_with_surrounding_code(int x)
 {
     int y = x + 3;
 
@@ -66,7 +66,7 @@ int _2_if_with_surrounding_code(int x)
 
 
 /* 3: if with explicit compound blocks */
-int _3_if_compound(int x)
+int _03_if_compound(int x)
 {
     int y = x;
 
@@ -80,7 +80,7 @@ int _3_if_compound(int x)
 
 
 /* 4: if / else with compound blocks */
-int _4_if_else_compound(int x)
+int _04_if_else_compound(int x)
 {
     int y;
 
@@ -101,7 +101,7 @@ int _4_if_else_compound(int x)
 /* ================================================================== */
 
 /* 5: equality */
-int _5_if_equal(int x, int y)
+int _05_if_equal(int x, int y)
 {
     if (x == y)
         return 100;
@@ -111,7 +111,7 @@ int _5_if_equal(int x, int y)
 
 
 /* 6: inequality */
-int _6_if_not_equal(int x, int y)
+int _06_if_not_equal(int x, int y)
 {
     if (x != y)
         return x + y;
@@ -121,7 +121,7 @@ int _6_if_not_equal(int x, int y)
 
 
 /* 7: several relational operators */
-int _7_relational(int x, int y)
+int _07_relational(int x, int y)
 {
     if (x < y)
         return 1;
@@ -137,7 +137,7 @@ int _7_relational(int x, int y)
 
 
 /* 8: boolean argument */
-int _8_boolean_argument(bool cond, int x)
+int _08_boolean_argument(bool cond, int x)
 {
     if (cond)
         return x * 3;
@@ -151,7 +151,7 @@ int _8_boolean_argument(bool cond, int x)
 /* ================================================================== */
 
 /* 9: classic if / else-if / else */
-int _9_if_elseif_else(int x)
+int _09_if_elseif_else(int x)
 {
     if (x > 10)
         return x + 100;
@@ -1338,26 +1338,26 @@ int main(int argc, char **argv)
     /* Minimal IFs                                                     */
     /* -------------------------------------------------------------- */
 
-    result += _0_if_only(a);
-    result += _1_if_else(a);
-    result += _2_if_with_surrounding_code(a);
-    result += _3_if_compound(a);
-    result += _4_if_else_compound(a);
+    result += _00_if_only(a);
+    result += _01_if_else(a);
+    result += _02_if_with_surrounding_code(a);
+    result += _03_if_compound(a);
+    result += _04_if_else_compound(a);
     if (test ==  0) { printf("%d\n", result); return 0; }  /* stop after section 0 */
     /* -------------------------------------------------------------- */
     /* Simple conditions                                               */
     /* -------------------------------------------------------------- */
 
-    result += _5_if_equal(a, 4);
-    result += _6_if_not_equal(a, 4);
-    result += _7_relational(a, 4);
-    result += _8_boolean_argument(a > 0, a);
+    result += _05_if_equal(a, 4);
+    result += _06_if_not_equal(a, 4);
+    result += _07_relational(a, 4);
+    result += _08_boolean_argument(a > 0, a);
     if (test ==  1) { printf("%d\n", result); return 0; }  /* stop after section 0 */
     /* -------------------------------------------------------------- */
     /* Else-if                                                         */
     /* -------------------------------------------------------------- */
 
-    result += _9_if_elseif_else(a);
+    result += _09_if_elseif_else(a);
     result += _10_multiple_elseif(a);
     result += _11_elseif_expressions(a, 4);
     if (test ==  2) { printf("%d\n", result); return 0; }  /* stop after section 0 */

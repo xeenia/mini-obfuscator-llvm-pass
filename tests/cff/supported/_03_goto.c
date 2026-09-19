@@ -33,7 +33,7 @@ int g_void_result = 0;
 /* ================================================================== */
 
 /* 0: bare conditional goto */
-int _0_goto_only(int x)
+int _00_goto_only(int x)
 {
     int result = x;
 
@@ -48,7 +48,7 @@ positive:
 
 
 /* 1: goto with two labels */
-int _1_goto_two_labels(int x)
+int _01_goto_two_labels(int x)
 {
     if (x > 0)
         goto big;
@@ -64,7 +64,7 @@ small:
 
 
 /* 2: goto with code before and after */
-int _2_goto_surrounding_code(int x)
+int _02_goto_surrounding_code(int x)
 {
     int y = x + 3;
 
@@ -84,7 +84,7 @@ done:
 
 
 /* 3: goto over a block */
-int _3_goto_skip_block(int x)
+int _03_goto_skip_block(int x)
 {
     int y = x;
 
@@ -104,7 +104,7 @@ skip:
 /* ================================================================== */
 
 /* 4: equality */
-int _4_goto_equal(int x, int y)
+int _04_goto_equal(int x, int y)
 {
     if (x == y)
         goto eq;
@@ -117,7 +117,7 @@ eq:
 
 
 /* 5: inequality */
-int _5_goto_not_equal(int x, int y)
+int _05_goto_not_equal(int x, int y)
 {
     if (x != y)
         goto neq;
@@ -130,7 +130,7 @@ neq:
 
 
 /* 6: several relational operators */
-int _6_relational(int x, int y)
+int _06_relational(int x, int y)
 {
     if (x < y)
         goto lt;
@@ -149,7 +149,7 @@ gt:
 
 
 /* 7: boolean argument */
-int _7_boolean_argument(bool cond, int x)
+int _07_boolean_argument(bool cond, int x)
 {
     if (cond)
         goto true_case;
@@ -166,7 +166,7 @@ true_case:
 /* ================================================================== */
 
 /* 8: chain of conditional gotos */
-int _8_goto_chain(int x)
+int _08_goto_chain(int x)
 {
     if (x > 10)
         goto a;
@@ -185,7 +185,7 @@ b:
 
 
 /* 9: multiple levels */
-int _9_multiple_levels(int x)
+int _09_multiple_levels(int x)
 {
     if (x < -10)
         goto l1;
@@ -1745,20 +1745,20 @@ int main(int argc, char **argv)
     int result = 0;
 
     /* ---------------- Minimal GOTOs ---------------- */
-    result += _0_goto_only(a);
-    result += _1_goto_two_labels(a);
-    result += _2_goto_surrounding_code(a);
-    result += _3_goto_skip_block(a);
+    result += _00_goto_only(a);
+    result += _01_goto_two_labels(a);
+    result += _02_goto_surrounding_code(a);
+    result += _03_goto_skip_block(a);
 
     /* ---------------- Simple conditions ---------------- */
-    result += _4_goto_equal(a, 4);
-    result += _5_goto_not_equal(a, 4);
-    result += _6_relational(a, 4);
-    result += _7_boolean_argument(a > 0, a);
+    result += _04_goto_equal(a, 4);
+    result += _05_goto_not_equal(a, 4);
+    result += _06_relational(a, 4);
+    result += _07_boolean_argument(a > 0, a);
 
     /* ---------------- Goto chains ---------------- */
-    result += _8_goto_chain(a);
-    result += _9_multiple_levels(a);
+    result += _08_goto_chain(a);
+    result += _09_multiple_levels(a);
     result += _10_goto_expressions(a, 4);
 
     /* ---------------- Logical conditions ---------------- */

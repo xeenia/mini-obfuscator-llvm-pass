@@ -31,15 +31,17 @@ It processes functions individually, splitting basic blocks where needed and rep
 
 The pass also handles SSA dependencies that can be affected by the transformation by demoting PHI nodes and selected cross-basic-block values to stack storage. Optional promotion back to SSA is available.
 
-### Supported control flow
+### Currently supported 
 
 * Conditional and unconditional branches.
 * Return and unreachable terminators.
-* Common control-flow patterns such as `if` statements, loops, and `goto`-based flow, when represented using supported LLVM IR constructs.
+* Common control-flow patterns such as `if` statements, loops, `goto`-based flow and `switch`, when represented using supported LLVM IR constructs.
 * Basic-block splitting before dispatcher construction.
 * Configurable minimum and maximum basic-block limits.
 * Diagnostic output for cross-basic-block value dependencies and dynamic allocas.
 * Optional SSA promotion for demoted PHI nodes and cross-block values.
+* Functions outside the configured basic-block limits are skipped.
+* Case block shuffling hardening: randomizes switch case block ordering instead of keeping sequential layout.
 
 ### Limitations
 
@@ -47,8 +49,6 @@ Again, this is an experimental pass, not a production-ready obfuscator.
 
 * Functions with unsupported terminators are skipped.
 * Exception-handling blocks and block addresses are not supported.
-* Switch is also unsupported at the moment, but will be supported soon. 
-* Functions outside the configured basic-block limits are skipped.
 * Dynamic allocas remain at their original location during entry-block reconstruction. Their cross-basic-block uses may be handled by the pass’s generic demotion logic.
 * The current implementation focuses on LLVM IR generated around `-O0`; behavior with other optimization levels has not been fully established.
 * Testing covers the included programs and input cases, not every possible LLVM IR pattern.

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 /* ================================================================== */
 /* Globals                                                             */
@@ -29,7 +30,7 @@ int g_void_result = 0;
 /* 0-74: full IF corpus (same as the IF-only suite)                    */
 /* ================================================================== */
 
-int _0_if_only(int x)
+int _00_if_only(int x)
 {
     if (x > 0)
         return x * 2;
@@ -37,7 +38,7 @@ int _0_if_only(int x)
     return x;
 }
 
-int _1_if_else(int x)
+int _01_if_else(int x)
 {
     if (x > 0)
         return x + 10;
@@ -45,7 +46,7 @@ int _1_if_else(int x)
         return x - 10;
 }
 
-int _2_if_with_surrounding_code(int x)
+int _02_if_with_surrounding_code(int x)
 {
     int y = x + 3;
 
@@ -56,7 +57,7 @@ int _2_if_with_surrounding_code(int x)
     return y;
 }
 
-int _3_if_compound(int x)
+int _03_if_compound(int x)
 {
     int y = x;
 
@@ -68,7 +69,7 @@ int _3_if_compound(int x)
     return y;
 }
 
-int _4_if_else_compound(int x)
+int _04_if_else_compound(int x)
 {
     int y;
 
@@ -83,7 +84,7 @@ int _4_if_else_compound(int x)
     return y;
 }
 
-int _5_if_equal(int x, int y)
+int _05_if_equal(int x, int y)
 {
     if (x == y)
         return 100;
@@ -91,7 +92,7 @@ int _5_if_equal(int x, int y)
     return 200;
 }
 
-int _6_if_not_equal(int x, int y)
+int _06_if_not_equal(int x, int y)
 {
     if (x != y)
         return x + y;
@@ -99,7 +100,7 @@ int _6_if_not_equal(int x, int y)
     return x - y;
 }
 
-int _7_relational(int x, int y)
+int _07_relational(int x, int y)
 {
     if (x < y)
         return 1;
@@ -113,7 +114,7 @@ int _7_relational(int x, int y)
     return 4;
 }
 
-int _8_boolean_argument(bool cond, int x)
+int _08_boolean_argument(bool cond, int x)
 {
     if (cond)
         return x * 3;
@@ -121,7 +122,7 @@ int _8_boolean_argument(bool cond, int x)
     return x - 3;
 }
 
-int _9_if_elseif_else(int x)
+int _09_if_elseif_else(int x)
 {
     if (x > 10)
         return x + 100;
@@ -2934,27 +2935,32 @@ final:
 
 int main(int argc, char **argv)
 {
-    int a = (argc > 1) ? atoi(argv[1]) : 4;
+    int show_blocks = 1;
+    int a =4;
+    //int a = (argc > 1) ? atoi(argv[1]) : 4;
 
     int result = 0;
-
+    if (show_blocks) printf("Begin\n");
     /* ---------------- Minimal IFs ---------------- */
-    result += _0_if_only(a);
-    result += _1_if_else(a);
-    result += _2_if_with_surrounding_code(a);
-    result += _3_if_compound(a);
-    result += _4_if_else_compound(a);
+    result += _00_if_only(a);
+    result += _01_if_else(a);
+    result += _02_if_with_surrounding_code(a);
+    result += _03_if_compound(a);
+    result += _04_if_else_compound(a);
+    if (show_blocks) printf("Minimal IFs\n");
 
     /* ---------------- Simple conditions ---------------- */
-    result += _5_if_equal(a, 4);
-    result += _6_if_not_equal(a, 4);
-    result += _7_relational(a, 4);
-    result += _8_boolean_argument(a > 0, a);
+    result += _05_if_equal(a, 4);
+    result += _06_if_not_equal(a, 4);
+    result += _07_relational(a, 4);
+    result += _08_boolean_argument(a > 0, a);
+    if (show_blocks) printf("Simple conditions\n");
 
     /* ---------------- Else-if ---------------- */
-    result += _9_if_elseif_else(a);
+    result += _09_if_elseif_else(a);
     result += _10_multiple_elseif(a);
     result += _11_elseif_expressions(a, 4);
+    if (show_blocks) printf("Else-if\n");
 
     /* ---------------- Logical conditions ---------------- */
     result += _12_and(a, 3);
@@ -2962,12 +2968,14 @@ int main(int argc, char **argv)
     result += _14_and_or(a, 2, -1);
     result += _15_or_and(a, 0, 20);
     result += _16_complex_boolean(a, 3, 5, 1);
+    if (show_blocks) printf("Logical conditions\n");
 
     /* ---------------- Arithmetic-heavy conditions ---------------- */
     result += _17_nested_arithmetic_condition(a, 1, 20);
     result += _18_deep_parentheses(a, 2, 3);
     result += _19_arithmetic_boolean(a, 2, 5);
     result += _20_nested_boolean_parentheses(a, 3, 5, 7);
+    if (show_blocks) printf("Arithmetic-heavy conditions\n");
 
     /* ---------------- Nested IFs ---------------- */
     result += _21_nested_if(a, 3);
@@ -2979,10 +2987,12 @@ int main(int argc, char **argv)
     result += _26_nested_and(a, 3, 5);
     result += _27_nested_or(a, 0, 20);
     result += _28_nested_complex_boolean(a, 3, 5, 7);
+    if (show_blocks) printf("Nested IFs\n");
 
     /* ---------------- Independent IFs ---------------- */
     result += _29_independent_ifs(a);
     result += _30_independent_if_else(a, 3);
+    if (show_blocks) printf("Independent IFs\n");
 
     /* ---------------- Arrays ---------------- */
     result += _31_array_condition(1);
@@ -2990,6 +3000,7 @@ int main(int argc, char **argv)
     result += _33_array_complex_condition(1, 2);
     result += _34_matrix_condition(1, 1);
     result += _35_nested_array(1, 2);
+    if (show_blocks) printf("Arrays\n");
 
     /* ---------------- Pointers ---------------- */
     int pointer_value = a;
@@ -3004,6 +3015,7 @@ int main(int argc, char **argv)
 
     pointer_value = a;
     result += _41_pointer_write_nested(&pointer_value, a, 3);
+    if (show_blocks) printf("Pointers\n");
 
     /* ---------------- Global-only functions ---------------- */
     g_x = a;
@@ -3017,35 +3029,42 @@ int main(int argc, char **argv)
     result += _45_global_nested();
     result += _46_global_array_only();
     result += _47_global_matrix_only();
+    if (show_blocks) printf("Global-only functions\n");
 
     /* ---------------- Multiple returns ---------------- */
     result += _48_multiple_returns(a);
     result += _49_nested_multiple_returns(a, 3);
     result += _50_complex_multiple_returns(a, 3, 5);
+    if (show_blocks) printf("Multiple returns\n");
 
     /* ---------------- Prefix / suffix ---------------- */
     result += _51_prefix_code(a, 2, 3);
     result += _52_suffix_code(a, 3);
     result += _53_prefix_nested_suffix(a, 3, 5);
+    if (show_blocks) printf("Prefix / suffix\n");
 
     /* ---------------- Merged paths / PHIs ---------------- */
     result += _54_diamond(a, 3);
     result += _55_multiple_merge_values(a, 3);
     result += _56_nested_diamonds(a, 3, 5);
+    if (show_blocks) printf("Merged paths / PHIs\n");
 
     /* ---------------- Ternary + IF ---------------- */
     result += _57_ternary_before_if(a, 3);
     result += _58_ternary_inside_if(a, 3);
     result += _59_nested_ternary_if(a, 3, 5);
+    if (show_blocks) printf("Ternary + IF\n");
 
     /* ---------------- Dynamic alloca / VLA ---------------- */
     result += _60_dynamic_alloca(4, a);
     result += _61_dynamic_alloca_pointer(5, a);
     result += _62_dynamic_alloca_complex(6, a, 3);
+    if (show_blocks) printf("Dynamic alloca / VLA\n");
 
     /* ---------------- malloc ---------------- */
     result += _63_malloc_if(4, a);
     result += _64_malloc_nested_if(4, a, 3);
+    if (show_blocks) printf("malloc\n");
 
     /* ---------------- Void functions ---------------- */
     g_void_result = 0;
@@ -3061,12 +3080,14 @@ int main(int argc, char **argv)
     _71_void_array(1, a);
 
     result += g_void_result;
+    if (show_blocks) printf("Void functions\n");
 
     /* ---------------- IF stress ---------------- */
     pointer_value = a;
     result += _72_complex_control_flow(&pointer_value, 1, a, 3);
     result += _73_complex_merge(a, 3, 5);
     result += _74_if_stress(&pointer_value, 1, a, 3, 5);
+    if (show_blocks) printf("IF stress\n");
 
     /* ---------------- Loops ---------------- */
     result += _75_for_simple(4, a);
@@ -3083,12 +3104,14 @@ int main(int argc, char **argv)
     result += _86_triple_nested(2, 3, 2);
     result += _87_if_OR3(a, 3, -5);
     result += _88_if_OR3_vla(a, 3, -5);
+    if (show_blocks) printf("Loops\n");
 
     /* ---------------- Loops + VLA ---------------- */
     result += _89_loop_vla(4, a);
     result += _90_vla_nested_loop(4, a);
     result += _91_alloca_inside_loop(4, a);
     result += _92_vla_size_from_loop(5, a);
+    if (show_blocks) printf("Loops + VLA\n");
 
     /* ---------------- Globals + loops ---------------- */
     result += _93_global_loop();
@@ -3098,13 +3121,14 @@ int main(int argc, char **argv)
     pointer_value = a;
     _95_void_loop_pointer(&pointer_value, 4, a);
     result += g_void_result;
+    if (show_blocks) printf("Globals + loops\n");
 
     /* ---------------- GOTO + everything ---------------- */
     result += _96_goto_break(6, a);
     result += _97_goto_nested_loop(5, a);
     result += _98_goto_vla(4, a);
     result += _99_malloc_loop(4, a);
-
+    if (show_blocks) printf("GOTO + everything\n");
     /* ---------------- Final stress ---------------- */
     pointer_value = a;
     result += _100_stress(&pointer_value, 4, a, 3);
@@ -3112,6 +3136,7 @@ int main(int argc, char **argv)
     pointer_value = a;
     result += _101_stress_goto(&pointer_value, 4, a, 3, 5);
     result += _102_oneblock(a);
+    if (show_blocks) printf("Final stress\n");
 
     /* ---------------- Switch + combinations ---------------- */
 
@@ -3144,7 +3169,6 @@ int main(int argc, char **argv)
         4,
         a
     );
-
     result += _117_switch_ternary_loop(
         a % 4,
         4,
@@ -3234,6 +3258,7 @@ int main(int argc, char **argv)
         4,
         a
     );
+    if (show_blocks) printf("Switch + combinations\n");
 
     /* ---------------- Final switch stress ---------------- */
 
@@ -3248,6 +3273,7 @@ int main(int argc, char **argv)
         3,
         5
     );
+    if (show_blocks) printf("Final switch stress\n");
 
     /* ---------------- Output ---------------- */
     printf("%d\n", result);

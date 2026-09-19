@@ -8,7 +8,7 @@
 /* 0. Simple switch                                                   */
 /* ================================================================== */
 
-int _0_switch_simple(int x)
+int _00_switch_simple(int x)
 {
     int result = 0;
 
@@ -34,7 +34,7 @@ int _0_switch_simple(int x)
 /* 1. Switch with default                                             */
 /* ================================================================== */
 
-int _1_switch_default(int x)
+int _01_switch_default(int x)
 {
     int result = 100;
 
@@ -64,7 +64,7 @@ int _1_switch_default(int x)
 /* 2. Switch with negative values                                     */
 /* ================================================================== */
 
-int _2_switch_negative(int x)
+int _02_switch_negative(int x)
 {
     int result = 0;
 
@@ -102,7 +102,7 @@ int _2_switch_negative(int x)
 /* 3. Fallthrough                                                     */
 /* ================================================================== */
 
-int _3_switch_fallthrough(int x)
+int _03_switch_fallthrough(int x)
 {
     int result = 0;
 
@@ -131,7 +131,7 @@ int _3_switch_fallthrough(int x)
 /* 4. Intentional fallthrough with multiple statements                */
 /* ================================================================== */
 
-int _4_switch_fallthrough_steps(int x)
+int _04_switch_fallthrough_steps(int x)
 {
     int result = 0;
 
@@ -159,33 +159,22 @@ int _4_switch_fallthrough_steps(int x)
 /* 5. Code before and after switch                                    */
 /* ================================================================== */
 
-int _5_switch_before_after(int x)
+int _05_switch_before_after(int x)
 {
     int result = 5;
-
     result *= 2;
-
     switch (x) {
         case 1:
-            result += 10;
-            break;
-
+            result += 10; break;
         case 2:
-            result += 20;
-            break;
-
+            result += 20; break;
         case 3:
-            result += 30;
-            break;
-
+            result += 30; break;
         default:
-            result += 40;
-            break;
+            result += 40; break;
     }
-
     result *= 3;
     result -= 7;
-
     return result;
 }
 
@@ -194,7 +183,7 @@ int _5_switch_before_after(int x)
 /* 6. Multiple switches                                               */
 /* ================================================================== */
 
-int _6_switch_multiple(int x)
+int _06_switch_multiple(int x)
 {
     int result = 0;
 
@@ -234,7 +223,7 @@ int _6_switch_multiple(int x)
 /* 7. Two independent switches                                        */
 /* ================================================================== */
 
-int _7_switch_two_independent(int x)
+int _07_switch_two_independent(int x)
 {
     int a = 0;
     int b = 0;
@@ -279,7 +268,7 @@ int _7_switch_two_independent(int x)
 /* 8. Switch expression with arithmetic                               */
 /* ================================================================== */
 
-int _8_switch_expression(int x)
+int _08_switch_expression(int x)
 {
     int result = 0;
     int value = (x * 7 + 3) % 5;
@@ -314,7 +303,7 @@ int _8_switch_expression(int x)
 /* 9. Bitwise switch expression                                       */
 /* ================================================================== */
 
-int _9_switch_bitwise(int x)
+int _09_switch_bitwise(int x)
 {
     int result = 0;
     int key = (x ^ 0x55) & 7;
@@ -1497,16 +1486,16 @@ int main(int argc, char **argv)
 
     int result = 0;
 
-    result += _0_switch_simple(a);
-    result += _1_switch_default(a);
-    result += _2_switch_negative(a);
-    result += _3_switch_fallthrough(a);
-    result += _4_switch_fallthrough_steps(a);
-    result += _5_switch_before_after(a);
-    result += _6_switch_multiple(a);
-    result += _7_switch_two_independent(a);
-    result += _8_switch_expression(a);
-    result += _9_switch_bitwise(a);
+    result += _00_switch_simple(a);
+    result += _01_switch_default(a);
+    result += _02_switch_negative(a);
+    result += _03_switch_fallthrough(a);
+    result += _04_switch_fallthrough_steps(a);
+    result += _05_switch_before_after(a);
+    result += _06_switch_multiple(a);
+    result += _07_switch_two_independent(a);
+    result += _08_switch_expression(a);
+    result += _09_switch_bitwise(a);
     result += _10_switch_array(a);
     result += _11_switch_pointer(a);
     result += _12_switch_pointer_modify(a);

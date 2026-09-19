@@ -36,7 +36,7 @@ int g_void_result = 0;
 /* ================================================================== */
 
 /* 0: classic for */
-int _0_for_simple(int n)
+int _00_for_simple(int n)
 {
     int sum = 0;
 
@@ -48,7 +48,7 @@ int _0_for_simple(int n)
 
 
 /* 1: classic while */
-int _1_while_simple(int n)
+int _01_while_simple(int n)
 {
     int i = 0;
     int sum = 0;
@@ -63,7 +63,7 @@ int _1_while_simple(int n)
 
 
 /* 2: classic do-while */
-int _2_dowhile_simple(int n)
+int _02_dowhile_simple(int n)
 {
     int i = 0;
     int sum = 0;
@@ -78,7 +78,7 @@ int _2_dowhile_simple(int n)
 
 
 /* 3: for with empty body */
-int _3_for_empty_body(int n)
+int _03_for_empty_body(int n)
 {
     int i;
 
@@ -90,7 +90,7 @@ int _3_for_empty_body(int n)
 
 
 /* 4: loop with a constant condition and break */
-int _4_while_true_break(int n)
+int _04_while_true_break(int n)
 {
     int i = 0;
     int sum = 0;
@@ -116,7 +116,7 @@ int _4_while_true_break(int n)
  */
 
 /* 5: for with continue */
-int _5_for_continue(int n)
+int _05_for_continue(int n)
 {
     int sum = 0;
 
@@ -138,7 +138,7 @@ int _5_for_continue(int n)
 /* ================================================================== */
 
 /* 6: relational loop condition */
-int _6_relational_loop(int a, int b)
+int _06_relational_loop(int a, int b)
 {
     int sum = 0;
 
@@ -150,7 +150,7 @@ int _6_relational_loop(int a, int b)
 
 
 /* 7: inequality loop condition */
-int _7_not_equal_loop(int n)
+int _07_not_equal_loop(int n)
 {
     int i = 0;
     int sum = 0;
@@ -165,7 +165,7 @@ int _7_not_equal_loop(int n)
 
 
 /* 8: loop condition with && */
-int _8_loop_and(int a, int b)
+int _08_loop_and(int a, int b)
 {
     int i = 0;
     int sum = 0;
@@ -180,7 +180,7 @@ int _8_loop_and(int a, int b)
 
 
 /* 9: loop condition with || */
-int _9_loop_or(int a, int b)
+int _09_loop_or(int a, int b)
 {
     int i = 0;
     int sum = 0;
@@ -1569,22 +1569,22 @@ int main(int argc, char **argv)
     /* -------------------------------------------------------------- */
     /* Simple loops                                                     */
     /* -------------------------------------------------------------- */
-    result += _0_for_simple(a);
-    result += _1_while_simple(a);
-    result += _2_dowhile_simple(a);
-    result += _3_for_empty_body(3);
-    result += _4_while_true_break(a);
-    result += _5_for_continue(a);
+    result += _00_for_simple(a);
+    result += _01_while_simple(a);
+    result += _02_dowhile_simple(a);
+    result += _03_for_empty_body(3);
+    result += _04_while_true_break(a);
+    result += _05_for_continue(a);
     if (test ==  0) { printf("%d\n", result); return 0; }  /* stop after section 0 */
 
     /* -------------------------------------------------------------- */
     /* Loop conditions                                                  */
     /* -------------------------------------------------------------- */
 
-    result += _6_relational_loop(a, a + 6);
-    result += _7_not_equal_loop(a);
-    result += _8_loop_and(a, 5);
-    result += _9_loop_or(a, 5);
+    result += _06_relational_loop(a, a + 6);
+    result += _07_not_equal_loop(a);
+    result += _08_loop_and(a, 5);
+    result += _09_loop_or(a, 5);
     result += _10_nested_loop_condition(a, 6, 3, 4);
     if (test ==  1) { printf("%d\n", result); return 0; }
 

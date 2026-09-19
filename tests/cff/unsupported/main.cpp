@@ -199,10 +199,6 @@ int main(int argc, char **argv)
 
     int result = 0;
 
-    result += _0_switch_simple(a);
-    result += _1_switch_in_if(a, b);
-    result += _2_switch_fallthrough(a);
-
     result += _3_computed_goto(a);
     result += _4_computed_goto_dispatch(a, b);
 

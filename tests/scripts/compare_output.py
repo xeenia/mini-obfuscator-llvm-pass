@@ -2,11 +2,13 @@
 """
 Differential IR tester.
 
-For every pair of files [name]_before.ll / [name]_after.ll in ../ir/:
-  1. compiles each to an executable [name]_before / [name]_after
+Recursively searches subfolders in ../cff/ir/ for pairs of:
+  [name]_before.ll / [name]_after.ll
+  
+  1. compiles each to an executable [name]_before / [name]_after in its subfolder
   2. runs both with the same command-line arguments
   3. compares their (single-integer) outputs
-  4. prints a tick if identical, an X otherwise
+  4. prints an [OK] if identical, an [X ] otherwise
 
 Usage:
     python3 diff_test.py            # default input: 4
@@ -38,7 +40,7 @@ def run_cmd(cmd, timeout=10):
 
 
 def find_pairs():
-    """Return sorted list of (name, before_path, after_path)."""
+    """Return sorted list of (rel_display_name, before_path, after_path)."""
     if not IR_DIR.is_dir():
         print(f"error: IR directory '{IR_DIR}' not found")
         sys.exit(1)
@@ -46,22 +48,29 @@ def find_pairs():
     befores = {}
     afters = {}
 
-    for f in IR_DIR.glob("*.ll"):
+    # Recursive search through all subdirectories
+    for f in IR_DIR.rglob("*.ll"):
+        rel_parent = f.relative_to(IR_DIR).parent
+        
         if f.stem.endswith("_before"):
-            befores[f.stem[: -len("_before")]] = f
+            base = f.stem[:-len("_before")]
+            key = rel_parent / base
+            befores[key] = f
         elif f.stem.endswith("_after"):
-            afters[f.stem[: -len("_after")]] = f
+            base = f.stem[:-len("_after")]
+            key = rel_parent / base
+            afters[key] = f
 
     names = sorted(set(befores) & set(afters))
 
     orphans_before = set(befores) - set(afters)
     orphans_after = set(afters) - set(befores)
-    for n in sorted(orphans_before):
-        print(f"warning: '{befores[n].name}' has no matching _after file, skipped")
-    for n in sorted(orphans_after):
-        print(f"warning: '{afters[n].name}' has no matching _before file, skipped")
+    for k in sorted(orphans_before):
+        print(f"warning: '{befores[k]}' has no matching _after file, skipped")
+    for k in sorted(orphans_after):
+        print(f"warning: '{afters[k]}' has no matching _before file, skipped")
 
-    return [(n, befores[n], afters[n]) for n in names]
+    return [(str(k), befores[k], afters[k]) for k in names]
 
 
 def parse_int_output(stdout):
@@ -72,20 +81,18 @@ def parse_int_output(stdout):
     return int(lines[-1].strip())
 
 
-def test_pair(name, before_ll, after_ll, inputs):
+def test_pair(rel_name, before_ll, after_ll, inputs):
     """Compile and compare one before/after pair. Returns True on success."""
-    exe_before = name + "_before"
-    exe_after = name + "_after"
-
     results = {}
     ok = True
     detail_lines = []
 
-    for variant, ll_file, exe_name in (
-        ("before", before_ll, exe_before),
-        ("after", after_ll, exe_after),
+    for variant, ll_file in (
+        ("before", before_ll),
+        ("after", after_ll),
     ):
-        exe_path = IR_DIR / (exe_name + EXE_SUFFIX)
+        # Place temporary executable in the same directory as the .ll file
+        exe_path = ll_file.with_suffix(EXE_SUFFIX)
 
         # --- compile ---
         rc, _, stderr = run_cmd([CC, str(ll_file), "-o", str(exe_path)])
@@ -125,7 +132,7 @@ def test_pair(name, before_ll, after_ll, inputs):
         and results["before"] == results["after"]
     )
 
-    print(f"[{'OK' if all_match else 'X '}] {name}")
+    print(f"[{'OK' if all_match else 'X '}] {rel_name}")
     if not all_match:
         print(f"    before: {results['before']}")
         print(f"    after:  {results['after']}")
@@ -150,19 +157,18 @@ def main():
     print(f"found {len(pairs)} pair(s) in '{IR_DIR}', inputs: {inputs}\n")
 
     passed = 0
-    for name, before_ll, after_ll in pairs:
-        if test_pair(name, before_ll, after_ll, inputs):
+    for rel_name, before_ll, after_ll in pairs:
+        if test_pair(rel_name, before_ll, after_ll, inputs):
             passed += 1
 
     total = len(pairs)
     failed = total - passed
     print(f"\n{passed}/{total} passed, {failed} failed")
 
-    # clean up compiled executables
-    for name, _, _ in pairs:
-        for variant in ("_before", "_after"):
-            exe = IR_DIR / (name + variant + EXE_SUFFIX)
-            exe.unlink(missing_ok=True)
+    # Clean up compiled executables
+    for _, before_ll, after_ll in pairs:
+        before_ll.with_suffix(EXE_SUFFIX).unlink(missing_ok=True)
+        after_ll.with_suffix(EXE_SUFFIX).unlink(missing_ok=True)
 
     sys.exit(0 if failed == 0 else 1)
 
