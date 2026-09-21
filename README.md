@@ -5,7 +5,7 @@ An ongoing educational project for learning LLVM IR transformations and explorin
 The project contains two LLVM passes:
 
 * **Signature Obfuscator** — transforms function names and signatures through function-name obfuscation, dummy-parameter insertion, and parameter shuffling.
-* **Control Flow Flattening (CFF)** — transforms function control flow using basic-block splitting and a central switch dispatcher.
+* **Control Flow Flattening (CFF)** — transforms function control flow by doing basic-block splitting and a creating central switch dispatcher. **See demonstrated examples (original code, high-level CFF view, and CFGs before/after) in [`cff-examples.md`](tests/cff/cff-examples.md)**.
 
 The project uses LLVM 17, C++17, CMake, and Ninja.
 

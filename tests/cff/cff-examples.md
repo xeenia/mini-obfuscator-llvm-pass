@@ -9,7 +9,7 @@
 - [Hardening](#hardening)
   - [Dispatcher Case Shuffling](#dispatcher-case-shuffling)
 - [Edge Cases](#edge-cases)
-  - [Cross-Block Values-Users (Dominance)](#cross-block-dataflow)
+  - [Cross-Block Values-Users (Dominance)](#cross-block-values-users-dominance)
   - [PHI Node Handling](#phi-node-handling)
   - [Dynamic Alloca](#dynamic-alloca)
 
