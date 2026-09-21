@@ -37,10 +37,10 @@ The pass also handles SSA dependencies that can be affected by the transformatio
 * Return and unreachable terminators.
 * Common control-flow patterns such as `if` statements, loops, `goto`-based flow and `switch`, when represented using supported LLVM IR constructs.
 * Basic-block splitting before dispatcher construction.
-* Configurable minimum and maximum basic-block limits.
+* Configurable minimum and maximum basic-block limits, and functions outside the configured basic-block limits are skipped.
 * Diagnostic output for cross-basic-block value dependencies and dynamic allocas.
 * Optional SSA promotion for demoted PHI nodes and cross-block values.
-* Functions outside the configured basic-block limits are skipped.
+* Dynamic allocas remain at their original location during entry-block reconstruction. Their cross-basic-block uses will be handled by the pass’s generic demotion logic.
 * Case block shuffling hardening: randomizes switch case block ordering instead of keeping sequential layout.
 
 ### Limitations
@@ -49,7 +49,6 @@ Again, this is an experimental pass, not a production-ready obfuscator.
 
 * Functions with unsupported terminators are skipped.
 * Exception-handling blocks and block addresses are not supported.
-* Dynamic allocas remain at their original location during entry-block reconstruction. Their cross-basic-block uses may be handled by the pass’s generic demotion logic.
 * The current implementation focuses on LLVM IR generated around `-O0`; behavior with other optimization levels has not been fully established.
 * Testing covers the included programs and input cases, not every possible LLVM IR pattern.
 
@@ -104,6 +103,7 @@ opt \
 | `-cff-no-dispatch`      | `false` | Split basic blocks without creating the central dispatcher.                         |
 | `-cff-promote=MODE`     |  `none` | Selects which demoted values to attempt to promote back to SSA.                     |
 | `-cff-diagnostics=MODE` |  `none` | Prints diagnostics about the original CFG instead of performing the transformation. |
+| `-cff-level=N` |  `0` | Selects the CFF obfuscation level. 0 uses sequential, unshuffled case states; 1 uses randomized/shuffled case order. |
 
 ### SSA promotion modes
 
@@ -146,22 +146,55 @@ opt \
 
 Diagnostics analyze the original CFG and do not perform flattening.
 
+### CFF obfuscation levels
+
+| Mode     | Description                                          |
+| -------- | ---------------------------------------------------- |
+| `0`   | Basic CFF with sequential case states and unshuffled case order.                   |
+| `1`   | Basic CFF with randomized/shuffled case order.                |
+
+Example:
+
+```bash
+opt \
+  -load-pass-plugin=./build/miniObfuscator.so \
+  -passes=CFFPass \
+  -cff-level=1 \
+  input.bc -S -o output.ll
+```
+Note: Two additional hardening techniques are currently under development.
+
 ## Test suite
 
 The CFF test suite is organized into four C source files:
 
 | File          | Focus                          |
 | ------------- | ------------------------------ |
+| `_00_all.c`   | Combined control-flow patterns |
 | `_01_ifs.c`   | `if`-based control flow        |
 | `_02_loops.c` | Loop-based control flow        |
 | `_03_goto.c`  | `goto`-based control flow      |
-| `_04_all.c`   | Combined control-flow patterns |
+| `_04_switch.c` | switch-based control flow.        |
+| `_05_for_obf_levels.c`  |Tests for CFF obfuscation levels 0 and 1.     |
+
 
 Each file contains multiple test functions, and also include arrays, pointers, and complicated conditions. Its `main` function calls the test functions, sums their return values, and prints the final result.
 
 The comparison script compiles and runs the original and transformed LLVM IR using the same test inputs, then compares their final printed integer results.
 
 Matching results show that the observed outputs agree for the tested inputs. They do not prove full semantic equivalence.
+
+## Test suite
+
+The CFGs directory contains the CFGs from the test programs, including the before, split, and after transformation stages.
+
+For `_05_for_obf_levels.c`, CFG outputs are provided for both obfuscation levels:
+* Level 0: Base, sequential case states.
+* Level 1: Shuffled case order.
+
+The ir directory contains two folders with the corresponding LLVM IR outputs:
+* level0-base
+* level1-shuffle
 
 ## Scripts
 
