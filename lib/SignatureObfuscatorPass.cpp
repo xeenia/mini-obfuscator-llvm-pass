@@ -1,6 +1,6 @@
 #include "SignatureObfuscatorPass.h"
 #include "SignatureObfuscatorAnalysis.h"
-
+#include "ObfuscationAttributes.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/Module.h"
@@ -17,264 +17,310 @@
 
 using namespace llvm;
 
-static cl::opt<uint64_t> Seed(
-    "rename-seed", cl::init(0xC0FFEE),
-    cl::desc("Seed for deterministic name/shuffle generation"));
+namespace{
+    enum class SignatureMode { All, Rename, Dummy, Shuffle};
 
-static cl::opt<bool> OnlyRename(
-    "only-rename",
-    cl::init(false),
-    cl::desc("apply only function-name obfuscation"));
-
-static cl::opt<bool> OnlyDummy(
-    "only-dummy",
-    cl::init(false),
-    cl::desc("apply only dummy-parameter insertion"));
-  
-static cl::opt<bool> OnlyShuffle(
-    "only-shuffle",
-    cl::init(false),
-    cl::desc("apply only shuffling-parameter insertion"));
-
+    cl::OptionCategory SIGCategory("Signature Obfuscation Options", "Options for configuring the Signature Obfuscation pass.");
     
-static void printSignature(raw_ostream &OS, Function *F){
-    OS << F->getName() << " (";
-    unsigned i = 0;
-    for (Argument &Arg : F->args()) {
-        if (i++) OS << ", ";
-        OS << *Arg.getType();
-        if (Arg.hasName())
-        OS << " " << Arg.getName();
-    }
-    OS << ")";
-}
-// builds names like _fACF62A35728C77E0
-static std::string makeOpaqueName(std::mt19937_64 &Rng) {
-    std::string S;
-    raw_string_ostream OS(S);
-    OS << "_f" << utohexstr(Rng());
-    return OS.str();
-}
-static Function *symbolRenaming(Function *F){
-    std::mt19937_64 Rng(Seed ^ hash_value(F->getName()));
-    std::string oldName = F->getName().str();
-    F->setName(makeOpaqueName(Rng));
-    errs() << "     (1) function-name obfuscation: " << oldName << " -> " << F->getName() << "\n";
-    return F;
-}
-Function *appendDummyParams(Function &Old, unsigned N){
-    Module &M = *Old.getParent();
-    FunctionType *OldTy = Old.getFunctionType();
-    SmallVector<Type *, 8> NewParams(OldTy->param_begin(), OldTy->param_end());
-    Type *I32Ty = Type::getInt32Ty(M.getContext());
-    for(unsigned i = 0; i < N; i++){
-        NewParams.push_back(I32Ty);
-    }
-    FunctionType *NewTy = FunctionType::get(OldTy->getReturnType(), NewParams, false);
-    Function *newF = Function::Create(NewTy, Old.getLinkage(), Old.getAddressSpace(), Old.getName(), &M);
-    newF->copyAttributesFrom(&Old);
+    static cl::opt<uint64_t> seed("sig-seed", 
+           cl::init(0xC0FFEE),
+           cl::desc("Seed for deterministic name/shuffle generation"),
+           cl::cat(SIGCategory));
 
-    //mapping
-    ValueToValueMapTy VMap;
-    auto NewArgIt = newF->arg_begin();
-    for (Argument &OldArg : Old.args()) {
-        NewArgIt->setName(OldArg.getName());
-        VMap[&OldArg] = &*NewArgIt;
-        ++NewArgIt;
+    cl::opt<SignatureMode> SIGMode("sig-mode",
+    cl::init(SignatureMode::All),
+    cl::values(
+        clEnumValN(SignatureMode::All,   "all",   "Apply all signature transformations (rename, dummy parameters, and argument shuffle)"),
+        clEnumValN(SignatureMode::Rename,   "rename",   "Rename candidate functions only"),
+        clEnumValN(SignatureMode::Dummy, "dummy", "Inject dummy parameters only to candidate functions"),
+        clEnumValN(SignatureMode::Shuffle,    "shuffle",    "Shuffle function parameter ordering only to candidate functions")
+    ),
+    cl::desc("Specify which signature obfuscation transformations to apply"),
+    cl::cat(SIGCategory));
+
+    cl::opt<unsigned> dummyCount("sig-dummy-count",
+    cl::init(0),
+    cl::desc(  "Number of dummy parameters to add; 0 selects automatic sizing"),
+    cl::cat(SIGCategory));
+
+    struct FunctionContext {
+        Function *originalF = nullptr; 
+        Function *currentF=nullptr;
+        Function *replacementF=nullptr;
+            
+        SmallVector<unsigned,10> perm;
+
+        explicit FunctionContext(Function *originalF) : originalF(originalF) {
+            currentF = originalF;
+        }
+
+        void applyRename();
+        void applyDummyParameters(unsigned count);
+        bool applyShuffle();
+        void rewriteCallSites();
+
+    private:
+        void appendDummyParams(unsigned N);
+        void shuffleSlots();
+    };
+
+    static void keepFunctionOrder(Function &Old, Function &New) {
+        Module &M = *Old.getParent();
+        M.getFunctionList().splice(
+            Old.getIterator(),
+            M.getFunctionList(),
+            New.getIterator());
     }
-    int argSize = Old.arg_size();
-    errs() << "ArgSize: " <<  argSize << "\n";
-    BasicBlock *BB = &Old.getEntryBlock();
-    auto it_alloca = BB->begin();
-    auto it_store = BB->begin();
-    IRBuilder<> allocaBuilder(&*it_alloca);
-    IRBuilder<> storeBuilder(&*it_store);
-    std::advance(it_alloca, argSize);
-    allocaBuilder.SetInsertPoint(&*it_alloca);
-    for (; it_store != BB->end(); ++it_store) {
-        if (llvm::isa<llvm::StoreInst>(*it_store)) {
-            std::advance(it_store, argSize);
-            storeBuilder.SetInsertPoint(&*it_store);
-            break; 
+
+    //==================== RENAME TECHNIQUE ====================
+
+    // builds names like _fACF62A35728C77E0
+    static std::string makeOpaqueName(std::mt19937_64 &Rng) {
+        std::string S;
+        raw_string_ostream OS(S);
+        OS << "_f" << utohexstr(Rng());
+        return OS.str();
+    }
+
+    void FunctionContext::applyRename() {
+        std::mt19937_64 RNG(seed ^ hash_value(currentF->getName()));
+        const std::string newName = makeOpaqueName(RNG);
+        currentF->setName(newName);
+    }
+
+    //====================   ADD DUMMY PARAMS TECHNIQUE   ====================
+
+    void FunctionContext::applyDummyParameters(unsigned count) {
+        appendDummyParams(count);
+        keepFunctionOrder(*currentF, *replacementF);
+        replacementF->takeName(currentF);
+    }
+
+    void createDummyParameterAllocasAndStores(Function &F) {
+        BasicBlock &Entry = F.getEntryBlock();
+        auto InsertPt = Entry.getFirstInsertionPt();
+
+        if (InsertPt == Entry.end()) report_fatal_error( "No valid insertion point in function entry block");
+        IRBuilder<> Builder(&*InsertPt);
+        for (Argument &Arg : F.args()) {
+            Attribute RoleAttr = F.getAttributes().getParamAttr(Arg.getArgNo(), obfAttributes::dummyRoleAttr);
+
+            if(!RoleAttr.isValid()) continue;
+            
+            AllocaInst *Alloca = Builder.CreateAlloca(Arg.getType(), nullptr, Arg.getName() + ".addr");
+            Builder.CreateStore(&Arg, Alloca);
         }
     }
 
-    for (unsigned i = 0; i < N; ++i, ++NewArgIt, ++it_alloca, ++it_store){
-      NewArgIt->setName("dummy" + Twine(i));
-      AllocaInst *allocaIns = allocaBuilder.CreateAlloca(NewArgIt->getType(), nullptr);
-       Value *ArgVal = NewArgIt;
-      storeBuilder.CreateStore(ArgVal, allocaIns);
+    void FunctionContext::appendDummyParams(unsigned N){
+        Module &M = *currentF->getParent();
+        FunctionType *OldTy = currentF->getFunctionType();
+        
+        SmallVector<Type *, 8> NewParams(OldTy->param_begin(), OldTy->param_end());
+        Type *I32Ty = Type::getInt32Ty(M.getContext());
+
+        for(unsigned i = 0; i < N; i++){
+            NewParams.push_back(I32Ty);
+        }
+
+        FunctionType *NewTy = FunctionType::get(OldTy->getReturnType(), NewParams, false);
+
+        replacementF = Function::Create(NewTy, currentF->getLinkage(), currentF->getAddressSpace(), currentF->getName(), &M);
+        replacementF->copyAttributesFrom(currentF);
+
+        //mapping
+        ValueToValueMapTy VMap;
+        auto NewArgIt = replacementF->arg_begin();
+        for (Argument &OldArg : currentF->args()) {
+            NewArgIt->setName(OldArg.getName());
+            VMap[&OldArg] = &*NewArgIt;
+            ++NewArgIt;
+        }
+        
+        SmallVector<ReturnInst *, 4> returns;
+        CloneFunctionInto( replacementF, currentF, VMap, CloneFunctionChangeType::LocalChangesOnly, returns);
+
+        if (N > 0) {
+            Attribute NoUndefAttr = Attribute::get(M.getContext(), Attribute::NoUndef);
+            Attribute DummyRole = Attribute::get( M.getContext(), obfAttributes::dummyRoleAttr, obfAttributes::toString(obfAttributes::DummyRole::Generic));
+
+            for (unsigned i = currentF->arg_size(); i < replacementF->arg_size(); ++i) {
+                Argument *DummyArg = replacementF->getArg(i);
+                
+                DummyArg->setName("dummy" + std::to_string(i - currentF->arg_size()));
+
+                replacementF->addParamAttr(i, NoUndefAttr);
+                replacementF->addParamAttr(i, DummyRole);
+            }
+            replacementF->addFnAttr(obfAttributes::dummyFunctionAttr);
+        }
+        createDummyParameterAllocasAndStores(*replacementF);
     }
 
+    //====================   SHUFFLE PARAMS TECHNIQUE   ====================
 
-    SmallVector<ReturnInst *, 4> Returns;
-    CloneFunctionInto(newF, &Old, VMap, CloneFunctionChangeType::LocalChangesOnly, Returns);
-    return newF;
-}
+    void FunctionContext::shuffleSlots() {
+        Module &M = *currentF->getParent();
+        unsigned N = currentF->arg_size();
 
-static void keepFunctionOrder(Function &Old, Function &New) {
-    Module &M = *Old.getParent();
-    M.getFunctionList().splice(
-        Old.getIterator(),
-        M.getFunctionList(),
-        New.getIterator());
-}
+        SmallVector<Type *,10> OldTypes;
+        for (Argument &Arg : currentF->args())
+            OldTypes.push_back(Arg.getType());
 
-void rewriteDummyCallSites(Function &Old, Function &newF, unsigned N) {
-  for (User *U : make_early_inc_range(Old.users())) {
-    auto *CB = dyn_cast<CallBase>(U);
-    if (!CB || CB->getCalledFunction() != &Old)
-      continue; 
-    
-    SmallVector<Value *, 8> NewArgs(CB->args());
-    Type *I32Ty = Type::getInt32Ty(Old.getContext());
-    for (unsigned I = 0; I < N; ++I)
-      NewArgs.push_back(ConstantInt::get(I32Ty, 0));
+        //perm[i] = new slot that old arg i goes to. start as identity then shuffle
+        perm.resize(N);
+        for (unsigned i = 0; i < N; ++i)
+            perm[i] = i;
+        // for exactly 2 args, always swap. otherwise shuffle randomly
+        if (N == 2) {
+            perm[0] = 1;
+            perm[1] = 0;
+        } else {
+            uint64_t LocalSeed = seed ^ hash_value(currentF->getName());
+            std::mt19937_64 RNG(LocalSeed);
+            std::shuffle(perm.begin(), perm.end(), RNG);
+        }
 
-    IRBuilder<> B(CB);
-    CallInst *NC = B.CreateCall(&newF, NewArgs);
-    NC->setCallingConv(CB->getCallingConv());
-    CB->replaceAllUsesWith(NC);
-    CB->eraseFromParent();
-  }
-}
+        //put each old type at its shuffled slot
+        SmallVector<Type *,10> newTypes(N);
+        for (unsigned i = 0; i < N; ++i)
+            newTypes[perm[i]] = OldTypes[i];
 
-static Function *addDummies(Function *F, unsigned padCount){
-    Function *newF = appendDummyParams(*F, padCount);
-    rewriteDummyCallSites(*F, *newF, padCount);
-    keepFunctionOrder(*F,*newF);
-    newF->takeName(F);
-    F->eraseFromParent();
-    errs() << "     (2) dummy parameters:  +" << padCount << " (now " << newF->arg_size() << " total args)\n";
-    return newF;
-}
+        FunctionType *NewTy = FunctionType::get(currentF->getReturnType(), newTypes, false);
+        replacementF = Function::Create(NewTy, currentF->getLinkage(), currentF->getAddressSpace(), currentF->getName(), &M);
+        replacementF->copyAttributesFrom(currentF);
+        SmallVector<Argument *, 8> newArgs;
 
-void rewriteShuffledCallSites(Function &Old, Function &newF, const std::vector<unsigned> &perm) {
-  for (User *U : make_early_inc_range(Old.users())) {
-    auto *CB = dyn_cast<CallBase>(U);
-    if (!CB || CB->getCalledFunction() != &Old)
-      continue;
+        for (Argument &NA : replacementF->args())
+            newArgs.push_back(&NA);
 
-    //reordering the args the same way the params were shuffled
-    SmallVector<Value *, 8> NewArgs(CB->arg_size());
-    for (unsigned i = 0; i < CB->arg_size(); ++i)
-      NewArgs[perm[i]] = CB->getArgOperand(i);
+        ValueToValueMapTy VMap;
+        unsigned i = 0;
 
-    IRBuilder<> B(CB);
-    CallInst *NC = B.CreateCall(&newF, NewArgs);
-    NC->setCallingConv(CB->getCallingConv());
-    CB->replaceAllUsesWith(NC);
-    CB->eraseFromParent();
-  }
-}
+        for (Argument &OldArg : currentF->args()) {
+            unsigned target = perm[i++];
+            newArgs[target]->setName(OldArg.getName());
+            VMap[&OldArg] = newArgs[target];
+        }
+        SmallVector<ReturnInst *, 8> returns;
+        CloneFunctionInto(replacementF, currentF, VMap, CloneFunctionChangeType::LocalChangesOnly, returns);
+    }
 
-Function *shuffleSlots(Function &Old, std::vector<unsigned> &perm) {
-  Module &M = *Old.getParent();
-  unsigned N = Old.arg_size();
+    bool FunctionContext::applyShuffle() {
+        if (currentF->arg_size() < 2) return false;
 
-  std::vector<Type *> OldTypes;
-  for (Argument &Arg : Old.args())
-    OldTypes.push_back(Arg.getType());
+        shuffleSlots();
+        keepFunctionOrder(*currentF, *replacementF);
+        replacementF->takeName(currentF);
+        return true;
+    }
 
-  //perm[i] = new slot that old arg i goes to. start as identity then shuffle
-  perm.resize(N);
-  for (unsigned i = 0; i < N; ++i)
-    perm[i] = i;
-  // for exactly 2 args, always swap. otherwise shuffle randomly
-  if (N == 2) {
-      perm[0] = 1;
-      perm[1] = 0;
-  } else {
-      uint64_t LocalSeed = Seed ^ hash_value(Old.getName());
-      std::mt19937_64 RNG(LocalSeed);
-      std::shuffle(perm.begin(), perm.end(), RNG);
-  }
+    //====================   REWRITING CALL SITES   ====================
 
-  //put each old type at its shuffled slot
-  std::vector<Type *> NewTypes(N);
-  for (unsigned i = 0; i < N; ++i)
-    NewTypes[perm[i]] = OldTypes[i];
+    void FunctionContext::rewriteCallSites() {
+        if (!replacementF) return;
 
-  FunctionType *NewTy = FunctionType::get(Old.getReturnType(), NewTypes, false);
-  Function *newF = Function::Create(NewTy, Old.getLinkage(),
-                                    Old.getAddressSpace(),
-                                    Old.getName(), &M);
-  newF->copyAttributesFrom(&Old);
+        const unsigned originalArgCount = originalF->arg_size();
+        const unsigned finalArgCount = replacementF->arg_size();
 
-  SmallVector<Argument *, 8> NewArgs;
-  for (Argument &NA : newF->args())
-    NewArgs.push_back(&NA);
+        if (finalArgCount < originalArgCount) report_fatal_error("SignatureObfuscatorPass: unexpected parameter removal");
 
-  ValueToValueMapTy VMap;
-  unsigned i = 0;
-  for (Argument &OldArg : Old.args()) {
-    unsigned target = perm[i++];
-    NewArgs[target]->setName(OldArg.getName());
-    VMap[&OldArg] = NewArgs[target];
-  }
+        const unsigned dummyCount = finalArgCount - originalArgCount;
 
-  SmallVector<ReturnInst *, 8> Returns;
-  CloneFunctionInto(newF, &Old, VMap, CloneFunctionChangeType::LocalChangesOnly, Returns);
-  return newF;
-}
+        if (!perm.empty() && perm.size() != finalArgCount) report_fatal_error("SignatureObfuscatorPass: permutation size mismatch");
+        
+        for (User *U : make_early_inc_range(originalF->users())) {
+            auto *CB = dyn_cast<CallBase>(U);
 
-static Function *shuffleParameters(Function *F) {
-  if (F->arg_size() < 2) {
-    errs() << "     (3) shuffle parameters: skipped (<2 args)\n";
-    return F;
-  }
-  std::vector<unsigned> perm;
-  Function *newF = shuffleSlots(*F, perm);
-  keepFunctionOrder(*F,*newF);
-  rewriteShuffledCallSites(*F, *newF, perm);
-  newF->takeName(F);
-  F->eraseFromParent();
-  errs() << "     (3) shuffle parameters: [";
-  int i{0};
-  for (Argument &Arg : newF->args()){
-    if (i) errs() << ",";
-    errs() << *Arg.getType() << " %" << perm[i++];
-  }
-  errs() << "]\n";
-  return newF;
-}
+            if (!CB) continue;
+            if (CB->getCalledFunction() != originalF) continue;
+            if (CB->arg_size() != originalArgCount) report_fatal_error("SignatureObfuscatorPass: unexpected call argument count");
+
+            SmallVector<Value *, 8> newArgs(finalArgCount, nullptr);
+
+            for (unsigned i = 0; i < originalArgCount; ++i) {
+                const unsigned finalIndex = perm.empty() ? i : perm[i];
+                if (finalIndex >= finalArgCount) report_fatal_error("SignatureObfuscatorPass: invalid permutation index");
+                newArgs[finalIndex] = CB->getArgOperand(i);
+            }
+            // Fill the slots belonging to the appended dummy arguments.
+            Type *I32Ty = Type::getInt32Ty(originalF->getContext());
+
+            for (unsigned i = 0; i < dummyCount; ++i) {
+                const unsigned oldIndex = originalArgCount + i;
+                const unsigned finalIndex = perm.empty() ? oldIndex : perm[oldIndex];
+
+                if (finalIndex >= finalArgCount) report_fatal_error("SignatureObfuscatorPass: invalid dummy permutation index");
+                if (newArgs[finalIndex] != nullptr) report_fatal_error("SignatureObfuscatorPass: duplicate argument position");
+
+                newArgs[finalIndex] = ConstantInt::get(I32Ty, 0);
+            }
+
+            for (unsigned i = 0; i < newArgs.size(); ++i) 
+                if (!newArgs[i]) report_fatal_error("SignatureObfuscatorPass: unassigned call argument");
+
+            IRBuilder<> B(CB);
+            CallInst *NC = B.CreateCall(replacementF, newArgs);
+            NC->setCallingConv(CB->getCallingConv());
+
+            CB->replaceAllUsesWith(NC);
+            CB->eraseFromParent();
+        }
+
+    }
+} //namespace
+
+//====================   RUN   ====================
 
 PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager &AM) {
-
     auto &analysisResult = AM.getResult<SignatureObfuscatorAnalysis>(M);
-    auto &candidates = analysisResult.Candidates;
-    bool Changed{false};
-
-    errs() << "=== Module: " << M.getName() << " ===\n\n";
-
-
-    for(SignatureObfuscatorAnalysis::CandidateInfo Info : candidates){
-        Function *curFn = Info.Fn;
-         // prints original signature, before any transform touches it
-        errs() << "--- ";
-        printSignature(errs(), curFn);
-        errs() << " ---\n";
-
-        //custom technique activation
-        bool doRename   = !OnlyDummy && !OnlyShuffle;
-        bool doDummy    = !OnlyRename && !OnlyShuffle;
-        bool doShuffle  = !OnlyRename && !OnlyDummy;
-        bool doDummyShuffle = OnlyDummy && OnlyShuffle;
-
-        if(doRename)
-            curFn = symbolRenaming(curFn);
-        if(Info.dummyAllowed && (doDummy || doDummyShuffle)){
-            unsigned padCount = analysisResult.MaxArgs - curFn->arg_size();
-            curFn = addDummies(curFn, padCount+1); //we add +1 so even functions with max args can have at least 1 dummy 
+    auto &functionAnalysisInfos = analysisResult.functionAnalysisInfo;
+    bool changed{false};
+    
+    for(SignatureObfuscatorAnalysis::FunctionAnalysisInfo functionInfo : functionAnalysisInfos){ //NOTE: BETTER NAMES
+        FunctionContext Context(functionInfo.Fn);
+        if (functionInfo.canRename && (SIGMode == SignatureMode::All || SIGMode == SignatureMode::Rename)) 
+            Context.applyRename();
+        
+        if (functionInfo.canAddDummy && (SIGMode == SignatureMode::All || SIGMode == SignatureMode::Dummy)) {
+            unsigned padCount = 0;
+            if (dummyCount == 0)
+                padCount = analysisResult.MaxArgs - Context.currentF->arg_size() + 1;
+            else
+                padCount = dummyCount;
+            Context.applyDummyParameters(padCount);
+            changed =true;
         }
-        if(Info.dummyAllowed && (doShuffle || doDummyShuffle)){
-            curFn = shuffleParameters(curFn);
+
+        if (functionInfo.canShuffle && (SIGMode == SignatureMode::All || SIGMode == SignatureMode::Shuffle)) {
+            if (Context.replacementF != nullptr) {
+                    Context.currentF = Context.replacementF;
+                    Context.replacementF = nullptr;
+                }
+            changed = Context.applyShuffle();
         }
-        Changed = true;
+
+        if (Context.replacementF != nullptr) {
+            Function *finalF = Context.replacementF;
+            Function *intermediateF = Context.currentF != Context.originalF?Context.currentF:nullptr;
+            Context.rewriteCallSites();
+            if (!Context.originalF->use_empty()) report_fatal_error("SignatureObfuscatorPass could not replace all original uses");
+        
+            Context.originalF->eraseFromParent();
+            if (intermediateF != nullptr) {
+                if (!intermediateF->use_empty()) {
+                    errs() << "Error: intermediate function still has users: " << intermediateF->getName() << '\n';
+                    report_fatal_error( "SignatureObfuscatorPass could not remove intermediate function");
+                }
+                intermediateF->eraseFromParent();
+            }
+            Context.currentF = finalF;
+            Context.replacementF = nullptr;
+        }
+      
     }
     
-    if (Changed && verifyModule(M, &errs()))
-    report_fatal_error("SignatureObfuscatorPass produced an invalid module");
+    if (changed && verifyModule(M, &errs())) report_fatal_error("SignatureObfuscatorPass produced an invalid module");
 
-    return Changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
+    return changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
 }

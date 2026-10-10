@@ -12,6 +12,7 @@
 #include "llvm/Analysis/AssumptionCache.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/RandomNumberGenerator.h"
+#include "ObfuscationAttributes.h"
 
 
 using namespace llvm;
@@ -155,7 +156,7 @@ namespace{
                 if (HasDynAlloca) break;
             }
 
-            
+            if(HasCrossBlockUse && HasDynAlloca) return;
             if (HasCrossBlockUse && HasDynAlloca) {
                 errs() << "[CFFDiagnostic] "<< llvm::format("%-40s", F.getName().str().c_str())<< " -> [BOTH]\n";
             } else if(HasCrossBlockUse){

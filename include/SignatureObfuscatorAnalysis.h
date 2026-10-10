@@ -1,18 +1,23 @@
 #pragma once
 #include "llvm/ADT/StringSet.h"
 #include "llvm/IR/PassManager.h"
-#include <vector>
-
-
+#include "ObfuscationAttributes.h"
 
 
 struct SignatureObfuscatorAnalysis : public llvm::AnalysisInfoMixin<SignatureObfuscatorAnalysis>{
-    struct CandidateInfo{
+    struct FunctionAnalysisInfo{
             llvm::Function *Fn;
-            bool dummyAllowed = false; 
+            bool canRename = false; 
+            bool canAddDummy = false; 
+            bool canShuffle = false; 
+
+            std::string renameReason;
+            std::string dummyReason;
+            std::string shuffleReason;
     };
+
     struct Result {
-        std::vector<CandidateInfo> Candidates;
+        llvm::SmallVector<FunctionAnalysisInfo, 10> functionAnalysisInfo;
         unsigned MaxArgs = 0; //we will save the max arg_size among dummy eligible functions
     };
 

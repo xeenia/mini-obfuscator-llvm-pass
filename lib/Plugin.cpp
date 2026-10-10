@@ -18,7 +18,7 @@ PassPluginLibraryInfo getPluginInfo(){
 
                 PB.registerPipelineParsingCallback(
                     [](StringRef Name, ModulePassManager &MPM, ArrayRef<PassBuilder::PipelineElement>){
-                        if(Name == "obfpass") {
+                        if(Name == "SIGpass") {
                             MPM.addPass(SignatureObfuscatorPass());
                             return true;
                         }
