@@ -79,11 +79,22 @@ struct FunctionContext {
         void appendDummyParams(unsigned N);
         void shuffleSlots();
     };
+    struct DiagnosticReport{
+        std::string functionName;
+        std::string renameResult;
+        std::string dummyResult;
+        std::string shuffleResult;
+        unsigned dummyCount=0;
+        unsigned renameStatus;
+        unsigned dummyStatus;
+        unsigned shuffleStatus;
+    };
     struct DiagnosticContext{
         FunctionContext *FC;
         SignatureObfuscatorAnalysis::FunctionAnalysisInfo *FI;
+        SmallVector<DiagnosticReport,10> report;
         enum class DiagStatus { Success, Skip, Disabled, Unknown};
-        explicit DiagnosticContext(FunctionContext *F,SignatureObfuscatorAnalysis::FunctionAnalysisInfo *fi):FC(F),FI(fi){}
+        void collectDiagnostics();
         void printDiagnostics();
         void diagSummary();
         void diagByFunction();
@@ -97,7 +108,51 @@ struct FunctionContext {
         int getDummyCount();
     };
     
+    void DiagnosticContext::collectDiagnostics(){
+        DiagnosticReport DR;
+        DR.functionName = FC->originalFName;
+        DR.renameStatus = static_cast<unsigned>(getRenameStatus());
+        DR.dummyStatus = static_cast<unsigned>(getDummyStatus());
+        DR.shuffleStatus =  static_cast<unsigned>(getShuffleStatus());
 
+        DR.dummyCount = getDummyCount();
+        auto getDummyParameterTypes = [&]() -> std::string {
+            std::string Types;
+            raw_string_ostream OS(Types);
+            OS << "(";
+            bool First = true;
+            for (const Argument &Arg : FC->currentF->args()) {
+                if (!FC->currentF->getAttributes().hasParamAttr(Arg.getArgNo(), "obf.dummy.role")) continue;
+                if (!First) OS << ",";
+                Arg.getType()->print(OS);
+                First = false;
+            }
+            OS << ")";
+            return OS.str();
+        };
+        auto getMessage = [&](DiagStatus DS, std::string successMessage, StringRef skipReason) -> std::string{
+            std::string message;
+            switch (DS) {
+                case DiagStatus::Success:
+                    message = std::move(successMessage);
+                    break;
+                case DiagStatus::Skip:
+                    message = skipReason.str();
+                    break;
+                case DiagStatus::Disabled:
+                    message = "disabled by command-line option";
+                    break;
+                default:
+                    message = "unknown reason";
+                    break;
+            }
+            return message;
+        };
+        DR.renameResult = getMessage(getRenameStatus(),((FC->replacementF!=nullptr)?FC->replacementF->getName():FC->originalF->getName()).str(),FI->renameReason);
+        DR.dummyResult =getMessage(getDummyStatus(),getDummyParameterTypes(),FI->dummyReason);
+        DR.shuffleResult =getMessage(getShuffleStatus(), "[" + join(map_range(FC->perm, [](unsigned I) {return std::to_string(I);}), ", ") + "]", FI->shuffleReason);
+        report.push_back(std::move(DR));
+    }
     int DiagnosticContext::getDummyCount(){
         const unsigned originalArgCount = FC->originalF->arg_size();
         const unsigned finalArgCount = FC->currentF->arg_size();
@@ -132,53 +187,102 @@ struct FunctionContext {
         else return DiagStatus::Unknown;
     }
     void DiagnosticContext::diagSummary(){
-        errs() << "[Signature] "
-        << format("%-24s", FC->originalFName.c_str())
-        << " rename=" << format("%-12s", getStatusName(getRenameStatus()).c_str())
-        << " dummy=" << format("%-12s", (getStatusName(getDummyStatus()) + std::string("(+") + std::to_string(getDummyCount()) + ")").c_str())
-        << " shuffle=" << getStatusName(getShuffleStatus())
-        << '\n';
+        errs() << "[Signature] Summary Diagnostics\n"
+        << "================================================================================================\n";
+        for (const DiagnosticReport &DR : report) {
+            errs() << "[Signature] " << formatv("{0,-24}", DR.functionName)
+                << " rename=" << formatv("{0,-12}", getStatusName(static_cast<DiagStatus>(DR.renameStatus)))
+                << " dummy=" << formatv("{0,-12}", getStatusName(static_cast<DiagStatus>(DR.dummyStatus)) + "(+" + std::to_string(DR.dummyCount) + ")")
+                << " shuffle=" << getStatusName( static_cast<DiagStatus>(DR.shuffleStatus))
+                << '\n';
+        }
     }
     void DiagnosticContext::diagByFunction(){
-        auto getDummyParameterTypes = [&]() -> std::string {
-            std::string Types;
-            raw_string_ostream OS(Types);
-            OS << "(";
-            bool First = true;
-            for (const Argument &Arg : FC->currentF->args()) {
-                if (!FC->currentF->getAttributes().hasParamAttr(Arg.getArgNo(), "obf.dummy.role")) continue;
-                if (!First) OS << ",";
-                Arg.getType()->print(OS);
-                First = false;
-            }
-            OS << ")";
-            return OS.str();
-        };
-        auto printOperation = [&](StringRef technique, DiagStatus DS, std::string successMessage, StringRef skipReason) {
-            std::string message;
-            switch (DS) {
-                case DiagStatus::Success:
-                    message = std::move(successMessage);
-                    break;
-                case DiagStatus::Skip:
-                    message = skipReason.str();
-                    break;
-                case DiagStatus::Disabled:
-                    message = "disabled by command-line option";
-                    break;
-                default:
-                    message = "unknown reason";
-                    break;
-            }
-            errs() << formatv("  {0,-10} {1,-10} {2}\n", technique, getStatusName(DS), message);
-        };
-        errs() << "[Signature] " << format("%-24s", FC->originalFName.c_str()) << "\n";
-        printOperation("Rename",getRenameStatus(),FC->originalFName + " -> " + ((FC->replacementF!=nullptr)?FC->replacementF->getName():FC->originalF->getName()).str(),FI->renameReason);
-        printOperation("Dummies",getDummyStatus(),"+" + std::to_string(getDummyCount()) +" " + getDummyParameterTypes(),FI->dummyReason);
-        printOperation("Shuffle",getShuffleStatus(), "[" + join(map_range(FC->perm, [](unsigned I) {return std::to_string(I);}), ", ") + "]", FI->shuffleReason);
-        errs() << "\n";
+        errs() << "[Signature] by Function Diagnostics\n"
+        << "================================================================================================\n";
+        for (const DiagnosticReport &DR : report) {
+            errs() << "\n[Signature] " << DR.functionName << '\n';
+            errs() << formatv("  {0,-10} {1,-10} {2}\n", "Rename", getStatusName(static_cast<DiagStatus>(DR.renameStatus)), DR.renameResult);
+            errs() << formatv("  {0,-10} {1,-10} {2}\n", "Dummy", getStatusName(static_cast<DiagStatus>(DR.dummyStatus)), ((DR.dummyCount!=0)? ("(+" + std::to_string(DR.dummyCount) + ") ") : "") + DR.dummyResult);
+            errs() << formatv("  {0,-10} {1,-10} {2}\n", "Shuffle", getStatusName(static_cast<DiagStatus>(DR.shuffleStatus)), DR.shuffleResult);
+        }
     }
     
+    void DiagnosticContext::diagByTechnique(){
+         errs() << "[Signature] Technique Diagnostics\n"
+        << "================================================================================================\n";
+        auto printTechniqueSection = [&](StringRef title, auto statusGetter, auto resultGetter, bool showDummyCount, bool showExcludedFunctions) {
+            errs() << "\n" << title << '\n' << "------------------------------------------------------------\n";
+
+            std::string success;
+            std::string skipped;
+            std::string disabled;
+            std::string unknown;
+            std::string excludedFunctions;
+
+            for (const DiagnosticReport &DR : report) {
+                const auto status = statusGetter(DR);
+                const std::string &result = resultGetter(DR);
+                if (static_cast<DiagStatus>(DR.renameStatus) == DiagStatus::Skip &&
+                    static_cast<DiagStatus>(DR.dummyStatus) == DiagStatus::Skip &&
+                    static_cast<DiagStatus>(DR.shuffleStatus) == DiagStatus::Skip) {
+                    excludedFunctions += "  - " + DR.functionName + ": " + result + "\n";    
+                    continue;
+                }
+
+                std::string entry = "  - " + DR.functionName + ": ";
+
+                if (showDummyCount && status == DiagStatus::Success)
+                    entry += "+" + std::to_string(DR.dummyCount) + " -> ";
+
+                entry += result + '\n';
+
+                switch (status) {
+                case DiagStatus::Success:
+                    success += entry;
+                    break;
+                case DiagStatus::Skip:
+                    skipped += entry;
+                    break;
+                case DiagStatus::Disabled:
+                    disabled += entry;
+                    break;
+                case DiagStatus::Unknown:
+                    unknown += entry;
+                    break;
+                }
+            }
+            if(!showExcludedFunctions){
+                if (!success.empty()) errs() << "SUCCESS:\n" << success << '\n';
+                if (!skipped.empty()) errs() << "SKIPPED:\n" << skipped << '\n';
+                if (!disabled.empty()) errs() << "DISABLED:\n" << disabled << '\n';
+                if (!unknown.empty()) errs() << "UNKNOWN:\n" << unknown << '\n'; 
+            }else{
+                errs() << excludedFunctions << '\n';
+            }
+        };
+
+        printTechniqueSection( "1. Function Renaming",
+            [](const DiagnosticReport &DR) { return static_cast<DiagStatus>(DR.renameStatus); },
+            [](const DiagnosticReport &DR) -> const std::string & { return DR.renameResult; },
+            false,false);
+
+        printTechniqueSection( "2. Dummy Parameter Insertion",
+            [](const DiagnosticReport &DR) { return static_cast<DiagStatus>(DR.dummyStatus); },
+            [](const DiagnosticReport &DR) -> const std::string & { return DR.dummyResult; },
+            true,false);
+
+        printTechniqueSection( "3. Parameter Shuffling",
+            [](const DiagnosticReport &DR) { return static_cast<DiagStatus>(DR.shuffleStatus); },
+            [](const DiagnosticReport &DR) -> const std::string & { return DR.shuffleResult; },
+            false,false);
+        
+        printTechniqueSection( "4. Functions Excluded from All Techniques",
+            [](const DiagnosticReport &DR) { return static_cast<DiagStatus>(DR.renameStatus); },
+            [](const DiagnosticReport &DR) -> const std::string & { return DR.renameResult; },
+            false,true);
+        
+    }
     void DiagnosticContext::printDiagnostics(){
         switch(Diagnostics){
             case SignatureDiagnostics::Summary:
@@ -187,7 +291,9 @@ struct FunctionContext {
             case SignatureDiagnostics::byFunction: 
                 diagByFunction();
                 break;
-            case SignatureDiagnostics::byTechnique: break;
+            case SignatureDiagnostics::byTechnique: 
+                diagByTechnique();
+            break;
             case SignatureDiagnostics::Table: break;
         }
     }
@@ -400,8 +506,11 @@ PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager 
     auto &analysisResult = AM.getResult<SignatureObfuscatorAnalysis>(M);
     auto &functionAnalysisInfos = analysisResult.functionAnalysisInfo;
     bool changed{false};
+    DiagnosticContext DC;
     for(SignatureObfuscatorAnalysis::FunctionAnalysisInfo functionInfo : functionAnalysisInfos){ //NOTE: BETTER NAMES
         FunctionContext FC(functionInfo.Fn);
+        DC.FC = &FC;
+        DC.FI = &functionInfo;
         if (functionInfo.canRename && !DisableRename){
             FC.applyRename();
         }
@@ -423,10 +532,8 @@ PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager 
             changed = FC.applyShuffle();
         }
 
-        if(Diagnostics != SignatureDiagnostics::None){
-            DiagnosticContext DC{&FC, &functionInfo};
-            DC.printDiagnostics();
-        }
+        if(Diagnostics != SignatureDiagnostics::None) DC.collectDiagnostics();
+        
         if (FC.replacementF != nullptr) {
             Function *finalF = FC.replacementF;
             Function *intermediateF = FC.currentF != FC.originalF?FC.currentF:nullptr;
@@ -446,7 +553,7 @@ PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager 
         }
     }
 
-    
+    if(Diagnostics != SignatureDiagnostics::None) DC.printDiagnostics();
     if (changed && verifyModule(M, &errs())) report_fatal_error("SignatureObfuscatorPass produced an invalid module");
 
     return changed ? PreservedAnalyses::none() : PreservedAnalyses::all();
