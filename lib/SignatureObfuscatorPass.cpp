@@ -6,6 +6,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/FormatVariadic.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/ADT/StringExtras.h" 
@@ -18,7 +19,6 @@
 using namespace llvm;
 
 namespace{
-    enum class SignatureMode { All, Rename, Dummy, Shuffle};
     enum class SignatureDiagnostics { None, Summary, byFunction, byTechnique, Table};
 
     cl::OptionCategory SIGCategory("Signature Obfuscation Options", "Options for configuring the Signature Obfuscation pass.");
@@ -28,16 +28,23 @@ namespace{
            cl::desc("Seed for deterministic name/shuffle generation"),
            cl::cat(SIGCategory));
 
-    cl::opt<SignatureMode> SIGMode("sig-mode",
-    cl::init(SignatureMode::All),
-    cl::values(
-        clEnumValN(SignatureMode::All,   "all",   "Apply all signature transformations (rename, dummy parameters, and argument shuffle)"),
-        clEnumValN(SignatureMode::Rename,   "rename",   "Rename candidate functions only"),
-        clEnumValN(SignatureMode::Dummy, "dummy", "Inject dummy parameters only to candidate functions"),
-        clEnumValN(SignatureMode::Shuffle,    "shuffle",    "Shuffle function parameter ordering only to candidate functions")
-    ),
-    cl::desc("Specify which signature obfuscation transformations to apply"),
+    static cl::opt<bool> DisableRename(
+    "sig-dis-rename",
+    cl::init(false),
+    cl::desc("Disable function renaming"),
     cl::cat(SIGCategory));
+
+    static cl::opt<bool> DisableDummy(
+        "sig-dis-dummy",
+        cl::init(false),
+        cl::desc("Disable dummy parameter insertion"),
+        cl::cat(SIGCategory));
+
+    static cl::opt<bool> DisableShuffle(
+        "sig-dis-shuffle",
+        cl::init(false),
+        cl::desc("Enable parameter shuffling"),
+        cl::cat(SIGCategory));
 
     cl::opt<unsigned> dummyCount("sig-dummy-count",
     cl::init(0),
@@ -54,28 +61,30 @@ namespace{
     ),
     cl::desc("Select the diagnostic output format for signature obfuscation"),
     cl::cat(SIGCategory));
-
-    struct FunctionContext {
+struct FunctionContext {
         Function *originalF = nullptr; 
         Function *currentF=nullptr;
         Function *replacementF=nullptr;
         std::string originalFName;
         SmallVector<unsigned,10> perm;
-        enum class DiagStatus { Success, Skip, Disabled};
-        explicit FunctionContext(Function *F):originalF(F),currentF(F) {
-            originalFName=F->getName();
-        }
+        
+        explicit FunctionContext(Function *F):originalF(F),currentF(F),originalFName(F->getName()){}
 
         void applyRename();
         void applyDummyParameters(unsigned count);
         bool applyShuffle();
         void rewriteCallSites();
-        void printDiagnostics(SignatureDiagnostics diagType);
-
+        
     private:
-        int getDummyCount();
         void appendDummyParams(unsigned N);
         void shuffleSlots();
+    };
+    struct DiagnosticContext{
+        FunctionContext *FC;
+        SignatureObfuscatorAnalysis::FunctionAnalysisInfo *FI;
+        enum class DiagStatus { Success, Skip, Disabled, Unknown};
+        explicit DiagnosticContext(FunctionContext *F,SignatureObfuscatorAnalysis::FunctionAnalysisInfo *fi):FC(F),FI(fi){}
+        void printDiagnostics();
         void diagSummary();
         void diagByFunction();
         void diagByTechnique();
@@ -85,15 +94,17 @@ namespace{
         DiagStatus getDummyStatus();
         DiagStatus getShuffleStatus();
         std::string getStatusName(DiagStatus status);
+        int getDummyCount();
     };
+    
 
-    int FunctionContext::getDummyCount(){
-        const unsigned originalArgCount = originalF->arg_size();
-        const unsigned finalArgCount = currentF->arg_size();
+    int DiagnosticContext::getDummyCount(){
+        const unsigned originalArgCount = FC->originalF->arg_size();
+        const unsigned finalArgCount = FC->currentF->arg_size();
         if (finalArgCount < originalArgCount) report_fatal_error("SignatureObfuscatorPass: unexpected parameter removal");
         return finalArgCount - originalArgCount;
     }
-    std::string FunctionContext::getStatusName(DiagStatus status){
+    std::string DiagnosticContext::getStatusName(DiagStatus status){
         switch(status){
             case DiagStatus::Success: return "SUCCESS";
             case DiagStatus::Skip: return "SKIP";
@@ -102,37 +113,80 @@ namespace{
         }
     }
 
-    FunctionContext::DiagStatus FunctionContext::getRenameStatus(){
-        if(originalFName != currentF->getName()) return DiagStatus::Success;
-        else if(SIGMode != SignatureMode::All && SIGMode != SignatureMode::Rename) return DiagStatus::Disabled;
-        else return DiagStatus::Skip;
+    DiagnosticContext::DiagStatus DiagnosticContext::getRenameStatus(){
+        if(FC->originalFName != FC->currentF->getName()) return DiagStatus::Success;
+        else if(DisableRename) return DiagStatus::Disabled;
+        else if(!FI->canRename) return DiagStatus::Skip;
+        else return DiagStatus::Unknown;
     }
-    FunctionContext::DiagStatus FunctionContext::getDummyStatus(){
-        if(SIGMode != SignatureMode::All && SIGMode != SignatureMode::Dummy) return DiagStatus::Disabled;
+    DiagnosticContext::DiagStatus DiagnosticContext::getDummyStatus(){
+        if(DisableDummy) return DiagStatus::Disabled;
         else if(getDummyCount() != 0) return DiagStatus::Success;
-        else return DiagStatus::Skip;
+        else if(!FI->canAddDummy) return DiagStatus::Skip;
+        else return DiagStatus::Unknown;
     }
-    FunctionContext::DiagStatus FunctionContext::getShuffleStatus(){
-        if(SIGMode != SignatureMode::All && SIGMode != SignatureMode::Shuffle) return DiagStatus::Disabled;
-        else if(!perm.empty()) return DiagStatus::Success;
-        else return DiagStatus::Skip;
+    DiagnosticContext::DiagStatus DiagnosticContext::getShuffleStatus(){
+        if(DisableShuffle) return DiagStatus::Disabled;
+        else if(!FC->perm.empty()) return DiagStatus::Success;
+        else if(!FI->canShuffle) return DiagStatus::Skip;
+        else return DiagStatus::Unknown;
     }
-    void FunctionContext::diagSummary(){
+    void DiagnosticContext::diagSummary(){
         errs() << "[Signature] "
-        << format("%-24s", originalFName.c_str())
+        << format("%-24s", FC->originalFName.c_str())
         << " rename=" << format("%-12s", getStatusName(getRenameStatus()).c_str())
         << " dummy=" << format("%-12s", (getStatusName(getDummyStatus()) + std::string("(+") + std::to_string(getDummyCount()) + ")").c_str())
         << " shuffle=" << getStatusName(getShuffleStatus())
         << '\n';
     }
-
+    void DiagnosticContext::diagByFunction(){
+        auto getDummyParameterTypes = [&]() -> std::string {
+            std::string Types;
+            raw_string_ostream OS(Types);
+            OS << "(";
+            bool First = true;
+            for (const Argument &Arg : FC->currentF->args()) {
+                if (!FC->currentF->getAttributes().hasParamAttr(Arg.getArgNo(), "obf.dummy.role")) continue;
+                if (!First) OS << ",";
+                Arg.getType()->print(OS);
+                First = false;
+            }
+            OS << ")";
+            return OS.str();
+        };
+        auto printOperation = [&](StringRef technique, DiagStatus DS, std::string successMessage, StringRef skipReason) {
+            std::string message;
+            switch (DS) {
+                case DiagStatus::Success:
+                    message = std::move(successMessage);
+                    break;
+                case DiagStatus::Skip:
+                    message = skipReason.str();
+                    break;
+                case DiagStatus::Disabled:
+                    message = "disabled by command-line option";
+                    break;
+                default:
+                    message = "unknown reason";
+                    break;
+            }
+            errs() << formatv("  {0,-10} {1,-10} {2}\n", technique, getStatusName(DS), message);
+        };
+        errs() << "[Signature] " << format("%-24s", FC->originalFName.c_str()) << "\n";
+        printOperation("Rename",getRenameStatus(),FC->originalFName + " -> " + ((FC->replacementF!=nullptr)?FC->replacementF->getName():FC->originalF->getName()).str(),FI->renameReason);
+        printOperation("Dummies",getDummyStatus(),"+" + std::to_string(getDummyCount()) +" " + getDummyParameterTypes(),FI->dummyReason);
+        printOperation("Shuffle",getShuffleStatus(), "[" + join(map_range(FC->perm, [](unsigned I) {return std::to_string(I);}), ", ") + "]", FI->shuffleReason);
+        errs() << "\n";
+    }
     
-    void FunctionContext::printDiagnostics(SignatureDiagnostics diagType){
-        switch(diagType){
+    void DiagnosticContext::printDiagnostics(){
+        switch(Diagnostics){
             case SignatureDiagnostics::Summary:
                 diagSummary();
                 break;
-            case SignatureDiagnostics::byFunction: break;
+            case SignatureDiagnostics::byFunction: 
+                diagByFunction();
+                break;
             case SignatureDiagnostics::byTechnique: break;
             case SignatureDiagnostics::Table: break;
         }
@@ -342,45 +396,44 @@ namespace{
 } //namespace
 
 //====================   RUN   ====================
-
 PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager &AM) {
     auto &analysisResult = AM.getResult<SignatureObfuscatorAnalysis>(M);
     auto &functionAnalysisInfos = analysisResult.functionAnalysisInfo;
     bool changed{false};
-    
     for(SignatureObfuscatorAnalysis::FunctionAnalysisInfo functionInfo : functionAnalysisInfos){ //NOTE: BETTER NAMES
-        FunctionContext Context(functionInfo.Fn);
-        if (functionInfo.canRename && (SIGMode == SignatureMode::All || SIGMode == SignatureMode::Rename)){
-            Context.applyRename();
+        FunctionContext FC(functionInfo.Fn);
+        if (functionInfo.canRename && !DisableRename){
+            FC.applyRename();
         }
-        if (functionInfo.canAddDummy && (SIGMode == SignatureMode::All || SIGMode == SignatureMode::Dummy)) {
+        if (functionInfo.canAddDummy && !DisableDummy) {
             unsigned padCount = 0;
             if (dummyCount == 0)
-                padCount = analysisResult.MaxArgs - Context.currentF->arg_size() + 1;
+                padCount = analysisResult.MaxArgs - FC.currentF->arg_size() + 1;
             else
                 padCount = dummyCount;
-            Context.applyDummyParameters(padCount);
+            FC.applyDummyParameters(padCount);
             changed =true;
         }
 
-        if (functionInfo.canShuffle && (SIGMode == SignatureMode::All || SIGMode == SignatureMode::Shuffle)) {
-            if (Context.replacementF != nullptr) {
-                    Context.currentF = Context.replacementF;
-                    Context.replacementF = nullptr;
+        if (functionInfo.canShuffle && !DisableShuffle) {
+            if (FC.replacementF != nullptr) {
+                    FC.currentF = FC.replacementF;
+                    FC.replacementF = nullptr;
                 }
-            changed = Context.applyShuffle();
+            changed = FC.applyShuffle();
         }
 
         if(Diagnostics != SignatureDiagnostics::None){
-            Context.printDiagnostics(Diagnostics);
+            DiagnosticContext DC{&FC, &functionInfo};
+            DC.printDiagnostics();
         }
-        if (Context.replacementF != nullptr) {
-            Function *finalF = Context.replacementF;
-            Function *intermediateF = Context.currentF != Context.originalF?Context.currentF:nullptr;
-            Context.rewriteCallSites();
-            if (!Context.originalF->use_empty()) report_fatal_error("SignatureObfuscatorPass could not replace all original uses");
+        if (FC.replacementF != nullptr) {
+            Function *finalF = FC.replacementF;
+            Function *intermediateF = FC.currentF != FC.originalF?FC.currentF:nullptr;
+            FC.rewriteCallSites();
+            if (!FC.originalF->use_empty()) report_fatal_error("SignatureObfuscatorPass could not replace all original uses");
 
-            Context.originalF->eraseFromParent();
+            FC.originalF->eraseFromParent();
             if (intermediateF != nullptr) {
                 if (!intermediateF->use_empty()) {
                     errs() << "Error: intermediate function still has users: " << intermediateF->getName() << '\n';
@@ -388,8 +441,8 @@ PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager 
                 }
                 intermediateF->eraseFromParent();
             }
-            Context.currentF = finalF;
-            Context.replacementF = nullptr;
+            FC.currentF = finalF;
+            FC.replacementF = nullptr;
         }
     }
 
