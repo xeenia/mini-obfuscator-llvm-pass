@@ -57,7 +57,8 @@ namespace{
         clEnumValN(SignatureDiagnostics::None, "none", "Disable diagnostic output"),
         clEnumValN(SignatureDiagnostics::Summary, "summary", "Print a concise summary of transformation results for each function"),
         clEnumValN(SignatureDiagnostics::byFunction, "function", "Print diagnostic results grouped by function, including per-technique statuses and skip reasons"),
-        clEnumValN(SignatureDiagnostics::byTechnique, "technique", "Print diagnostic results grouped by technique, including transformed, skipped, and unchanged functions")
+        clEnumValN(SignatureDiagnostics::byTechnique, "technique", "Print diagnostic results grouped by technique, including transformed, skipped, and unchanged functions"),
+        clEnumValN(SignatureDiagnostics::Table, "table", "Print diagnostic results grouped by technique, including transformed, skipped, and unchanged functions")
     ),
     cl::desc("Select the diagnostic output format for signature obfuscation"),
     cl::cat(SIGCategory));
@@ -201,10 +202,13 @@ struct FunctionContext {
         errs() << "[Signature] by Function Diagnostics\n"
         << "================================================================================================\n";
         for (const DiagnosticReport &DR : report) {
+            const auto renameStatus = static_cast<DiagStatus>(DR.renameStatus);
+            const auto dummyStatus = static_cast<DiagStatus>(DR.dummyStatus);
+            const auto shuffleStatus = static_cast<DiagStatus>(DR.shuffleStatus);
             errs() << "\n[Signature] " << DR.functionName << '\n';
-            errs() << formatv("  {0,-10} {1,-10} {2}\n", "Rename", getStatusName(static_cast<DiagStatus>(DR.renameStatus)), DR.renameResult);
-            errs() << formatv("  {0,-10} {1,-10} {2}\n", "Dummy", getStatusName(static_cast<DiagStatus>(DR.dummyStatus)), ((DR.dummyCount!=0)? ("(+" + std::to_string(DR.dummyCount) + ") ") : "") + DR.dummyResult);
-            errs() << formatv("  {0,-10} {1,-10} {2}\n", "Shuffle", getStatusName(static_cast<DiagStatus>(DR.shuffleStatus)), DR.shuffleResult);
+            errs() << formatv("  {0,-10} {1,-10} {2}\n", "Rename", getStatusName(renameStatus), DR.renameResult);
+            errs() << formatv("  {0,-10} {1,-10} {2}\n", "Dummy", getStatusName(dummyStatus), ((DR.dummyCount!=0)? ("(+" + std::to_string(DR.dummyCount) + ") ") : "") + DR.dummyResult);
+            errs() << formatv("  {0,-10} {1,-10} {2}\n", "Shuffle", getStatusName(shuffleStatus), DR.shuffleResult);
         }
     }
     
@@ -283,6 +287,79 @@ struct FunctionContext {
             false,true);
         
     }
+    
+    void DiagnosticContext::diagTable() {
+    auto pad = [](StringRef value, size_t width) {
+        std::string result = value.str();
+        if (result.size() < width)
+            result.append(width - result.size(), ' ');
+        return result;
+    };
+
+    errs() << "[Signature] Transformation Summary\n"
+           << "================================================================================================\n"
+           << pad("Function", 15)
+           << pad("Rename", 19)
+           << pad("Dummy Parameters", 21)
+           << pad("Parameter Shuffle", 22)
+           << "Notes\n"
+           << "------------------------------------------------------------------------------------------------\n";
+
+    for (const DiagnosticReport &DR : report) {
+        const auto renameStatus = static_cast<DiagStatus>(DR.renameStatus);
+        const auto dummyStatus = static_cast<DiagStatus>(DR.dummyStatus);
+        const auto shuffleStatus = static_cast<DiagStatus>(DR.shuffleStatus);
+
+        std::string rename = getStatusName(renameStatus);
+        std::string dummy = getStatusName(dummyStatus);
+        std::string shuffle = getStatusName(shuffleStatus);
+
+        if (dummyStatus == DiagStatus::Success) dummy += " (+" + std::to_string(DR.dummyCount) + ")";
+
+        std::string notes;
+        auto addNote = [&](StringRef technique, StringRef result) {
+            if (result.empty()) return;
+            if (!notes.empty()) notes += "; ";
+            notes += technique.str() + ": " + result.str();
+        };
+
+        struct NoteEntry {
+            StringRef message;
+            std::string techniques;
+        };
+
+        SmallVector<NoteEntry, 3> noteEntries;
+
+        auto collectNote = [&](char technique, DiagStatus status, StringRef result) {
+            if (status == DiagStatus::Success || result.empty()) return;
+
+            for (NoteEntry &entry : noteEntries) {
+                if (entry.message == result) {
+                    entry.techniques += "," + std::string(1, technique);
+                    return;
+                }
+            }
+            noteEntries.push_back({result, std::string(1, technique)});
+        };
+
+        collectNote('R', renameStatus, DR.renameResult);
+        collectNote('D', dummyStatus, DR.dummyResult);
+        collectNote('S', shuffleStatus, DR.shuffleResult);
+
+        for (const NoteEntry &entry : noteEntries) {
+            if (!notes.empty()) notes += "; ";
+            notes += entry.techniques + ": " + entry.message.str();
+        }
+
+        errs() << pad(DR.functionName, 15)
+               << pad(rename, 19)
+               << pad(dummy, 21)
+               << pad(shuffle, 22)
+               << (notes.empty() ? "-" : notes) << '\n';
+    }
+
+    errs() << "================================================================================================\n";
+}
     void DiagnosticContext::printDiagnostics(){
         switch(Diagnostics){
             case SignatureDiagnostics::Summary:
@@ -294,7 +371,9 @@ struct FunctionContext {
             case SignatureDiagnostics::byTechnique: 
                 diagByTechnique();
             break;
-            case SignatureDiagnostics::Table: break;
+            case SignatureDiagnostics::Table: 
+                diagTable();
+            break;
         }
     }
     static void keepFunctionOrder(Function &Old, Function &New) {
