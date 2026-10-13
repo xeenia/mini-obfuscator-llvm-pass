@@ -468,6 +468,8 @@ namespace{
             }
             if (!ArgStore) continue;
             if (!DBuilder.moveDummyStateStoreToEntry(ArgStore)) continue;
+            F.removeParamAttr(Arg.getArgNo(), "obf.dummy.role");
+            F.addParamAttr( Arg.getArgNo(), Attribute::get(F.getContext(), "obf.dummy.role", "1")); //updating the dummy's attribute to "CFFState"
             dummyArgIndex = Arg.getArgNo();
             foundDummyState = true;
             break;
