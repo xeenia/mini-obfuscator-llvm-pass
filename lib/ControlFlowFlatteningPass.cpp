@@ -122,128 +122,119 @@ namespace{
     }
 
     void printDiagnostic(Function &F) {
-        if (CFFDumpDiagnostics == DiagVerbosity::Quick) {
-            bool HasCrossBlockUse = false;
-            bool HasDynAlloca = false;
+        using Diagnostics = SmallVector<std::string, 8>;
 
-            //checks for cross-block uses
+        auto collectCrossBlockUses = [&]() {
+            Diagnostics diagnostics;
             for (BasicBlock &UserBB : F) {
                 for (Instruction &User : UserBB) {
-                    if (isa<PHINode>(User))
-                        continue;
+                    if (isa<PHINode>(User)) continue;
                     for (Value *Op : User.operands()) {
                         auto *Def = dyn_cast<Instruction>(Op);
-                        if (!Def || isa<PHINode>(Def))
-                            continue;
+                        if (!Def || isa<PHINode>(Def)) continue;
+
                         BasicBlock *DefBB = Def->getParent();
-                        if (DefBB == &UserBB)
-                            continue;
+                        if (DefBB == &UserBB) continue;
+
                         auto *AI = dyn_cast<AllocaInst>(Def);
-                        if (AI && AI->isStaticAlloca() && DefBB == &F.getEntryBlock())
-                            continue;
+                        if (AI && AI->isStaticAlloca() && DefBB == &F.getEntryBlock()) continue;
 
-                        HasCrossBlockUse = true;
-                        break;
+                        std::string message;
+                        raw_string_ostream OS(message);
+
+                        OS << "  User: ";
+                        User.printAsOperand(OS, false);
+                        OS << "\n    block: "
+                        << getSimpleNodeLabel(&UserBB);
+                        OS << "\n    uses value: ";
+                        Def->printAsOperand(OS, false);
+                        OS << "\n    defined in: "
+                        << getSimpleNodeLabel(DefBB);
+                        OS << "\n\n";
+
+                        OS.flush();
+                        diagnostics.push_back(std::move(message));
                     }
-                    if (HasCrossBlockUse) break;
                 }
-                if (HasCrossBlockUse) break;
             }
+            return diagnostics;
+        };
 
-            //checks for dynamic allocas
+        auto collectDynamicAllocas = [&]() {
+            llvm::SmallVector<AllocaInst *, 8> allocas;
             for (BasicBlock &BB : F) {
                 for (Instruction &I : BB) {
                     auto *AI = dyn_cast<AllocaInst>(&I);
-                    if (AI && !AI->isStaticAlloca()) {
-                        HasDynAlloca = true;
-                        break;
-                    }
+                    if (AI && !AI->isStaticAlloca()) allocas.push_back(AI);
                 }
-                if (HasDynAlloca) break;
             }
+            return allocas;
+        };
 
-            if(HasCrossBlockUse && HasDynAlloca) return;
-            if (HasCrossBlockUse && HasDynAlloca) {
-                errs() << "[CFFDiagnostic] "<< llvm::format("%-40s", F.getName().str().c_str())<< " -> [BOTH]\n";
-            } else if(HasCrossBlockUse){
-                errs() << "[CFFDiagnostic] "<< llvm::format("%-40s", F.getName().str().c_str())<< " -> [CROSS]\n";
-            }else if(HasDynAlloca){
-                errs() << "[CFFDiagnostic] "<< llvm::format("%-40s", F.getName().str().c_str())<< " -> [ALLOCA]\n";
+        if (CFFDumpDiagnostics == DiagVerbosity::Quick) {
+            auto crossBlockUses = collectCrossBlockUses();
+            auto dynamicAllocas = collectDynamicAllocas();
+            bool hasCross = !crossBlockUses.empty();
+            bool hasAlloca = !dynamicAllocas.empty();
+            if (hasCross || hasAlloca) {
+                errs() << "[CFFDiagnostic] " << llvm::format("%-40s", F.getName().str().c_str()) << " -> ";
+                if (hasCross && hasAlloca) errs() << "[BOTH]";
+                else if (hasCross) errs() << "[CROSS]";
+                else errs() << "[ALLOCA]";
+                errs() << "\n";
             }
             return;
         }
 
-        if (CFFDumpDiagnostics == DiagVerbosity::CrossValues || CFFDumpDiagnostics == DiagVerbosity::All) {
-            errs() << "\n========== CFF Diagnostics: " << F.getName() << " ==========\n";
+        bool showCross = CFFDumpDiagnostics == DiagVerbosity::CrossValues || CFFDumpDiagnostics == DiagVerbosity::All;
+        bool showAlloca = CFFDumpDiagnostics == DiagVerbosity::DynAlloca || CFFDumpDiagnostics == DiagVerbosity::All;
+        if (!showCross && !showAlloca) return;
+
+        Diagnostics crossDiagnostics;
+        llvm::SmallVector<AllocaInst *, 8> dynamicAllocas;
+
+        if (showCross) crossDiagnostics = collectCrossBlockUses();
+        if (showAlloca) dynamicAllocas = collectDynamicAllocas();
+        if (crossDiagnostics.empty() && dynamicAllocas.empty()) return;
+
+        errs() << "\n========== CFF Diagnostics: "  << F.getName() << " ==========\n";
+
+        if (showCross && !crossDiagnostics.empty()) {
             errs() << "\n[DOMINANCE CROSS-BLOCK USES]\n";
-            bool FoundCrossBlockUse = false;
-            for (BasicBlock &UserBB : F) {
-                for (Instruction &User : UserBB) {
-                    if (isa<PHINode>(User))
-                        continue;
-                    for (Value *Op : User.operands()) {
-                        auto *Def = dyn_cast<Instruction>(Op);
-                        if (!Def)
-                            continue;
-                        if (isa<PHINode>(Def))
-                            continue;
-                        BasicBlock *DefBB = Def->getParent();
-                        if (DefBB == &UserBB)
-                            continue;
-                        auto *AI = dyn_cast<AllocaInst>(Def);
-                        if (AI && AI->isStaticAlloca() &&
-                            DefBB == &F.getEntryBlock()) {
-                            continue;
-                        }
-                        FoundCrossBlockUse = true;
-                        errs() << "  User: ";
-                        User.printAsOperand(errs(), false);
-                        errs() << "\n    block: ";
-                        errs() << getSimpleNodeLabel(&UserBB);
-                        errs() << "\n    uses value: ";
-                        Def->printAsOperand(errs(), false);
-                        errs() << "\n    defined in: ";
-                        errs() << getSimpleNodeLabel(DefBB);
-                        errs() << "\n\n";
-                    }
-                }
-            }
-            if (!FoundCrossBlockUse)
-                errs() << "  None\n";
+            for (const std::string &message : crossDiagnostics)
+                errs() << message;
         }
-        if (CFFDumpDiagnostics == DiagVerbosity::DynAlloca || CFFDumpDiagnostics == DiagVerbosity::All) {
-            errs() << "\n[DYNAMIC ALLOCA]\n";
-            bool FoundDynamicAlloca = false;
-            for (BasicBlock &BB : F) {
-                for (Instruction &I : BB) {
-                    auto *AI = dyn_cast<AllocaInst>(&I);
-                    if (!AI || AI->isStaticAlloca())
-                        continue;
-                    FoundDynamicAlloca = true;
-                    errs() << "  Alloca: ";
-                    AI->printAsOperand(errs(), false);
-                    errs() << "\n    defined in: " << getSimpleNodeLabel(&BB) << "\n";
-                    errs() << "    used in blocks:\n";
-                    SmallPtrSet<BasicBlock *, 8> UsedBlocks;
-                    for (User *U : AI->users()) {
-                        auto *UserI = dyn_cast<Instruction>(U);
-                        if (!UserI)
-                            continue;
-                        UsedBlocks.insert(UserI->getParent());
-                    }
-                    if (UsedBlocks.empty()) {
-                        errs() << "      None\n";
-                    } else {
-                        for (BasicBlock *UserBB : UsedBlocks) {
-                            errs() << "      " << getSimpleNodeLabel(UserBB) << "\n";
-                        }
-                    }
-                    errs() << "\n";
+
+        if (showAlloca && !dynamicAllocas.empty()) {
+            errs() << "\n[DYNAMIC ALLOCAS]\n";
+
+            for (AllocaInst *AI : dynamicAllocas) {
+                std::string message;
+                raw_string_ostream OS(message);
+
+                OS << "  Alloca: ";
+                AI->printAsOperand(OS, false);
+                OS << "\n    defined in: " << getSimpleNodeLabel(AI->getParent());
+                OS << "\n    used in blocks:\n";
+
+                SmallPtrSet<BasicBlock *, 8> usedBlocks;
+
+                for (User *U : AI->users()) {
+                    auto *UserI = dyn_cast<Instruction>(U);
+                    if (UserI) usedBlocks.insert(UserI->getParent());
                 }
+
+                if (usedBlocks.empty())  OS << "      None\n";
+                else 
+                    for (BasicBlock *UserBB : usedBlocks)
+                        OS << "      " << getSimpleNodeLabel(UserBB) << "\n";
+            
+                OS << "\n";
+                OS.flush();
+
+                errs() << message;
             }
-            if (!FoundDynamicAlloca) errs() << "  None\n";
         }
-        errs() << "\n";
     }
 
     SmallVector<AllocaInst *, 16> demotePHIs(Function& F) {
