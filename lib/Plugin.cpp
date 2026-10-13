@@ -22,7 +22,7 @@ PassPluginLibraryInfo getPluginInfo(){
                             MPM.addPass(SignatureObfuscatorPass());
                             return true;
                         }
-                        if(Name == "CFFPass"){
+                        if(Name == "CFFpass"){
                             MPM.addPass(
                                 createModuleToFunctionPassAdaptor(
                                     ControlFlowFlatteningPass()

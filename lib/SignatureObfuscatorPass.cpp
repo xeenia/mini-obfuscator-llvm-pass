@@ -115,7 +115,6 @@ struct FunctionContext {
         DR.renameStatus = static_cast<unsigned>(getRenameStatus());
         DR.dummyStatus = static_cast<unsigned>(getDummyStatus());
         DR.shuffleStatus =  static_cast<unsigned>(getShuffleStatus());
-
         DR.dummyCount = getDummyCount();
         auto getDummyParameterTypes = [&]() -> std::string {
             std::string Types;
@@ -170,21 +169,21 @@ struct FunctionContext {
     }
 
     DiagnosticContext::DiagStatus DiagnosticContext::getRenameStatus(){
-        if(FC->originalFName != FC->currentF->getName()) return DiagStatus::Success;
-        else if(DisableRename) return DiagStatus::Disabled;
+        if(DisableRename) return DiagStatus::Disabled;
         else if(!FI->canRename) return DiagStatus::Skip;
+        else if(FC->originalFName != FC->currentF->getName()) return DiagStatus::Success;
         else return DiagStatus::Unknown;
     }
     DiagnosticContext::DiagStatus DiagnosticContext::getDummyStatus(){
         if(DisableDummy) return DiagStatus::Disabled;
-        else if(getDummyCount() != 0) return DiagStatus::Success;
         else if(!FI->canAddDummy) return DiagStatus::Skip;
+        else if(getDummyCount() != 0) return DiagStatus::Success;
         else return DiagStatus::Unknown;
     }
     DiagnosticContext::DiagStatus DiagnosticContext::getShuffleStatus(){
         if(DisableShuffle) return DiagStatus::Disabled;
-        else if(!FC->perm.empty()) return DiagStatus::Success;
         else if(!FI->canShuffle) return DiagStatus::Skip;
+        else if(!FC->perm.empty()) return DiagStatus::Success;
         else return DiagStatus::Unknown;
     }
     void DiagnosticContext::diagSummary(){
@@ -296,14 +295,19 @@ struct FunctionContext {
         return result;
     };
 
+    constexpr size_t functionWidth = 30;
+    constexpr size_t renameWidth = 19;
+    constexpr size_t dummyWidth = 22;
+    constexpr size_t shuffleWidth = 23;
+
     errs() << "[Signature] Transformation Summary\n"
-           << "================================================================================================\n"
-           << pad("Function", 15)
-           << pad("Rename", 19)
-           << pad("Dummy Parameters", 21)
-           << pad("Parameter Shuffle", 22)
-           << "Notes\n"
-           << "------------------------------------------------------------------------------------------------\n";
+        << "========================================================================================================================================\n"
+        << pad("Function", functionWidth)
+        << " | " << pad("Rename", renameWidth)
+        << " | " << pad("Dummy Parameters", dummyWidth)
+        << " | " << pad("Parameter Shuffle", shuffleWidth)
+        << " | Notes\n"
+        << "----------------------------------------------------------------------------------------------------------------------------------------\n";
 
     for (const DiagnosticReport &DR : report) {
         const auto renameStatus = static_cast<DiagStatus>(DR.renameStatus);
@@ -351,14 +355,14 @@ struct FunctionContext {
             notes += entry.techniques + ": " + entry.message.str();
         }
 
-        errs() << pad(DR.functionName, 15)
-               << pad(rename, 19)
-               << pad(dummy, 21)
-               << pad(shuffle, 22)
-               << (notes.empty() ? "-" : notes) << '\n';
+        errs() << pad(DR.functionName, functionWidth)
+                << " | " << pad(rename, renameWidth)
+                << " | " << pad(dummy, dummyWidth)
+                << " | " << pad(shuffle, shuffleWidth)
+                << " | " << (notes.empty() ? "-" : notes) << '\n';
     }
 
-    errs() << "================================================================================================\n";
+    errs() << "========================================================================================================================================\n";
 }
     void DiagnosticContext::printDiagnostics(){
         switch(Diagnostics){

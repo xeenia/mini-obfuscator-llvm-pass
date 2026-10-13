@@ -11,6 +11,7 @@
 #include "llvm/Transforms/Utils/PromoteMemToReg.h"
 #include "llvm/Analysis/AssumptionCache.h"
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/IR/InstIterator.h"
 #include "llvm/Support/RandomNumberGenerator.h"
 #include "ObfuscationAttributes.h"
 
@@ -21,7 +22,7 @@ namespace{
     cl::OptionCategory CFFCategory("Control Flow Flattening Options", "Options for configuring the Control Flow Flattening (CFF) pass.");
     enum class PromoteKind { None, Phis, Values, All };
     enum class DiagVerbosity { None, CrossValues, DynAlloca, All, Quick };
-    enum class ObfLevel { None, Shuffle};
+    enum class ObfLevel { None, Shuffle, Dummy};
 
     cl::opt<PromoteKind> CFFPromote(
         "cff-promote",
@@ -53,7 +54,8 @@ namespace{
         cl::init(ObfLevel::None),
         cl::values(
             clEnumValN(ObfLevel::None,        "0",       "Basic CFF without additional transformations (sequential case states, unshuffled)"),
-            clEnumValN(ObfLevel::Shuffle, "1",      "Basic CFF with randomized/shuffled case order")
+            clEnumValN(ObfLevel::Shuffle, "1",      "Basic CFF with randomized/shuffled case order"),
+            clEnumValN(ObfLevel::Dummy, "2",      "Basic CFF with dummy state variable")
         ),
         cl::desc("Specify the obfuscation level for Control Flow Flattening (CFF)"),
         cl::cat(CFFCategory));
@@ -75,6 +77,8 @@ namespace{
         cl::init(3),
         cl::desc("Minimum number of original basic blocks required in a function to trigger flattening"),
         cl::cat(CFFCategory));
+
+       
     struct DispatcherBuilder {
         Function &F;
         IRBuilder<> builder;
@@ -90,10 +94,12 @@ namespace{
             : F(F), builder(EntryBB), firstBlock(firstBlock) {}
 
         void addstateVarToEntryBB(); 
+        void replaceDummyAtCallSites(unsigned dummyArgIndex);
         void rewriteUnconditionalBranch(BranchInst *BI); 
         void rewriteConditionalBranch(BranchInst *BI);
         void rewriteSwitch(SwitchInst *SI);
         int findStateForBlock(BasicBlock *Target) const; 
+        bool moveDummyStateStoreToEntry(StoreInst *ArgStore);
     };
 
     void printSkipMessage(llvm::StringRef FuncName, const Twine &reason) {
@@ -332,6 +338,39 @@ namespace{
         return true;
     }
 
+    bool DispatcherBuilder::moveDummyStateStoreToEntry(StoreInst *argStore) {
+        if (!argStore) return false;
+        auto *AI = dyn_cast<AllocaInst>(argStore->getPointerOperand());
+        if (!AI) return false;
+        BasicBlock &entryBB = F.getEntryBlock();
+        Instruction *term = entryBB.getTerminator();
+        if (!term) return false;
+        stateVar = AI;
+        if (argStore->getParent() != &entryBB) argStore->moveBefore(term);
+        return true;
+    }
+    
+    void DispatcherBuilder::replaceDummyAtCallSites(unsigned dummyArgIndex) {
+        const int stateIndex = findStateForBlock(firstBlock);
+        Constant *indexValue = builder.getInt32(stateIndex);
+
+        unsigned updated = 0;
+        unsigned matchingCalls = 0;
+        Module *M = F.getParent();
+
+        for (Function &Caller : *M) {
+            for (Instruction &I : instructions(Caller)) {
+                auto *CB = dyn_cast<CallBase>(&I);
+                if (!CB || CB->getCalledFunction() != &F) continue;
+                ++matchingCalls;
+                Value *oldValue = CB->getArgOperand(dummyArgIndex);
+                CB->setArgOperand(dummyArgIndex, indexValue);
+                ++updated;
+            }
+        }
+    }
+
+
     void DispatcherBuilder::addstateVarToEntryBB(){ 
         Instruction *Term = F.getEntryBlock().getTerminator();
         builder.SetInsertPoint(Term); 
@@ -384,7 +423,6 @@ namespace{
 
     void createAndBuildDispatcher(Function &F,  SmallVector<BasicBlock*, 20> &BBtoFlatten) {
         DispatcherBuilder DBuilder(F,&F.getEntryBlock(), BBtoFlatten[0]);
-
         LLVMContext &Ctx = DBuilder.F.getContext();
 
         DBuilder.defaultBB = BasicBlock::Create(Ctx, "default", &F);
@@ -396,7 +434,7 @@ namespace{
         Value *tempVal = DBuilder.builder.getInt32(0);
         SwitchInst *SI = DBuilder.builder.CreateSwitch(tempVal, DBuilder.defaultBB, BBtoFlatten.size());
 
-        if(CFFLevel==ObfLevel::Shuffle){
+        if(CFFLevel==ObfLevel::Shuffle || CFFLevel==ObfLevel::Dummy){
             std::mt19937 Gen(std::random_device{}());
             llvm::shuffle(BBtoFlatten.begin(), BBtoFlatten.end(), Gen);
         }
@@ -412,8 +450,32 @@ namespace{
         DBuilder.builder.SetInsertPoint(DBuilder.loopBB);
         DBuilder.builder.CreateBr(DBuilder.switchBB);
 
+        unsigned dummyArgIndex = 0;
+        bool foundDummyState = false;
 
-        DBuilder.addstateVarToEntryBB();
+        //lvl 2 - dummy hardening - finds the first dummy in the arg list, moves its store in entry block and updates the call sites
+        for (Argument &Arg : F.args()) {
+            Attribute RoleAttr = F.getAttributes().getParamAttr(Arg.getArgNo(), "obf.dummy.role");
+            if (!RoleAttr.isValid()) continue;
+            StoreInst *ArgStore = nullptr;
+            for (User *U : Arg.users()) {
+                auto *SI = dyn_cast<StoreInst>(U);
+
+                if (SI && SI->getValueOperand() == &Arg) {
+                    ArgStore = SI;
+                    break;
+                }
+            }
+            if (!ArgStore) continue;
+            if (!DBuilder.moveDummyStateStoreToEntry(ArgStore)) continue;
+            dummyArgIndex = Arg.getArgNo();
+            foundDummyState = true;
+            break;
+        }
+
+        if (foundDummyState)  DBuilder.replaceDummyAtCallSites(dummyArgIndex);
+        else DBuilder.addstateVarToEntryBB();
+
         for (size_t i = 0; i < BBtoFlatten.size(); i++) {
             BasicBlock *BB = BBtoFlatten[i];
             Instruction *Term = BB->getTerminator();
@@ -430,7 +492,9 @@ namespace{
 
     //update switch condition
     DBuilder.builder.SetInsertPoint(SI);
-    Value *stateVal = DBuilder.builder.CreateLoad(DBuilder.builder.getInt32Ty(), DBuilder.stateVar, "b");
+    Value *stateVal;
+    if (CFFLevel == ObfLevel::Dummy && F.hasFnAttribute("obf.dummy")) stateVal = DBuilder.builder.CreateLoad(DBuilder.stateVar->getAllocatedType(), DBuilder.stateVar, "dummy.state");
+    else stateVal = DBuilder.builder.CreateLoad(DBuilder.builder.getInt32Ty(), DBuilder.stateVar, "b");
     SI->setCondition(stateVal);
     //connecting the entry point with the dispatcher
     auto *entryTerm = dyn_cast<BranchInst>(DBuilder.F.getEntryBlock().getTerminator());
@@ -573,6 +637,7 @@ namespace{
         return false;
     }
 }//end namespace
+
 PreservedAnalyses ControlFlowFlatteningPass::run(Function &F, FunctionAnalysisManager &AM) {
     if (!isCFFCandidate(F))  return PreservedAnalyses::all();
     if (exceedsBlockLimits(F)) return PreservedAnalyses::all();
@@ -584,10 +649,9 @@ PreservedAnalyses ControlFlowFlatteningPass::run(Function &F, FunctionAnalysisMa
     SmallVector<AllocaInst *,16> AllocasFromPhis = demotePHIs(F);
     SmallVector<AllocaInst *, 16> AllocasFromValues = demoteFunction(F);
     flattenFunction(F);
-
     if (verifyFunction(F, &errs()))
         report_fatal_error("ControlFlowFlatteningPass produced an invalid function");
-
+ 
     if (CFFPromote != PromoteKind::None) {
         DominatorTree DT(F);
         auto &AC = AM.getResult<AssumptionAnalysis>(F);

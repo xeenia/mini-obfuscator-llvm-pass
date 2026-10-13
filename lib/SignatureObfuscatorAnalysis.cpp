@@ -13,7 +13,8 @@ enum class Reason{
     Variadic,
     AddressTaken,
     NonLocalLinkage,
-    NotEnoughArgs
+    NotEnoughArgs,
+    NoArgs
 };
 const char *getReasonMessage(Reason reason) {
     switch (reason) {
@@ -23,6 +24,7 @@ const char *getReasonMessage(Reason reason) {
         case Reason::Variadic: return "function is variadic";
         case Reason::AddressTaken: return "function address is taken";
         case Reason::NonLocalLinkage: return "function has non-local linkage";
+        case Reason::NoArgs: return "function has none args.";
         default: return "unknown reason";
     }
 }
@@ -50,6 +52,7 @@ SignatureObfuscatorAnalysis::Result SignatureObfuscatorAnalysis::run(llvm::Modul
             fnAnInfo.canRename = true;
             if (F.hasAddressTaken()) setSignatureReasons(Reason::AddressTaken);
             else if (F.isVarArg()) setSignatureReasons(Reason::Variadic);
+            else if(F.arg_size() == 0) setSignatureReasons(Reason::NoArgs);
             else {
                 fnAnInfo.canAddDummy = true;
                 fnAnInfo.canShuffle = true;
