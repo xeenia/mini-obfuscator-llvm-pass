@@ -1,0 +1,13 @@
+[Signature] Transformation Summary
+========================================================================================================================================
+Function                       | Rename              | Dummy Parameters       | Parameter Shuffle       | Notes
+----------------------------------------------------------------------------------------------------------------------------------------
+main                           | SKIP                | SKIP                   | SKIP                    | R,D,S: function is main
+_00_two                        | DISABLED            | DISABLED               | SUCCESS                 | R,D: disabled by command-line option
+_01_three                      | DISABLED            | DISABLED               | SUCCESS                 | R,D: disabled by command-line option
+_02_four                       | DISABLED            | DISABLED               | SUCCESS                 | R,D: disabled by command-line option
+_03_mixed                      | DISABLED            | DISABLED               | SUCCESS                 | R,D: disabled by command-line option
+_04_cb                         | DISABLED            | SKIP                   | SKIP                    | R: disabled by command-line option; D,S: function address is taken
+_05_fact                       | DISABLED            | DISABLED               | SKIP                    | R,D: disabled by command-line option; S: function has too few arguments to shuffle
+printf                         | SKIP                | SKIP                   | SKIP                    | R,D,S: function is a declaration
+========================================================================================================================================

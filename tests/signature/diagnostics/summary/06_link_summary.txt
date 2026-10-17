@@ -1,0 +1,23 @@
+[Signature] Summary Diagnostics
+================================================================================================
+[Signature] _07_init                 rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] main                     rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _00_local_zero           rename=SUCCESS      dummy=SUCCESS(+4)  shuffle=SUCCESS
+[Signature] _01_local_one            rename=SUCCESS      dummy=SUCCESS(+3)  shuffle=SUCCESS
+[Signature] _02_local_two            rename=SUCCESS      dummy=SUCCESS(+2)  shuffle=SUCCESS
+[Signature] _03_local_three          rename=SUCCESS      dummy=SUCCESS(+1)  shuffle=SUCCESS
+[Signature] _04_local_cb             rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] abs                      rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] printf                   rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _05_square               rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _06_triple               rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _00_public_add           rename=SUCCESS      dummy=SUCCESS(+2)  shuffle=SUCCESS
+[Signature] _01_public_mul           rename=SUCCESS      dummy=SUCCESS(+2)  shuffle=SUCCESS
+[Signature] _02_mixed                rename=SUCCESS      dummy=SUCCESS(+1)  shuffle=SUCCESS
+[Signature] _03_callback             rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _05_fact                 rename=SUCCESS      dummy=SUCCESS(+3)  shuffle=SUCCESS
+[Signature] _04_variadic_sum         rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] llvm.va_start            rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] llvm.va_end              rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _07_force_internal       rename=SUCCESS      dummy=SUCCESS(+3)  shuffle=SUCCESS
+[Signature] _06_internal_helper      rename=SUCCESS      dummy=SUCCESS(+3)  shuffle=SUCCESS

@@ -1,5 +1,5 @@
-; ModuleID = '_05_for_obf_levels.c'
-source_filename = "_05_for_obf_levels.c"
+; ModuleID = '/home/xenia/Projects/mini-obfuscator-llvm-pass/tests/cff/scripts/../supported/_05_for_obf_levels.c'
+source_filename = "/home/xenia/Projects/mini-obfuscator-llvm-pass/tests/cff/scripts/../supported/_05_for_obf_levels.c"
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 

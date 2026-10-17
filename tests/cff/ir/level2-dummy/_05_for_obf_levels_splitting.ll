@@ -1,5 +1,5 @@
-; ModuleID = '/tmp/tmp.0X45wnAZQL/input.bc'
-source_filename = "/home/xenia/Projects/mini-obfuscator-llvm-pass/tests/cff/supported/_05_for_obf_levels.c"
+; ModuleID = '/tmp/tmp.zXkJDsxLoh/_05_for_obf_levels.bc'
+source_filename = "/home/xenia/Projects/mini-obfuscator-llvm-pass/tests/cff/scripts/../supported/_05_for_obf_levels.c"
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
@@ -9,13 +9,27 @@ target triple = "x86_64-unknown-linux-gnu"
 @.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_00_no_args_globals() #0 {
+define dso_local i32 @_00_no_args_globals(i32 noundef "obf.dummy.role"="0" %dummy6, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy5, i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef "obf.dummy.role"="0" %dummy1) #0 {
 entry:
+  %dummy0.addr = alloca i32, align 4
+  %dummy1.addr = alloca i32, align 4
+  %dummy2.addr = alloca i32, align 4
+  %dummy3.addr = alloca i32, align 4
+  %dummy4.addr = alloca i32, align 4
+  %dummy5.addr = alloca i32, align 4
+  %dummy6.addr = alloca i32, align 4
   %0 = alloca i32, align 4
   %1 = alloca i32, align 4
   br label %2
 
 2:                                                ; preds = %entry
+  store i32 %dummy0, ptr %dummy0.addr, align 4
+  store i32 %dummy1, ptr %dummy1.addr, align 4
+  store i32 %dummy2, ptr %dummy2.addr, align 4
+  store i32 %dummy3, ptr %dummy3.addr, align 4
+  store i32 %dummy4, ptr %dummy4.addr, align 4
+  store i32 %dummy5, ptr %dummy5.addr, align 4
+  store i32 %dummy6, ptr %dummy6.addr, align 4
   %3 = load i32, ptr @g_counter, align 4
   %4 = add nsw i32 %3, 5
   store i32 %4, ptr @g_counter, align 4
@@ -49,7 +63,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_01_loop_if_single_arg(i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef %0, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy5) #1 {
+define dso_local i32 @_01_loop_if_single_arg(i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef %0, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy5) #0 {
 entry:
   %dummy0.addr = alloca i32, align 4
   %dummy1.addr = alloca i32, align 4
@@ -134,7 +148,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_02_pointer_array_two_args(i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef %0, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy2, ptr noundef %1, i32 noundef "obf.dummy.role"="0" %dummy1) #1 {
+define dso_local i32 @_02_pointer_array_two_args(i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef %0, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy2, ptr noundef %1, i32 noundef "obf.dummy.role"="0" %dummy1) #0 {
 entry:
   %dummy0.addr = alloca i32, align 4
   %dummy1.addr = alloca i32, align 4
@@ -221,7 +235,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_03_switch_goto(i32 noundef "obf.dummy.role"="0" %dummy5, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef %0) #1 {
+define dso_local i32 @_03_switch_goto(i32 noundef "obf.dummy.role"="0" %dummy5, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef %0) #0 {
 entry:
   %dummy0.addr = alloca i32, align 4
   %dummy1.addr = alloca i32, align 4
@@ -283,7 +297,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_04_nested_loops_control(i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef %0, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef %1, i32 noundef "obf.dummy.role"="0" %dummy0) #1 {
+define dso_local i32 @_04_nested_loops_control(i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef %0, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef %1, i32 noundef "obf.dummy.role"="0" %dummy0) #0 {
 entry:
   %dummy0.addr = alloca i32, align 4
   %dummy1.addr = alloca i32, align 4
@@ -373,7 +387,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_05_six_args_compounds(i32 noundef %0, i32 noundef %1, i32 noundef %2, i32 noundef %3, i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef %4, i32 noundef %5) #1 {
+define dso_local i32 @_05_six_args_compounds(i32 noundef %0, i32 noundef %1, i32 noundef %2, i32 noundef %3, i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef %4, i32 noundef %5) #0 {
 entry:
   %dummy0.addr = alloca i32, align 4
   %6 = alloca i32, align 4
@@ -471,7 +485,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_06_double_pointer_dowhile(i32 noundef "obf.dummy.role"="0" %dummy5, i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef %0, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy0) #1 {
+define dso_local i32 @_06_double_pointer_dowhile(i32 noundef "obf.dummy.role"="0" %dummy5, i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef %0, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy0) #0 {
 entry:
   %.reg2mem = alloca i1, align 1
   %dummy0.addr = alloca i32, align 4
@@ -539,7 +553,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_07_six_args_array_globals(i32 noundef %0, i32 noundef %1, i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef %2, i32 noundef %3, i32 noundef %4, i32 noundef %5) #1 {
+define dso_local i32 @_07_six_args_array_globals(i32 noundef %0, i32 noundef %1, i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef %2, i32 noundef %3, i32 noundef %4, i32 noundef %5) #0 {
 entry:
   %dummy0.addr = alloca i32, align 4
   %6 = alloca i32, align 4
@@ -638,7 +652,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_08_goto_loop_statemachine(i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef %0, i32 noundef %1, i32 noundef "obf.dummy.role"="0" %dummy0) #1 {
+define dso_local i32 @_08_goto_loop_statemachine(i32 noundef "obf.dummy.role"="0" %dummy2, i32 noundef "obf.dummy.role"="0" %dummy4, i32 noundef "obf.dummy.role"="0" %dummy3, i32 noundef "obf.dummy.role"="0" %dummy1, i32 noundef %0, i32 noundef %1, i32 noundef "obf.dummy.role"="0" %dummy0) #0 {
 entry:
   %dummy0.addr = alloca i32, align 4
   %dummy1.addr = alloca i32, align 4
@@ -706,7 +720,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @_09_six_args_full_mix(i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef %0, i32 noundef %1, i32 noundef %2, i32 noundef %3, i32 noundef %4, i32 noundef %5) #1 {
+define dso_local i32 @_09_six_args_full_mix(i32 noundef "obf.dummy.role"="0" %dummy0, i32 noundef %0, i32 noundef %1, i32 noundef %2, i32 noundef %3, i32 noundef %4, i32 noundef %5) #0 {
 entry:
   %dummy0.addr = alloca i32, align 4
   %6 = alloca i32, align 4
@@ -825,7 +839,7 @@ entry:
 }
 
 ; Function Attrs: noinline nounwind optnone uwtable
-define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #0 {
+define dso_local i32 @main(i32 noundef %0, ptr noundef %1) #1 {
 entry:
   %2 = alloca i32, align 4
   %3 = alloca i32, align 4
@@ -858,7 +872,7 @@ entry:
 17:                                               ; preds = %12, %9
   call void @llvm.memcpy.p0.p0.i64(ptr align 16 %6, ptr align 16 @__const.main.test_arr, i64 20, i1 false)
   store i32 0, ptr %7, align 4
-  %18 = call i32 @_00_no_args_globals()
+  %18 = call i32 @_00_no_args_globals(i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0)
   %19 = load i32, ptr %7, align 4
   %20 = add nsw i32 %19, %18
   store i32 %20, ptr %7, align 4
@@ -939,8 +953,8 @@ declare void @llvm.memcpy.p0.p0.i64(ptr noalias nocapture writeonly, ptr noalias
 
 declare i32 @printf(ptr noundef, ...) #4
 
-attributes #0 = { noinline nounwind optnone uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
-attributes #1 = { noinline nounwind optnone uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "obf.dummy" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #0 = { noinline nounwind optnone uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "obf.dummy" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { noinline nounwind optnone uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 attributes #2 = { nounwind willreturn memory(read) "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 attributes #3 = { nocallback nofree nounwind willreturn memory(argmem: readwrite) }
 attributes #4 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }

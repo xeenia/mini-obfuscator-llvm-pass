@@ -1,0 +1,10 @@
+[Signature] Summary Diagnostics
+================================================================================================
+[Signature] main                     rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _00_two                  rename=DISABLED     dummy=DISABLED(+0) shuffle=SUCCESS
+[Signature] _01_three                rename=DISABLED     dummy=DISABLED(+0) shuffle=SUCCESS
+[Signature] _02_four                 rename=DISABLED     dummy=DISABLED(+0) shuffle=SUCCESS
+[Signature] _03_mixed                rename=DISABLED     dummy=DISABLED(+0) shuffle=SUCCESS
+[Signature] _04_cb                   rename=DISABLED     dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _05_fact                 rename=DISABLED     dummy=DISABLED(+0) shuffle=SKIP
+[Signature] printf                   rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP

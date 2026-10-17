@@ -1,0 +1,47 @@
+[Signature] by Function Diagnostics
+================================================================================================
+
+[Signature] _01_square
+  Rename     SUCCESS    _fD6BE5F29961D2F43
+  Dummy      SKIP       function address is taken
+  Shuffle    SKIP       function address is taken
+
+[Signature] _02_triple
+  Rename     SUCCESS    _fBD6B75C45D33AB60
+  Dummy      SKIP       function address is taken
+  Shuffle    SKIP       function address is taken
+
+[Signature] _03_init
+  Rename     SUCCESS    _fFEA85C01F3338864
+  Dummy      SKIP       function address is taken
+  Shuffle    SKIP       function address is taken
+
+[Signature] main
+  Rename     SKIP       function is main
+  Dummy      SKIP       function is main
+  Shuffle    SKIP       function is main
+
+[Signature] _00_vararg_sum
+  Rename     SUCCESS    _fA4520BA5BCC8D8E2
+  Dummy      SKIP       function is variadic
+  Shuffle    SKIP       function is variadic
+
+[Signature] abs
+  Rename     SKIP       function is a declaration
+  Dummy      SKIP       function is a declaration
+  Shuffle    SKIP       function is a declaration
+
+[Signature] printf
+  Rename     SKIP       function is a declaration
+  Dummy      SKIP       function is a declaration
+  Shuffle    SKIP       function is a declaration
+
+[Signature] llvm.va_start
+  Rename     SKIP       function is an LLVM intrinsic
+  Dummy      SKIP       function is an LLVM intrinsic
+  Shuffle    SKIP       function is an LLVM intrinsic
+
+[Signature] llvm.va_end
+  Rename     SKIP       function is an LLVM intrinsic
+  Dummy      SKIP       function is an LLVM intrinsic
+  Shuffle    SKIP       function is an LLVM intrinsic

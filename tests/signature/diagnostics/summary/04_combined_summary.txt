@@ -1,0 +1,11 @@
+[Signature] Summary Diagnostics
+================================================================================================
+[Signature] _01_square               rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _02_triple               rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _03_init                 rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] main                     rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] _00_vararg_sum           rename=SUCCESS      dummy=SKIP(+0)     shuffle=SKIP
+[Signature] abs                      rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] printf                   rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] llvm.va_start            rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP
+[Signature] llvm.va_end              rename=SKIP         dummy=SKIP(+0)     shuffle=SKIP

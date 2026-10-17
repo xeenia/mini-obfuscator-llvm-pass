@@ -1,5 +1,5 @@
-; ModuleID = '_05_for_obf_levels.bc'
-source_filename = "_05_for_obf_levels.c"
+; ModuleID = '/tmp/tmp.4QH8Dw2eJE/_05_for_obf_levels.bc'
+source_filename = "/home/xenia/Projects/mini-obfuscator-llvm-pass/tests/cff/scripts/../supported/_05_for_obf_levels.c"
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
@@ -14,7 +14,7 @@ entry:
   %0 = alloca i32, align 4
   %1 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 2, ptr %b, align 4
+  store i32 0, ptr %b, align 4
   br label %switch
 
 2:                                                ; preds = %switch
@@ -29,7 +29,7 @@ entry:
 5:                                                ; preds = %switch
   %6 = load i32, ptr %1, align 4
   %7 = icmp slt i32 %6, 4
-  %8 = select i1 %7, i32 0, i32 1
+  %8 = select i1 %7, i32 2, i32 1
   store i32 %8, ptr %b, align 4
   br label %loop
 
@@ -59,13 +59,13 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b1 = load i32, ptr %b, align 4
   switch i32 %b1, label %default [
-    i32 0, label %9
+    i32 0, label %2
     i32 1, label %20
-    i32 2, label %2
+    i32 2, label %9
     i32 3, label %5
   ]
 
-loop:                                             ; preds = %5, %2, %9
+loop:                                             ; preds = %5, %9, %2
   br label %switch
 }
 
@@ -77,7 +77,7 @@ entry:
   %3 = alloca i32, align 4
   %4 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 0, ptr %b, align 4
+  store i32 2, ptr %b, align 4
   br label %switch
 
 5:                                                ; preds = %switch
@@ -89,25 +89,25 @@ entry:
 6:                                                ; preds = %switch
   %7 = load i32, ptr %2, align 4
   %8 = icmp slt i32 %7, 0
-  %9 = select i1 %8, i32 8, i32 9
+  %9 = select i1 %8, i32 8, i32 0
   store i32 %9, ptr %b, align 4
   br label %loop
 
 10:                                               ; preds = %switch
   store i32 -1, ptr %1, align 4
-  store i32 3, ptr %b, align 4
+  store i32 11, ptr %b, align 4
   br label %loop
 
 11:                                               ; preds = %switch
   store i32 0, ptr %4, align 4
-  store i32 2, ptr %b, align 4
+  store i32 9, ptr %b, align 4
   br label %loop
 
 12:                                               ; preds = %switch
   %13 = load i32, ptr %4, align 4
   %14 = load i32, ptr %2, align 4
   %15 = icmp slt i32 %13, %14
-  %16 = select i1 %15, i32 1, i32 4
+  %16 = select i1 %15, i32 5, i32 4
   store i32 %16, ptr %b, align 4
   br label %loop
 
@@ -115,7 +115,7 @@ entry:
   %18 = load i32, ptr %4, align 4
   %19 = srem i32 %18, 2
   %20 = icmp eq i32 %19, 0
-  %21 = select i1 %20, i32 11, i32 7
+  %21 = select i1 %20, i32 6, i32 1
   store i32 %21, ptr %b, align 4
   br label %loop
 
@@ -125,7 +125,7 @@ entry:
   %25 = load i32, ptr %3, align 4
   %26 = add nsw i32 %25, %24
   store i32 %26, ptr %3, align 4
-  store i32 6, ptr %b, align 4
+  store i32 7, ptr %b, align 4
   br label %loop
 
 27:                                               ; preds = %switch
@@ -133,24 +133,24 @@ entry:
   %29 = load i32, ptr %3, align 4
   %30 = add nsw i32 %29, %28
   store i32 %30, ptr %3, align 4
-  store i32 6, ptr %b, align 4
+  store i32 7, ptr %b, align 4
   br label %loop
 
 31:                                               ; preds = %switch
-  store i32 5, ptr %b, align 4
+  store i32 3, ptr %b, align 4
   br label %loop
 
 32:                                               ; preds = %switch
   %33 = load i32, ptr %4, align 4
   %34 = add nsw i32 %33, 1
   store i32 %34, ptr %4, align 4
-  store i32 2, ptr %b, align 4
+  store i32 9, ptr %b, align 4
   br label %loop
 
 35:                                               ; preds = %switch
   %36 = load i32, ptr %3, align 4
   store i32 %36, ptr %1, align 4
-  store i32 3, ptr %b, align 4
+  store i32 11, ptr %b, align 4
   br label %loop
 
 37:                                               ; preds = %switch
@@ -163,21 +163,21 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b1 = load i32, ptr %b, align 4
   switch i32 %b1, label %default [
-    i32 0, label %5
-    i32 1, label %17
-    i32 2, label %12
-    i32 3, label %37
+    i32 0, label %11
+    i32 1, label %27
+    i32 2, label %5
+    i32 3, label %32
     i32 4, label %35
-    i32 5, label %32
-    i32 6, label %31
-    i32 7, label %27
+    i32 5, label %17
+    i32 6, label %22
+    i32 7, label %31
     i32 8, label %10
-    i32 9, label %11
+    i32 9, label %12
     i32 10, label %6
-    i32 11, label %22
+    i32 11, label %37
   ]
 
-loop:                                             ; preds = %22, %6, %11, %10, %27, %31, %32, %35, %12, %17, %5
+loop:                                             ; preds = %6, %12, %10, %31, %22, %17, %35, %32, %5, %27, %11
   br label %switch
 }
 
@@ -191,32 +191,32 @@ entry:
   %6 = alloca ptr, align 8
   %7 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 0, ptr %b, align 4
+  store i32 4, ptr %b, align 4
   br label %switch
 
 8:                                                ; preds = %switch
   store ptr %0, ptr %3, align 8
   store i32 %1, ptr %4, align 4
-  store i32 3, ptr %b, align 4
+  store i32 0, ptr %b, align 4
   br label %loop
 
 9:                                                ; preds = %switch
   %10 = load ptr, ptr %3, align 8
   %11 = icmp ne ptr %10, null
-  %12 = select i1 %11, i32 6, i32 5
+  %12 = select i1 %11, i32 9, i32 3
   store i32 %12, ptr %b, align 4
   br label %loop
 
 13:                                               ; preds = %switch
   %14 = load i32, ptr %4, align 4
   %15 = icmp sle i32 %14, 0
-  %16 = select i1 %15, i32 5, i32 7
+  %16 = select i1 %15, i32 3, i32 7
   store i32 %16, ptr %b, align 4
   br label %loop
 
 17:                                               ; preds = %switch
   store i32 0, ptr %2, align 4
-  store i32 9, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %loop
 
 18:                                               ; preds = %switch
@@ -224,7 +224,7 @@ entry:
   %19 = load ptr, ptr %3, align 8
   store ptr %19, ptr %6, align 8
   store i32 0, ptr %7, align 4
-  store i32 4, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %loop
 
 20:                                               ; preds = %switch
@@ -251,20 +251,20 @@ entry:
   %36 = load ptr, ptr %6, align 8
   %37 = getelementptr inbounds i32, ptr %36, i32 1
   store ptr %37, ptr %6, align 8
-  store i32 8, ptr %b, align 4
+  store i32 5, ptr %b, align 4
   br label %loop
 
 38:                                               ; preds = %switch
   %39 = load i32, ptr %7, align 4
   %40 = add nsw i32 %39, 1
   store i32 %40, ptr %7, align 4
-  store i32 4, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %loop
 
 41:                                               ; preds = %switch
   %42 = load i32, ptr %5, align 4
   store i32 %42, ptr %2, align 4
-  store i32 9, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %loop
 
 43:                                               ; preds = %switch
@@ -277,19 +277,19 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b1 = load i32, ptr %b, align 4
   switch i32 %b1, label %default [
-    i32 0, label %8
+    i32 0, label %9
     i32 1, label %41
     i32 2, label %25
-    i32 3, label %9
-    i32 4, label %20
-    i32 5, label %17
-    i32 6, label %13
+    i32 3, label %17
+    i32 4, label %8
+    i32 5, label %38
+    i32 6, label %20
     i32 7, label %18
-    i32 8, label %38
-    i32 9, label %43
+    i32 8, label %43
+    i32 9, label %13
   ]
 
-loop:                                             ; preds = %38, %18, %13, %17, %20, %9, %25, %41, %8
+loop:                                             ; preds = %13, %18, %20, %38, %8, %17, %25, %41, %9
   br label %switch
 }
 
@@ -299,7 +299,7 @@ entry:
   %1 = alloca i32, align 4
   %2 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 0, ptr %b, align 4
+  store i32 5, ptr %b, align 4
   br label %switch
 
 3:                                                ; preds = %switch
@@ -314,35 +314,35 @@ entry:
   ]
 
 6:                                                ; preds = %switch
-  store i32 8, ptr %b, align 4
+  store i32 1, ptr %b, align 4
   br label %loop
 
 7:                                                ; preds = %switch
   store i32 100, ptr %2, align 4
-  store i32 3, ptr %b, align 4
+  store i32 0, ptr %b, align 4
   br label %loop
 
 8:                                                ; preds = %switch
-  store i32 4, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %loop
 
 9:                                                ; preds = %switch
   store i32 -1, ptr %2, align 4
-  store i32 3, ptr %b, align 4
+  store i32 0, ptr %b, align 4
   br label %loop
 
 10:                                               ; preds = %switch
-  store i32 6, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %loop
 
 11:                                               ; preds = %switch
   store i32 50, ptr %2, align 4
-  store i32 6, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %loop
 
 12:                                               ; preds = %switch
   store i32 200, ptr %2, align 4
-  store i32 6, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %loop
 
 13:                                               ; preds = %switch
@@ -357,22 +357,22 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b4 = load i32, ptr %b, align 4
   switch i32 %b4, label %default [
-    i32 0, label %3
-    i32 1, label %8
-    i32 2, label %7
-    i32 3, label %10
-    i32 4, label %12
-    i32 5, label %9
-    i32 6, label %13
+    i32 0, label %10
+    i32 1, label %11
+    i32 2, label %8
+    i32 3, label %9
+    i32 4, label %7
+    i32 5, label %3
+    i32 6, label %12
     i32 7, label %6
-    i32 8, label %11
+    i32 8, label %13
   ]
 
-loop:                                             ; preds = %11, %6, %9, %12, %10, %7, %8, %case3, %case2, %case1, %case
+loop:                                             ; preds = %6, %12, %case3, %case2, %case1, %case, %7, %9, %8, %11, %10
   br label %switch
 
 case:                                             ; preds = %3
-  store i32 5, ptr %b, align 4
+  store i32 3, ptr %b, align 4
   br label %loop
 
 case1:                                            ; preds = %3
@@ -380,11 +380,11 @@ case1:                                            ; preds = %3
   br label %loop
 
 case2:                                            ; preds = %3
-  store i32 2, ptr %b, align 4
+  store i32 4, ptr %b, align 4
   br label %loop
 
 case3:                                            ; preds = %3
-  store i32 1, ptr %b, align 4
+  store i32 2, ptr %b, align 4
   br label %loop
 }
 
@@ -397,7 +397,7 @@ entry:
   %5 = alloca i32, align 4
   %6 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 0, ptr %b, align 4
+  store i32 1, ptr %b, align 4
   br label %switch
 
 7:                                                ; preds = %switch
@@ -405,50 +405,50 @@ entry:
   store i32 %1, ptr %3, align 4
   store i32 0, ptr %4, align 4
   store i32 0, ptr %5, align 4
-  store i32 3, ptr %b, align 4
+  store i32 7, ptr %b, align 4
   br label %loop
 
 8:                                                ; preds = %switch
   %9 = load i32, ptr %5, align 4
   %10 = load i32, ptr %2, align 4
   %11 = icmp slt i32 %9, %10
-  %12 = select i1 %11, i32 10, i32 4
+  %12 = select i1 %11, i32 11, i32 3
   store i32 %12, ptr %b, align 4
   br label %loop
 
 13:                                               ; preds = %switch
   %14 = load i32, ptr %5, align 4
   %15 = icmp eq i32 %14, 5
-  %16 = select i1 %15, i32 12, i32 11
+  %16 = select i1 %15, i32 4, i32 5
   store i32 %16, ptr %b, align 4
   br label %loop
 
 17:                                               ; preds = %switch
-  store i32 4, ptr %b, align 4
+  store i32 3, ptr %b, align 4
   br label %loop
 
 18:                                               ; preds = %switch
   store i32 0, ptr %6, align 4
-  store i32 6, ptr %b, align 4
+  store i32 12, ptr %b, align 4
   br label %loop
 
 19:                                               ; preds = %switch
   %20 = load i32, ptr %6, align 4
   %21 = load i32, ptr %3, align 4
   %22 = icmp slt i32 %20, %21
-  %23 = select i1 %22, i32 8, i32 2
+  %23 = select i1 %22, i32 9, i32 10
   store i32 %23, ptr %b, align 4
   br label %loop
 
 24:                                               ; preds = %switch
   %25 = load i32, ptr %6, align 4
   %26 = icmp eq i32 %25, 2
-  %27 = select i1 %26, i32 9, i32 5
+  %27 = select i1 %26, i32 6, i32 2
   store i32 %27, ptr %b, align 4
   br label %loop
 
 28:                                               ; preds = %switch
-  store i32 7, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %loop
 
 29:                                               ; preds = %switch
@@ -460,25 +460,25 @@ entry:
   %35 = load i32, ptr %4, align 4
   %36 = add nsw i32 %35, %34
   store i32 %36, ptr %4, align 4
-  store i32 7, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %loop
 
 37:                                               ; preds = %switch
   %38 = load i32, ptr %6, align 4
   %39 = add nsw i32 %38, 1
   store i32 %39, ptr %6, align 4
-  store i32 6, ptr %b, align 4
+  store i32 12, ptr %b, align 4
   br label %loop
 
 40:                                               ; preds = %switch
-  store i32 1, ptr %b, align 4
+  store i32 0, ptr %b, align 4
   br label %loop
 
 41:                                               ; preds = %switch
   %42 = load i32, ptr %5, align 4
   %43 = add nsw i32 %42, 1
   store i32 %43, ptr %5, align 4
-  store i32 3, ptr %b, align 4
+  store i32 7, ptr %b, align 4
   br label %loop
 
 44:                                               ; preds = %switch
@@ -491,22 +491,22 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b1 = load i32, ptr %b, align 4
   switch i32 %b1, label %default [
-    i32 0, label %7
-    i32 1, label %41
-    i32 2, label %40
-    i32 3, label %8
-    i32 4, label %44
-    i32 5, label %29
-    i32 6, label %19
-    i32 7, label %37
-    i32 8, label %24
-    i32 9, label %28
-    i32 10, label %13
-    i32 11, label %18
-    i32 12, label %17
+    i32 0, label %41
+    i32 1, label %7
+    i32 2, label %29
+    i32 3, label %44
+    i32 4, label %17
+    i32 5, label %18
+    i32 6, label %28
+    i32 7, label %8
+    i32 8, label %37
+    i32 9, label %24
+    i32 10, label %40
+    i32 11, label %13
+    i32 12, label %19
   ]
 
-loop:                                             ; preds = %17, %18, %13, %28, %24, %37, %19, %29, %8, %40, %41, %7
+loop:                                             ; preds = %19, %13, %40, %24, %37, %8, %28, %18, %17, %29, %7, %41
   br label %switch
 }
 
@@ -521,7 +521,7 @@ entry:
   %11 = alloca i32, align 4
   %12 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 6, ptr %b, align 4
+  store i32 5, ptr %b, align 4
   br label %switch
 
 13:                                               ; preds = %switch
@@ -532,14 +532,14 @@ entry:
   store i32 %4, ptr %10, align 4
   store i32 %5, ptr %11, align 4
   store i32 0, ptr %12, align 4
-  store i32 5, ptr %b, align 4
+  store i32 11, ptr %b, align 4
   br label %loop
 
 14:                                               ; preds = %switch
   %15 = load i32, ptr %6, align 4
   %16 = load i32, ptr %7, align 4
   %17 = icmp sgt i32 %15, %16
-  %18 = select i1 %17, i32 9, i32 8
+  %18 = select i1 %17, i32 0, i32 9
   store i32 %18, ptr %b, align 4
   br label %loop
 
@@ -547,7 +547,7 @@ entry:
   %20 = load i32, ptr %8, align 4
   %21 = load i32, ptr %9, align 4
   %22 = icmp slt i32 %20, %21
-  %23 = select i1 %22, i32 2, i32 8
+  %23 = select i1 %22, i32 8, i32 9
   store i32 %23, ptr %b, align 4
   br label %loop
 
@@ -556,14 +556,14 @@ entry:
   %26 = load i32, ptr %8, align 4
   %27 = add nsw i32 %25, %26
   store i32 %27, ptr %12, align 4
-  store i32 12, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %loop
 
 28:                                               ; preds = %switch
   %29 = load i32, ptr %10, align 4
   %30 = load i32, ptr %11, align 4
   %31 = icmp eq i32 %29, %30
-  %32 = select i1 %31, i32 10, i32 0
+  %32 = select i1 %31, i32 4, i32 1
   store i32 %32, ptr %b, align 4
   br label %loop
 
@@ -571,7 +571,7 @@ entry:
   %34 = load i32, ptr %10, align 4
   %35 = mul nsw i32 %34, 2
   store i32 %35, ptr %12, align 4
-  store i32 7, ptr %b, align 4
+  store i32 2, ptr %b, align 4
   br label %loop
 
 36:                                               ; preds = %switch
@@ -581,11 +581,11 @@ entry:
   %40 = load i32, ptr %11, align 4
   %41 = add nsw i32 %39, %40
   store i32 %41, ptr %12, align 4
-  store i32 7, ptr %b, align 4
+  store i32 2, ptr %b, align 4
   br label %loop
 
 42:                                               ; preds = %switch
-  store i32 12, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %loop
 
 43:                                               ; preds = %switch
@@ -600,21 +600,21 @@ entry:
   %47 = load i32, ptr %12, align 4
   %48 = add nsw i32 %47, 10
   store i32 %48, ptr %12, align 4
-  store i32 11, ptr %b, align 4
+  store i32 7, ptr %b, align 4
   br label %loop
 
 49:                                               ; preds = %switch
   %50 = load i32, ptr %12, align 4
   %51 = add nsw i32 %50, 20
   store i32 %51, ptr %12, align 4
-  store i32 11, ptr %b, align 4
+  store i32 7, ptr %b, align 4
   br label %loop
 
 52:                                               ; preds = %switch
   %53 = load i32, ptr %12, align 4
   %54 = add nsw i32 %53, 30
   store i32 %54, ptr %12, align 4
-  store i32 11, ptr %b, align 4
+  store i32 7, ptr %b, align 4
   br label %loop
 
 55:                                               ; preds = %switch
@@ -627,34 +627,34 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b3 = load i32, ptr %b, align 4
   switch i32 %b3, label %default [
-    i32 0, label %36
-    i32 1, label %52
-    i32 2, label %24
-    i32 3, label %46
-    i32 4, label %49
-    i32 5, label %14
-    i32 6, label %13
-    i32 7, label %42
-    i32 8, label %28
-    i32 9, label %19
-    i32 10, label %33
-    i32 11, label %55
-    i32 12, label %43
+    i32 0, label %19
+    i32 1, label %36
+    i32 2, label %42
+    i32 3, label %49
+    i32 4, label %33
+    i32 5, label %13
+    i32 6, label %43
+    i32 7, label %55
+    i32 8, label %24
+    i32 9, label %28
+    i32 10, label %52
+    i32 11, label %14
+    i32 12, label %46
   ]
 
-loop:                                             ; preds = %case2, %case1, %case, %33, %19, %28, %42, %13, %14, %49, %46, %24, %52, %36
+loop:                                             ; preds = %46, %14, %52, %28, %24, %case2, %case1, %case, %13, %33, %49, %42, %36, %19
   br label %switch
 
 case:                                             ; preds = %43
-  store i32 1, ptr %b, align 4
+  store i32 10, ptr %b, align 4
   br label %loop
 
 case1:                                            ; preds = %43
-  store i32 3, ptr %b, align 4
+  store i32 12, ptr %b, align 4
   br label %loop
 
 case2:                                            ; preds = %43
-  store i32 4, ptr %b, align 4
+  store i32 3, ptr %b, align 4
   br label %loop
 }
 
@@ -668,7 +668,7 @@ entry:
   %4 = alloca ptr, align 8
   %5 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 5, ptr %b, align 4
+  store i32 0, ptr %b, align 4
   br label %switch
 
 6:                                                ; preds = %switch
@@ -678,7 +678,7 @@ entry:
   store ptr %2, ptr %3, align 8
   store ptr %3, ptr %4, align 8
   store i32 0, ptr %5, align 4
-  store i32 2, ptr %b, align 4
+  store i32 4, ptr %b, align 4
   br label %loop
 
 8:                                                ; preds = %switch
@@ -690,7 +690,7 @@ entry:
   %13 = load i32, ptr %5, align 4
   %14 = add nsw i32 %13, 1
   store i32 %14, ptr %5, align 4
-  store i32 4, ptr %b, align 4
+  store i32 1, ptr %b, align 4
   br label %loop
 
 15:                                               ; preds = %switch
@@ -699,7 +699,7 @@ entry:
   %18 = load i32, ptr %17, align 4
   %19 = icmp slt i32 %18, 20
   store i1 false, ptr %.reg2mem, align 1
-  %20 = select i1 %19, i32 0, i32 3
+  %20 = select i1 %19, i32 3, i32 2
   store i32 %20, ptr %b, align 4
   br label %loop
 
@@ -707,12 +707,12 @@ entry:
   %22 = load i32, ptr %5, align 4
   %23 = icmp slt i32 %22, 10
   store i1 %23, ptr %.reg2mem, align 1
-  store i32 3, ptr %b, align 4
+  store i32 2, ptr %b, align 4
   br label %loop
 
 24:                                               ; preds = %switch
   %.reload = load i1, ptr %.reg2mem, align 1
-  %25 = select i1 %.reload, i32 2, i32 1
+  %25 = select i1 %.reload, i32 4, i32 5
   store i32 %25, ptr %b, align 4
   br label %loop
 
@@ -728,15 +728,15 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b1 = load i32, ptr %b, align 4
   switch i32 %b1, label %default [
-    i32 0, label %21
-    i32 1, label %26
-    i32 2, label %8
-    i32 3, label %24
-    i32 4, label %15
-    i32 5, label %6
+    i32 0, label %6
+    i32 1, label %15
+    i32 2, label %24
+    i32 3, label %21
+    i32 4, label %8
+    i32 5, label %26
   ]
 
-loop:                                             ; preds = %6, %15, %24, %8, %21
+loop:                                             ; preds = %8, %21, %24, %15, %6
   br label %switch
 }
 
@@ -754,7 +754,7 @@ entry:
   %14 = alloca i32, align 4
   %15 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 2, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %switch
 
 16:                                               ; preds = %switch
@@ -786,13 +786,13 @@ entry:
   store ptr %29, ptr %13, align 8
   store i32 0, ptr %14, align 4
   store i32 0, ptr %15, align 4
-  store i32 3, ptr %b, align 4
+  store i32 2, ptr %b, align 4
   br label %loop
 
 30:                                               ; preds = %switch
   %31 = load i32, ptr %15, align 4
   %32 = icmp slt i32 %31, 6
-  %33 = select i1 %32, i32 1, i32 5
+  %33 = select i1 %32, i32 0, i32 7
   store i32 %33, ptr %b, align 4
   br label %loop
 
@@ -801,7 +801,7 @@ entry:
   %36 = load i32, ptr %35, align 4
   %37 = srem i32 %36, 2
   %38 = icmp eq i32 %37, 0
-  %39 = select i1 %38, i32 7, i32 4
+  %39 = select i1 %38, i32 3, i32 1
   store i32 %39, ptr %b, align 4
   br label %loop
 
@@ -817,7 +817,7 @@ entry:
   %49 = load i32, ptr %14, align 4
   %50 = add nsw i32 %49, %48
   store i32 %50, ptr %14, align 4
-  store i32 0, ptr %b, align 4
+  store i32 4, ptr %b, align 4
   br label %loop
 
 51:                                               ; preds = %switch
@@ -826,21 +826,21 @@ entry:
   %54 = load i32, ptr %14, align 4
   %55 = sub nsw i32 %54, %53
   store i32 %55, ptr %14, align 4
-  store i32 0, ptr %b, align 4
+  store i32 4, ptr %b, align 4
   br label %loop
 
 56:                                               ; preds = %switch
   %57 = load ptr, ptr %13, align 8
   %58 = getelementptr inbounds i32, ptr %57, i32 1
   store ptr %58, ptr %13, align 8
-  store i32 6, ptr %b, align 4
+  store i32 5, ptr %b, align 4
   br label %loop
 
 59:                                               ; preds = %switch
   %60 = load i32, ptr %15, align 4
   %61 = add nsw i32 %60, 1
   store i32 %61, ptr %15, align 4
-  store i32 3, ptr %b, align 4
+  store i32 2, ptr %b, align 4
   br label %loop
 
 62:                                               ; preds = %switch
@@ -853,17 +853,17 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b1 = load i32, ptr %b, align 4
   switch i32 %b1, label %default [
-    i32 0, label %56
-    i32 1, label %34
-    i32 2, label %16
-    i32 3, label %30
-    i32 4, label %51
-    i32 5, label %62
-    i32 6, label %59
-    i32 7, label %40
+    i32 0, label %34
+    i32 1, label %51
+    i32 2, label %30
+    i32 3, label %40
+    i32 4, label %56
+    i32 5, label %59
+    i32 6, label %16
+    i32 7, label %62
   ]
 
-loop:                                             ; preds = %40, %59, %51, %30, %16, %34, %56
+loop:                                             ; preds = %16, %59, %56, %40, %30, %51, %34
   br label %switch
 }
 
@@ -875,7 +875,7 @@ entry:
   %4 = alloca i32, align 4
   %5 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 6, ptr %b, align 4
+  store i32 4, ptr %b, align 4
   br label %switch
 
 6:                                                ; preds = %switch
@@ -884,26 +884,26 @@ entry:
   %7 = load i32, ptr %2, align 4
   store i32 %7, ptr %4, align 4
   store i32 0, ptr %5, align 4
-  store i32 7, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %loop
 
 8:                                                ; preds = %switch
   %9 = load i32, ptr %4, align 4
   %10 = load i32, ptr %3, align 4
   %11 = icmp sge i32 %9, %10
-  %12 = select i1 %11, i32 1, i32 5
+  %12 = select i1 %11, i32 1, i32 0
   store i32 %12, ptr %b, align 4
   br label %loop
 
 13:                                               ; preds = %switch
-  store i32 3, ptr %b, align 4
+  store i32 5, ptr %b, align 4
   br label %loop
 
 14:                                               ; preds = %switch
   %15 = load i32, ptr %4, align 4
   %16 = srem i32 %15, 3
   %17 = icmp eq i32 %16, 0
-  %18 = select i1 %17, i32 0, i32 2
+  %18 = select i1 %17, i32 2, i32 7
   store i32 %18, ptr %b, align 4
   br label %loop
 
@@ -913,7 +913,7 @@ entry:
   %22 = load i32, ptr %5, align 4
   %23 = add nsw i32 %22, %21
   store i32 %23, ptr %5, align 4
-  store i32 4, ptr %b, align 4
+  store i32 3, ptr %b, align 4
   br label %loop
 
 24:                                               ; preds = %switch
@@ -921,14 +921,14 @@ entry:
   %26 = load i32, ptr %5, align 4
   %27 = add nsw i32 %26, %25
   store i32 %27, ptr %5, align 4
-  store i32 4, ptr %b, align 4
+  store i32 3, ptr %b, align 4
   br label %loop
 
 28:                                               ; preds = %switch
   %29 = load i32, ptr %4, align 4
   %30 = add nsw i32 %29, 1
   store i32 %30, ptr %4, align 4
-  store i32 7, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %loop
 
 31:                                               ; preds = %switch
@@ -941,17 +941,17 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b1 = load i32, ptr %b, align 4
   switch i32 %b1, label %default [
-    i32 0, label %19
+    i32 0, label %14
     i32 1, label %13
-    i32 2, label %24
-    i32 3, label %31
-    i32 4, label %28
-    i32 5, label %14
-    i32 6, label %6
-    i32 7, label %8
+    i32 2, label %19
+    i32 3, label %28
+    i32 4, label %6
+    i32 5, label %31
+    i32 6, label %8
+    i32 7, label %24
   ]
 
-loop:                                             ; preds = %8, %6, %14, %28, %24, %13, %19
+loop:                                             ; preds = %24, %8, %6, %28, %19, %13, %14
   br label %switch
 }
 
@@ -970,7 +970,7 @@ entry:
   %15 = alloca i32, align 4
   %16 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 5, ptr %b, align 4
+  store i32 6, ptr %b, align 4
   br label %switch
 
 17:                                               ; preds = %switch
@@ -1004,13 +1004,13 @@ entry:
 
 29:                                               ; preds = %switch
   store i32 0, ptr %16, align 4
-  store i32 11, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %loop
 
 30:                                               ; preds = %switch
   %31 = load i32, ptr %16, align 4
   %32 = icmp slt i32 %31, 4
-  %33 = select i1 %32, i32 10, i32 8
+  %33 = select i1 %32, i32 5, i32 11
   store i32 %33, ptr %b, align 4
   br label %loop
 
@@ -1023,24 +1023,24 @@ entry:
   %40 = load i32, ptr %15, align 4
   %41 = add nsw i32 %40, %39
   store i32 %41, ptr %15, align 4
-  store i32 7, ptr %b, align 4
+  store i32 0, ptr %b, align 4
   br label %loop
 
 42:                                               ; preds = %switch
   %43 = load i32, ptr %16, align 4
   %44 = add nsw i32 %43, 1
   store i32 %44, ptr %16, align 4
-  store i32 11, ptr %b, align 4
+  store i32 8, ptr %b, align 4
   br label %loop
 
 45:                                               ; preds = %switch
-  store i32 3, ptr %b, align 4
+  store i32 12, ptr %b, align 4
   br label %loop
 
 46:                                               ; preds = %switch
   %47 = load i32, ptr %11, align 4
   %48 = icmp sgt i32 %47, 0
-  %49 = select i1 %48, i32 2, i32 12
+  %49 = select i1 %48, i32 3, i32 1
   store i32 %49, ptr %b, align 4
   br label %loop
 
@@ -1051,7 +1051,7 @@ entry:
   %54 = load i32, ptr %11, align 4
   %55 = mul nsw i32 %53, %54
   store i32 %55, ptr %15, align 4
-  store i32 9, ptr %b, align 4
+  store i32 7, ptr %b, align 4
   br label %loop
 
 56:                                               ; preds = %switch
@@ -1059,7 +1059,7 @@ entry:
   br label %loop
 
 57:                                               ; preds = %switch
-  store i32 3, ptr %b, align 4
+  store i32 12, ptr %b, align 4
   br label %loop
 
 58:                                               ; preds = %switch
@@ -1067,7 +1067,7 @@ entry:
   %60 = load i32, ptr @g_counter, align 4
   %61 = add nsw i32 %59, %60
   store i32 %61, ptr %6, align 4
-  store i32 0, ptr %b, align 4
+  store i32 10, ptr %b, align 4
   br label %loop
 
 62:                                               ; preds = %switch
@@ -1079,7 +1079,7 @@ entry:
   store i32 %67, ptr %15, align 4
   %68 = load i32, ptr %15, align 4
   store i32 %68, ptr %6, align 4
-  store i32 0, ptr %b, align 4
+  store i32 10, ptr %b, align 4
   br label %loop
 
 69:                                               ; preds = %switch
@@ -1092,34 +1092,34 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b3 = load i32, ptr %b, align 4
   switch i32 %b3, label %default [
-    i32 0, label %69
-    i32 1, label %29
-    i32 2, label %50
-    i32 3, label %58
+    i32 0, label %42
+    i32 1, label %56
+    i32 2, label %46
+    i32 3, label %50
     i32 4, label %62
-    i32 5, label %17
-    i32 6, label %46
-    i32 7, label %42
-    i32 8, label %45
-    i32 9, label %57
-    i32 10, label %34
-    i32 11, label %30
-    i32 12, label %56
+    i32 5, label %34
+    i32 6, label %17
+    i32 7, label %57
+    i32 8, label %30
+    i32 9, label %29
+    i32 10, label %69
+    i32 11, label %45
+    i32 12, label %58
   ]
 
-loop:                                             ; preds = %56, %30, %34, %57, %45, %42, %46, %case2, %case1, %case, %62, %58, %50, %29
+loop:                                             ; preds = %58, %45, %29, %30, %57, %case2, %case1, %case, %34, %62, %50, %46, %56, %42
   br label %switch
 
 case:                                             ; preds = %17
-  store i32 3, ptr %b, align 4
+  store i32 12, ptr %b, align 4
   br label %loop
 
 case1:                                            ; preds = %17
-  store i32 1, ptr %b, align 4
+  store i32 9, ptr %b, align 4
   br label %loop
 
 case2:                                            ; preds = %17
-  store i32 6, ptr %b, align 4
+  store i32 2, ptr %b, align 4
   br label %loop
 }
 
@@ -1133,7 +1133,7 @@ entry:
   %6 = alloca [5 x i32], align 16
   %7 = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 1, ptr %b, align 4
+  store i32 2, ptr %b, align 4
   br label %switch
 
 8:                                                ; preds = %switch
@@ -1141,13 +1141,13 @@ entry:
   store i32 %0, ptr %3, align 4
   store ptr %1, ptr %4, align 8
   store i32 4, ptr %5, align 4
-  store i32 0, ptr %b, align 4
+  store i32 3, ptr %b, align 4
   br label %loop
 
 9:                                                ; preds = %switch
   %10 = load i32, ptr %3, align 4
   %11 = icmp sgt i32 %10, 1
-  %12 = select i1 %11, i32 2, i32 3
+  %12 = select i1 %11, i32 0, i32 1
   store i32 %12, ptr %b, align 4
   br label %loop
 
@@ -1157,7 +1157,7 @@ entry:
   %16 = load ptr, ptr %15, align 8
   %17 = call i32 @atoi(ptr noundef %16) #4
   store i32 %17, ptr %5, align 4
-  store i32 3, ptr %b, align 4
+  store i32 1, ptr %b, align 4
   br label %loop
 
 18:                                               ; preds = %switch
@@ -1241,13 +1241,13 @@ default:                                          ; preds = %switch
 switch:                                           ; preds = %entry, %loop
   %b1 = load i32, ptr %b, align 4
   switch i32 %b1, label %default [
-    i32 0, label %9
-    i32 1, label %8
-    i32 2, label %13
-    i32 3, label %18
+    i32 0, label %13
+    i32 1, label %18
+    i32 2, label %8
+    i32 3, label %9
   ]
 
-loop:                                             ; preds = %13, %8, %9
+loop:                                             ; preds = %9, %8, %13
   br label %switch
 }
 

@@ -1,0 +1,16 @@
+[Signature] Transformation Summary
+========================================================================================================================================
+Function                       | Rename              | Dummy Parameters       | Parameter Shuffle       | Notes
+----------------------------------------------------------------------------------------------------------------------------------------
+main                           | SKIP                | SKIP                   | SKIP                    | R,D,S: function is main
+_00_zero                       | DISABLED            | SUCCESS (+4)           | DISABLED                | R,S: disabled by command-line option
+_01_one                        | DISABLED            | SUCCESS (+3)           | DISABLED                | R,S: disabled by command-line option
+_02_two                        | DISABLED            | SUCCESS (+2)           | DISABLED                | R,S: disabled by command-line option
+_03_three                      | DISABLED            | SUCCESS (+1)           | DISABLED                | R,S: disabled by command-line option
+_06_variadic                   | DISABLED            | SKIP                   | SKIP                    | R: disabled by command-line option; D,S: function is variadic
+_04_cb                         | DISABLED            | SKIP                   | SKIP                    | R: disabled by command-line option; D,S: function address is taken
+_05_fact                       | DISABLED            | SUCCESS (+3)           | DISABLED                | R,S: disabled by command-line option
+printf                         | SKIP                | SKIP                   | SKIP                    | R,D,S: function is a declaration
+llvm.va_start                  | SKIP                | SKIP                   | SKIP                    | R,D,S: function is an LLVM intrinsic
+llvm.va_end                    | SKIP                | SKIP                   | SKIP                    | R,D,S: function is an LLVM intrinsic
+========================================================================================================================================

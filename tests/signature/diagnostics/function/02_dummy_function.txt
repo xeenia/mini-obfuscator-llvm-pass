@@ -1,0 +1,57 @@
+[Signature] by Function Diagnostics
+================================================================================================
+
+[Signature] main
+  Rename     SKIP       function is main
+  Dummy      SKIP       function is main
+  Shuffle    SKIP       function is main
+
+[Signature] _00_zero
+  Rename     DISABLED   disabled by command-line option
+  Dummy      SUCCESS    (+4) (i32,i32,i32,i32)
+  Shuffle    DISABLED   disabled by command-line option
+
+[Signature] _01_one
+  Rename     DISABLED   disabled by command-line option
+  Dummy      SUCCESS    (+3) (i32,i32,i32)
+  Shuffle    DISABLED   disabled by command-line option
+
+[Signature] _02_two
+  Rename     DISABLED   disabled by command-line option
+  Dummy      SUCCESS    (+2) (i32,i32)
+  Shuffle    DISABLED   disabled by command-line option
+
+[Signature] _03_three
+  Rename     DISABLED   disabled by command-line option
+  Dummy      SUCCESS    (+1) (i32)
+  Shuffle    DISABLED   disabled by command-line option
+
+[Signature] _06_variadic
+  Rename     DISABLED   disabled by command-line option
+  Dummy      SKIP       function is variadic
+  Shuffle    SKIP       function is variadic
+
+[Signature] _04_cb
+  Rename     DISABLED   disabled by command-line option
+  Dummy      SKIP       function address is taken
+  Shuffle    SKIP       function address is taken
+
+[Signature] _05_fact
+  Rename     DISABLED   disabled by command-line option
+  Dummy      SUCCESS    (+3) (i32,i32,i32)
+  Shuffle    DISABLED   disabled by command-line option
+
+[Signature] printf
+  Rename     SKIP       function is a declaration
+  Dummy      SKIP       function is a declaration
+  Shuffle    SKIP       function is a declaration
+
+[Signature] llvm.va_start
+  Rename     SKIP       function is an LLVM intrinsic
+  Dummy      SKIP       function is an LLVM intrinsic
+  Shuffle    SKIP       function is an LLVM intrinsic
+
+[Signature] llvm.va_end
+  Rename     SKIP       function is an LLVM intrinsic
+  Dummy      SKIP       function is an LLVM intrinsic
+  Shuffle    SKIP       function is an LLVM intrinsic

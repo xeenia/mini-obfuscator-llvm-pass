@@ -1,0 +1,50 @@
+[Signature] Technique Diagnostics
+================================================================================================
+
+1. Function Renaming
+------------------------------------------------------------
+DISABLED:
+  - _00_zero: disabled by command-line option
+  - _01_one: disabled by command-line option
+  - _02_two: disabled by command-line option
+  - _03_three: disabled by command-line option
+  - _06_variadic: disabled by command-line option
+  - _04_cb: disabled by command-line option
+  - _05_fact: disabled by command-line option
+
+
+2. Dummy Parameter Insertion
+------------------------------------------------------------
+SUCCESS:
+  - _00_zero: +4 -> (i32,i32,i32,i32)
+  - _01_one: +3 -> (i32,i32,i32)
+  - _02_two: +2 -> (i32,i32)
+  - _03_three: +1 -> (i32)
+  - _05_fact: +3 -> (i32,i32,i32)
+
+SKIPPED:
+  - _06_variadic: function is variadic
+  - _04_cb: function address is taken
+
+
+3. Parameter Shuffling
+------------------------------------------------------------
+SKIPPED:
+  - _06_variadic: function is variadic
+  - _04_cb: function address is taken
+
+DISABLED:
+  - _00_zero: disabled by command-line option
+  - _01_one: disabled by command-line option
+  - _02_two: disabled by command-line option
+  - _03_three: disabled by command-line option
+  - _05_fact: disabled by command-line option
+
+
+4. Functions Excluded from All Techniques
+------------------------------------------------------------
+  - main: function is main
+  - printf: function is a declaration
+  - llvm.va_start: function is an LLVM intrinsic
+  - llvm.va_end: function is an LLVM intrinsic
+

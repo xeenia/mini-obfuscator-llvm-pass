@@ -1,0 +1,38 @@
+[Signature] Technique Diagnostics
+================================================================================================
+
+1. Function Renaming
+------------------------------------------------------------
+SUCCESS:
+  - _01_square: _fD6BE5F29961D2F43
+  - _02_triple: _fBD6B75C45D33AB60
+  - _03_init: _fFEA85C01F3338864
+  - _00_vararg_sum: _fA4520BA5BCC8D8E2
+
+
+2. Dummy Parameter Insertion
+------------------------------------------------------------
+SKIPPED:
+  - _01_square: function address is taken
+  - _02_triple: function address is taken
+  - _03_init: function address is taken
+  - _00_vararg_sum: function is variadic
+
+
+3. Parameter Shuffling
+------------------------------------------------------------
+SKIPPED:
+  - _01_square: function address is taken
+  - _02_triple: function address is taken
+  - _03_init: function address is taken
+  - _00_vararg_sum: function is variadic
+
+
+4. Functions Excluded from All Techniques
+------------------------------------------------------------
+  - main: function is main
+  - abs: function is a declaration
+  - printf: function is a declaration
+  - llvm.va_start: function is an LLVM intrinsic
+  - llvm.va_end: function is an LLVM intrinsic
+

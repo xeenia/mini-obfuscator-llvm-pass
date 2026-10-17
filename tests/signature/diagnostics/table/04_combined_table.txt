@@ -1,0 +1,14 @@
+[Signature] Transformation Summary
+========================================================================================================================================
+Function                       | Rename              | Dummy Parameters       | Parameter Shuffle       | Notes
+----------------------------------------------------------------------------------------------------------------------------------------
+_01_square                     | SUCCESS             | SKIP                   | SKIP                    | D,S: function address is taken
+_02_triple                     | SUCCESS             | SKIP                   | SKIP                    | D,S: function address is taken
+_03_init                       | SUCCESS             | SKIP                   | SKIP                    | D,S: function address is taken
+main                           | SKIP                | SKIP                   | SKIP                    | R,D,S: function is main
+_00_vararg_sum                 | SUCCESS             | SKIP                   | SKIP                    | D,S: function is variadic
+abs                            | SKIP                | SKIP                   | SKIP                    | R,D,S: function is a declaration
+printf                         | SKIP                | SKIP                   | SKIP                    | R,D,S: function is a declaration
+llvm.va_start                  | SKIP                | SKIP                   | SKIP                    | R,D,S: function is an LLVM intrinsic
+llvm.va_end                    | SKIP                | SKIP                   | SKIP                    | R,D,S: function is an LLVM intrinsic
+========================================================================================================================================

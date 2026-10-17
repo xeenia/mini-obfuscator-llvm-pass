@@ -1,0 +1,37 @@
+[Signature] by Function Diagnostics
+================================================================================================
+
+[Signature] _02_public_add
+  Rename     SUCCESS    _fC1C4E9F774D670
+  Dummy      DISABLED   disabled by command-line option
+  Shuffle    DISABLED   disabled by command-line option
+
+[Signature] main
+  Rename     SKIP       function is main
+  Dummy      SKIP       function is main
+  Shuffle    SKIP       function is main
+
+[Signature] _00_add
+  Rename     SUCCESS    _fD00D9B0ACAA8BBC0
+  Dummy      DISABLED   disabled by command-line option
+  Shuffle    DISABLED   disabled by command-line option
+
+[Signature] _01_mul
+  Rename     SUCCESS    _f33558A8B4F8F5FD7
+  Dummy      DISABLED   disabled by command-line option
+  Shuffle    DISABLED   disabled by command-line option
+
+[Signature] _04_fact
+  Rename     SUCCESS    _f4357345AE409A911
+  Dummy      DISABLED   disabled by command-line option
+  Shuffle    SKIP       function has too few arguments to shuffle
+
+[Signature] printf
+  Rename     SKIP       function is a declaration
+  Dummy      SKIP       function is a declaration
+  Shuffle    SKIP       function is a declaration
+
+[Signature] _03_cb
+  Rename     SUCCESS    _fED3E3C50F77B99F0
+  Dummy      SKIP       function address is taken
+  Shuffle    SKIP       function address is taken

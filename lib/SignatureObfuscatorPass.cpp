@@ -46,7 +46,7 @@ namespace{
         cl::desc("Enable parameter shuffling"),
         cl::cat(SIGCategory));
 
-    cl::opt<unsigned> dummyCount("sig-dummy-count",
+    cl::opt<unsigned> DummyCount("sig-dummy-count",
     cl::init(0),
     cl::desc(  "Number of dummy parameters to add; 0 selects automatic sizing"),
     cl::cat(SIGCategory));
@@ -106,9 +106,12 @@ struct FunctionContext {
         DiagStatus getDummyStatus();
         DiagStatus getShuffleStatus();
         std::string getStatusName(DiagStatus status);
+        Function *getEffectiveFunction();
         int getDummyCount();
     };
-    
+    Function *DiagnosticContext::getEffectiveFunction() {
+        return FC->replacementF ? FC->replacementF : FC->currentF;
+    }
     void DiagnosticContext::collectDiagnostics(){
         DiagnosticReport DR;
         DR.functionName = FC->originalFName;
@@ -120,12 +123,13 @@ struct FunctionContext {
             std::string Types;
             raw_string_ostream OS(Types);
             OS << "(";
-            bool First = true;
-            for (const Argument &Arg : FC->currentF->args()) {
-                if (!FC->currentF->getAttributes().hasParamAttr(Arg.getArgNo(), "obf.dummy.role")) continue;
-                if (!First) OS << ",";
+            bool first = true;
+            Function *effectiveF = getEffectiveFunction();
+            for (const Argument &Arg : effectiveF->args()) {
+                if (!effectiveF->getAttributes().hasParamAttr(Arg.getArgNo(), "obf.dummy.role")) continue;
+                if (!first) OS << ",";
                 Arg.getType()->print(OS);
-                First = false;
+                first = false;
             }
             OS << ")";
             return OS.str();
@@ -143,19 +147,19 @@ struct FunctionContext {
                     message = "disabled by command-line option";
                     break;
                 default:
-                    message = "unknown reason";
+                    message = "unknown reason!";
                     break;
             }
             return message;
         };
-        DR.renameResult = getMessage(getRenameStatus(),((FC->replacementF!=nullptr)?FC->replacementF->getName():FC->originalF->getName()).str(),FI->renameReason);
+        DR.renameResult = getMessage(getRenameStatus(),getEffectiveFunction()->getName().str(),FI->renameReason);
         DR.dummyResult =getMessage(getDummyStatus(),getDummyParameterTypes(),FI->dummyReason);
         DR.shuffleResult =getMessage(getShuffleStatus(), "[" + join(map_range(FC->perm, [](unsigned I) {return std::to_string(I);}), ", ") + "]", FI->shuffleReason);
         report.push_back(std::move(DR));
     }
     int DiagnosticContext::getDummyCount(){
         const unsigned originalArgCount = FC->originalF->arg_size();
-        const unsigned finalArgCount = FC->currentF->arg_size();
+        const unsigned finalArgCount = getEffectiveFunction()->arg_size();
         if (finalArgCount < originalArgCount) report_fatal_error("SignatureObfuscatorPass: unexpected parameter removal");
         return finalArgCount - originalArgCount;
     }
@@ -169,20 +173,20 @@ struct FunctionContext {
     }
 
     DiagnosticContext::DiagStatus DiagnosticContext::getRenameStatus(){
+        if(!FI->canRename) return DiagStatus::Skip;
         if(DisableRename) return DiagStatus::Disabled;
-        else if(!FI->canRename) return DiagStatus::Skip;
-        else if(FC->originalFName != FC->currentF->getName()) return DiagStatus::Success;
+        else if(FC->originalFName != getEffectiveFunction()->getName()) return DiagStatus::Success;
         else return DiagStatus::Unknown;
     }
     DiagnosticContext::DiagStatus DiagnosticContext::getDummyStatus(){
-        if(DisableDummy) return DiagStatus::Disabled;
-        else if(!FI->canAddDummy) return DiagStatus::Skip;
-        else if(getDummyCount() != 0) return DiagStatus::Success;
+        if(!FI->canAddDummy) return DiagStatus::Skip;
+        else if(DisableDummy) return DiagStatus::Disabled;
+        else if(getDummyCount() > 0) return DiagStatus::Success;
         else return DiagStatus::Unknown;
     }
     DiagnosticContext::DiagStatus DiagnosticContext::getShuffleStatus(){
-        if(DisableShuffle) return DiagStatus::Disabled;
-        else if(!FI->canShuffle) return DiagStatus::Skip;
+        if(!FI->canShuffle) return DiagStatus::Skip;
+        else if(DisableShuffle) return DiagStatus::Disabled;
         else if(!FC->perm.empty()) return DiagStatus::Success;
         else return DiagStatus::Unknown;
     }
@@ -596,14 +600,16 @@ PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager 
         DC.FI = &functionInfo;
         if (functionInfo.canRename && !DisableRename){
             FC.applyRename();
+            changed = true;
         }
         if (functionInfo.canAddDummy && !DisableDummy) {
             unsigned padCount = 0;
-            if (dummyCount == 0)
+            if (DummyCount == 0)
                 padCount = analysisResult.MaxArgs - FC.currentF->arg_size() + 1;
             else
-                padCount = dummyCount;
+                padCount = DummyCount;
             FC.applyDummyParameters(padCount);
+            if(functionInfo.canShuffle==false) functionInfo.canShuffle = true;
             changed =true;
         }
 
@@ -612,7 +618,7 @@ PreservedAnalyses SignatureObfuscatorPass::run(Module &M, ModuleAnalysisManager 
                     FC.currentF = FC.replacementF;
                     FC.replacementF = nullptr;
                 }
-            changed = FC.applyShuffle();
+            changed |= FC.applyShuffle();
         }
 
         if(Diagnostics != SignatureDiagnostics::None) DC.collectDiagnostics();

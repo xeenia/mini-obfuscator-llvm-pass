@@ -1,0 +1,26 @@
+[Signature] Transformation Summary
+========================================================================================================================================
+Function                       | Rename              | Dummy Parameters       | Parameter Shuffle       | Notes
+----------------------------------------------------------------------------------------------------------------------------------------
+_07_init                       | SUCCESS             | SKIP                   | SKIP                    | D,S: function address is taken
+main                           | SKIP                | SKIP                   | SKIP                    | R,D,S: function is main
+_00_local_zero                 | SUCCESS             | SUCCESS (+4)           | SUCCESS                 | -
+_01_local_one                  | SUCCESS             | SUCCESS (+3)           | SUCCESS                 | -
+_02_local_two                  | SUCCESS             | SUCCESS (+2)           | SUCCESS                 | -
+_03_local_three                | SUCCESS             | SUCCESS (+1)           | SUCCESS                 | -
+_04_local_cb                   | SUCCESS             | SKIP                   | SKIP                    | D,S: function address is taken
+abs                            | SKIP                | SKIP                   | SKIP                    | R,D,S: function is a declaration
+printf                         | SKIP                | SKIP                   | SKIP                    | R,D,S: function is a declaration
+_05_square                     | SUCCESS             | SKIP                   | SKIP                    | D,S: function address is taken
+_06_triple                     | SUCCESS             | SKIP                   | SKIP                    | D,S: function address is taken
+_00_public_add                 | SUCCESS             | SUCCESS (+2)           | SUCCESS                 | -
+_01_public_mul                 | SUCCESS             | SUCCESS (+2)           | SUCCESS                 | -
+_02_mixed                      | SUCCESS             | SUCCESS (+1)           | SUCCESS                 | -
+_03_callback                   | SUCCESS             | SKIP                   | SKIP                    | D,S: function address is taken
+_05_fact                       | SUCCESS             | SUCCESS (+3)           | SUCCESS                 | -
+_04_variadic_sum               | SUCCESS             | SKIP                   | SKIP                    | D,S: function is variadic
+llvm.va_start                  | SKIP                | SKIP                   | SKIP                    | R,D,S: function is an LLVM intrinsic
+llvm.va_end                    | SKIP                | SKIP                   | SKIP                    | R,D,S: function is an LLVM intrinsic
+_07_force_internal             | SUCCESS             | SUCCESS (+3)           | SUCCESS                 | -
+_06_internal_helper            | SUCCESS             | SUCCESS (+3)           | SUCCESS                 | -
+========================================================================================================================================

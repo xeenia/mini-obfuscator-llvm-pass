@@ -1,0 +1,42 @@
+[Signature] Technique Diagnostics
+================================================================================================
+
+1. Function Renaming
+------------------------------------------------------------
+SUCCESS:
+  - _02_public_add: _fC1C4E9F774D670
+  - _00_add: _fD00D9B0ACAA8BBC0
+  - _01_mul: _f33558A8B4F8F5FD7
+  - _04_fact: _f4357345AE409A911
+  - _03_cb: _fED3E3C50F77B99F0
+
+
+2. Dummy Parameter Insertion
+------------------------------------------------------------
+SKIPPED:
+  - _03_cb: function address is taken
+
+DISABLED:
+  - _02_public_add: disabled by command-line option
+  - _00_add: disabled by command-line option
+  - _01_mul: disabled by command-line option
+  - _04_fact: disabled by command-line option
+
+
+3. Parameter Shuffling
+------------------------------------------------------------
+SKIPPED:
+  - _04_fact: function has too few arguments to shuffle
+  - _03_cb: function address is taken
+
+DISABLED:
+  - _02_public_add: disabled by command-line option
+  - _00_add: disabled by command-line option
+  - _01_mul: disabled by command-line option
+
+
+4. Functions Excluded from All Techniques
+------------------------------------------------------------
+  - main: function is main
+  - printf: function is a declaration
+
